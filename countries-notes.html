@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Countries Notes | The Chessplayer</title>
+  <meta name="description" content="Country notes and GeoGuessr resources by The Chessplayer." />
+
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --line: #ded7ca;
+      --accent: #7c4a21;
+      --accent-soft: #efe2d3;
+      --dark: #151515;
+      --shadow: 0 18px 45px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 56px 0 96px;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 42px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 7vw, 5.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      color: var(--dark);
+      margin-bottom: 18px;
+    }
+
+    .intro {
+      max-width: 720px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 42px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .tile {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 24px;
+      min-height: 190px;
+      box-shadow: var(--shadow);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .tile:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 34px rgba(31, 41, 51, 0.09);
+      border-color: #cbbca7;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.78rem;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      font-size: 1.45rem;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .coming-soon {
+      opacity: 0.86;
+    }
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page {
+        padding-top: 32px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <a class="back" href="index.html">← Back to Home</a>
+
+    <h1>Countries Notes</h1>
+
+    <p class="intro">
+      Country-specific GeoGuessr notes, JSON resources, map-making files, and future research pages.
+      For now, this page focuses on Ecuador, Cambodia, Ireland, and China Mode.
+    </p>
+
+    <div class="grid">
+      <a class="tile" href="ecuador-notes.html">
+        <span class="tag">Notes</span>
+        <h2>Ecuador Notes</h2>
+        <p>
+          Ecuador resources and research notes, including the current map-making JSON file.
+          Later this can become a full country page with regions, roads, vegetation, climate, and car meta.
+        </p>
+      </a>
+
+      <a class="tile coming-soon" href="#">
+        <span class="tag">Coming Soon</span>
+        <h2>Cambodia Notes</h2>
+        <p>
+          Future notes for Cambodia: terrain, roads, vegetation,
+          regional guessing, and official-map experience.
+        </p>
+      </a>
+
+      <a class="tile coming-soon" href="#">
+        <span class="tag">Coming Soon</span>
+        <h2>Ireland Notes</h2>
+        <p>
+          Future notes for Ireland: landscape, road clues, regional differences,
+          signs, coast/inland distinctions, and NMPZ-specific observations.
+        </p>
+      </a>
+
+      <a class="tile coming-soon" href="#">
+        <span class="tag">Coming Soon</span>
+        <h2>China Mode</h2>
+        <p>
+          Future notes for 图寻中国: provinces, city recognition, plates,
+          signs, road clues, and foundational Chinese geography.
+        </p>
+      </a>
+    </div>
+  </main>
+</body>
+</html>

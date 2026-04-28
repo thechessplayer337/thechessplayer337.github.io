@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Latest Updates | The Chessplayer</title>
+  <meta name="description" content="Latest website updates for The Chessplayer." />
+
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --line: #ded7ca;
+      --accent: #7c4a21;
+      --accent-soft: #efe2d3;
+      --dark: #151515;
+      --shadow: 0 18px 45px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(900px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 56px 0 96px;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 42px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 7vw, 5.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      color: var(--dark);
+      margin-bottom: 18px;
+    }
+
+    .intro {
+      max-width: 720px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 42px;
+    }
+
+    .updates {
+      display: grid;
+      gap: 18px;
+    }
+
+    .update-card {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .date {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.78rem;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      font-size: 1.55rem;
+      color: var(--dark);
+      margin-bottom: 16px;
+    }
+
+    .update-groups {
+      display: grid;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    details {
+      border: 1px solid rgba(222, 215, 202, 0.85);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.46);
+      padding: 14px 16px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--dark);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 1rem;
+      font-weight: 750;
+      list-style-position: outside;
+    }
+
+    summary:hover {
+      color: var(--accent);
+    }
+
+    ul {
+      padding-left: 22px;
+      margin-top: 10px;
+    }
+
+    li {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 0.98rem;
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        width: min(100% - 24px, 900px);
+        padding-top: 32px;
+      }
+
+      .update-card {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <a class="back" href="index.html">← Back to Home</a>
+
+    <h1>Latest Updates</h1>
+
+    <p class="intro">
+      A simple update log for The Chessplayer website. Major new pages, records, notes, media links,
+      and structural changes will be recorded here.
+    </p>
+
+    <section class="updates">
+      <article class="update-card">
+        <span class="date">2026-04-28</span>
+        <h2>First major content and layout updates</h2>
+
+        <div class="update-groups">
+          <details>
+            <summary>Site Structure</summary>
+            <ul>
+              <li>Reorganized the homepage layout for cleaner navigation.</li>
+              <li>Reorganized the GeoGuessr section into a two-column layout.</li>
+              <li>Moved Countries Notes above Personal Records for better navigation.</li>
+              <li>Improved the Latest Updates page so same-day changes are grouped together.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Chess Pages</summary>
+            <ul>
+              <li>Updated the Chess section with Chess News, Chess Tutorials, and Chess Plus as future categories.</li>
+              <li>Marked the current Chess section as Coming Soon until more content is ready.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>GeoGuessr Pages</summary>
+            <ul>
+              <li>Added Beginner Notes page for GeoGuessr / 图寻 learning.</li>
+              <li>Improved Beginner Notes layout, image display, source link, and back-to-top navigation.</li>
+              <li>Added Countries Notes page as a hub for country-specific resources.</li>
+              <li>Added Ecuador Notes page with downloadable Ecuador map-making JSON.</li>
+              <li>Added Personal Records page for GeoGuessr NMPZ PBs and major runs.</li>
+              <li>Added An Arbitrary World NMPZ PB: 23,341.</li>
+              <li>Added A Balanced Cambodia NMPZ: 15,429, World Rank #3, with video link.</li>
+              <li>Added Supersonic Ireland NMPZ: 14,584, World Rank #1, with video link.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Future Sections</summary>
+            <ul>
+              <li>Marked NMPZ Notes as Coming Soon.</li>
+              <li>Set Cambodia, Ireland, and China Mode notes as future country pages.</li>
+            </ul>
+          </details>
+        </div>
+      </article>
+
+      <article class="update-card">
+        <span class="date">2026-04-27</span>
+        <h2>Website foundation built</h2>
+
+        <div class="update-groups">
+          <details>
+            <summary>Site Structure</summary>
+            <ul>
+              <li>Created the first working version of The Chessplayer personal website.</li>
+              <li>Added core sections for About, Working On, Chess, GeoGuessr, Extensions, and Contact.</li>
+              <li>Added the first homepage cards and navigation structure.</li>
+              <li>Set up the website through GitHub Pages.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Chess Pages</summary>
+            <ul>
+              <li>Added the first placeholder structure for future chess content.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>GeoGuessr Pages</summary>
+            <ul>
+              <li>Added the first placeholder structure for GeoGuessr notes and resources.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Future Sections</summary>
+            <ul>
+              <li>Prepared the site structure for future posts, records, country notes, and tutorials.</li>
+            </ul>
+          </details>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Records | The Chessplayer</title>
+  <meta name="description" content="Personal best GeoGuessr NMPZ rounds and records by The Chessplayer." />
+
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --line: #ded7ca;
+      --accent: #7c4a21;
+      --accent-soft: #efe2d3;
+      --dark: #151515;
+      --shadow: 0 18px 45px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 56px 0 96px;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 42px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 7vw, 5.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      color: var(--dark);
+      margin-bottom: 18px;
+    }
+
+    .intro {
+      max-width: 760px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 42px;
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .divider {
+      width: 1px;
+      height: 100%;
+      background: var(--line);
+      opacity: 0.9;
+    }
+
+    .column {
+      display: grid;
+      gap: 18px;
+    }
+
+    .column-title {
+      font-size: 2rem;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+
+    .column-subtitle {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .record-card {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.78rem;
+    }
+
+    h2 {
+      font-size: 1.45rem;
+      color: var(--dark);
+      margin-bottom: 3px;
+    }
+
+    .date-line {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+    }
+
+    .notes {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 0.96rem;
+      line-height: 1.7;
+    }
+
+    .score {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--dark);
+      font-size: 1.65rem;
+      font-weight: 750;
+      margin-top: 6px;
+    }
+
+    .link-button {
+      display: inline-flex;
+      margin-top: 14px;
+      padding: 9px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--accent);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 650;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .link-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(31, 41, 51, 0.10);
+      border-color: #cbbca7;
+    }
+
+    @media (max-width: 860px) {
+      .page {
+        padding-top: 32px;
+      }
+
+      .columns {
+        grid-template-columns: 1fr;
+      }
+
+      .divider {
+        display: none;
+      }
+
+      .column-title {
+        font-size: 1.75rem;
+      }
+
+      .score {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <a class="back" href="index.html">← Back to Home</a>
+
+    <h1>Personal Records</h1>
+
+    <p class="intro">
+      A personal archive of GeoGuessr NMPZ personal bests, official-map scores, memorable no-info rounds,
+      and recorded runs. This page is for tracking progress rather than replacing full writeups.
+    </p>
+
+    <section class="columns">
+      <div class="column">
+        <div>
+          <h2 class="column-title">World Map</h2>
+          <p class="column-subtitle">Personal bests and memorable runs on global maps.</p>
+        </div>
+
+        <article class="record-card">
+          <div>
+            <div class="tag-row">
+              <span class="tag">NMPZ</span>
+              <span class="tag">Personal Best</span>
+            </div>
+
+            <h2>An Arbitrary World</h2>
+            <p class="date-line">Date: 2026-04-28</p>
+            <p class="notes">
+              Current personal best on An Arbitrary World NMPZ. The run was recorded and can be viewed through the replay link below.
+            </p>
+
+            <a class="link-button" href="https://drive.google.com/file/d/1rZWKgfEKHVFaKOJ-NxSBlKn3i2wLr4WL/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+              Record Replay
+            </a>
+          </div>
+
+          <div class="score">23,341</div>
+        </article>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="column">
+        <div>
+          <h2 class="column-title">Country Specific</h2>
+          <p class="column-subtitle">Personal bests and records on country or region-specific maps.</p>
+        </div>
+
+        <article class="record-card">
+          <div>
+            <div class="tag-row">
+              <span class="tag">NMPZ</span>
+              <span class="tag">World Rank #3</span>
+            </div>
+
+            <h2>A Balanced Cambodia</h2>
+            <p class="date-line">Date: 2026-04-16</p>
+            <p class="notes">
+              Ranked #3 on the historical leaderboard at the time of the run; a major Cambodia benchmark.
+            </p>
+
+            <a class="link-button" href="https://www.bilibili.com/video/BV1XTdhB5EwW/" target="_blank" rel="noopener noreferrer">
+              Watch Video
+            </a>
+          </div>
+
+          <div class="score">15,429</div>
+        </article>
+
+        <article class="record-card">
+          <div>
+            <div class="tag-row">
+              <span class="tag">NMPZ</span>
+              <span class="tag">World Rank #1</span>
+            </div>
+
+            <h2>Supersonic Ireland</h2>
+            <p class="date-line">Date: 2026-04-13</p>
+            <p class="notes">
+              Current NMPZ World Record on the map A Supersonic Ireland.
+            </p>
+
+            <a class="link-button" href="https://www.bilibili.com/video/BV1yHQ4BCEBz/" target="_blank" rel="noopener noreferrer">
+              Watch Video
+            </a>
+          </div>
+
+          <div class="score">14,584</div>
+        </article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
