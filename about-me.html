@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Me | The Chessplayer</title>
+  <meta name="description" content="A short personal introduction for The Chessplayer." />
+
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --line: #ded7ca;
+      --accent: #7c4a21;
+      --accent-soft: #efe2d3;
+      --dark: #151515;
+      --shadow: 0 18px 45px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(900px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 56px 0 96px;
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 42px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 7vw, 5.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      color: var(--dark);
+      margin-bottom: 18px;
+    }
+
+    .intro {
+      max-width: 720px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 42px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 34px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.78rem;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      color: var(--dark);
+      margin-bottom: 14px;
+    }
+
+    p {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        padding-top: 32px;
+      }
+
+      .card {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <a class="back" href="index.html">← Back to Home</a>
+
+    <h1>About Me</h1>
+
+    <p class="intro">
+      A short personal introduction behind The Chessplayer.
+    </p>
+
+    <section class="card">
+      <span class="tag">About Me</span>
+      <h2>Hello, my friend!</h2>
+
+      <p>
+        I am a high school student from Shenzhen who is soon going to the University of California,
+        Davis for my undergraduate journey. Feel free to contact me through email, whether for
+        general communication or potential cooperation, and I will respond when I have time.
+        Have a nice day!
+      </p>
+    </section>
+
+    <section class="card">
+      <span class="tag">Purpose</span>
+      <h2>Why did I create this website?</h2>
+
+      <p>
+        Chess and GeoGuessr are by far two of my favorite hobbies, and I deem myself relatively
+        good at them among the general public. Thus, I wanted to create this website in order to
+        record my own journey as well as share my experience to help people who share similar
+        interests out there.
+      </p>
+
+      <p>
+        It is my great pleasure if you find my content helpful, and thank you for visiting!
+      </p>
+    </section>
+  </main>
+</body>
+</html>
