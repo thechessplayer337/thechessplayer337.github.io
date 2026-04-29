@@ -9,14 +9,13 @@
   <style>
     :root {
       --bg: #f7f4ee;
-      --panel: rgba(255, 255, 255, 0.82);
+      --panel: rgba(255, 255, 255, 0.72);
       --text: #1f2933;
       --muted: #667085;
       --line: #ded7ca;
       --accent: #7c4a21;
-      --accent-soft: #efe2d3;
       --dark: #151515;
-      --shadow: 0 18px 45px rgba(31, 41, 51, 0.08);
+      --shadow: 0 14px 34px rgba(31, 41, 51, 0.06);
     }
 
     * {
@@ -38,91 +37,89 @@
     }
 
     .page {
-      width: min(1100px, calc(100% - 32px));
+      width: min(860px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 56px 0 96px;
+      padding: 52px 0 88px;
     }
 
     .back {
       display: inline-block;
-      margin-bottom: 42px;
+      margin-bottom: 36px;
       font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--accent);
-      font-size: 0.95rem;
+      font-size: 0.92rem;
     }
 
     h1 {
-      font-size: clamp(3.6rem, 8vw, 6.8rem);
+      font-size: clamp(2.8rem, 7vw, 5rem);
       line-height: 0.95;
-      letter-spacing: -0.06em;
+      letter-spacing: -0.055em;
       color: var(--dark);
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .intro {
-      max-width: 760px;
+      max-width: 620px;
       font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--muted);
-      font-size: 1.05rem;
-      margin-bottom: 42px;
+      font-size: 0.98rem;
+      margin-bottom: 34px;
     }
 
     .about-card {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 32px;
-      padding: 42px;
+      border-radius: 26px;
+      padding: 34px 38px;
       box-shadow: var(--shadow);
     }
 
-    .tag {
-      display: inline-block;
-      padding: 7px 14px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.9rem;
-      margin-bottom: 24px;
-    }
-
     h2 {
-      font-size: clamp(2.2rem, 4vw, 3.5rem);
-      line-height: 1.05;
-      color: var(--dark);
-      margin-bottom: 24px;
-    }
-
-    h3 {
-      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-size: clamp(1.7rem, 3vw, 2.35rem);
       line-height: 1.1;
       color: var(--dark);
       margin-bottom: 18px;
+      letter-spacing: -0.035em;
+    }
+
+    h3 {
+      font-size: clamp(1.45rem, 2.5vw, 2rem);
+      line-height: 1.15;
+      color: var(--dark);
+      margin-bottom: 16px;
+      letter-spacing: -0.03em;
     }
 
     p {
       font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--muted);
-      font-size: 1rem;
-      line-height: 1.9;
-      margin-bottom: 22px;
-      max-width: 920px;
+      font-size: 0.96rem;
+      line-height: 1.85;
+      margin-bottom: 18px;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
     }
 
     .section-divider {
       height: 1px;
       background: var(--line);
-      margin: 34px 0;
+      margin: 30px 0;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 700px) {
+      .page {
+        padding-top: 32px;
+      }
+
       .about-card {
-        padding: 28px 22px;
-        border-radius: 24px;
+        padding: 26px 22px;
+        border-radius: 22px;
       }
 
       p {
-        font-size: 0.98rem;
+        font-size: 0.94rem;
       }
     }
   </style>
@@ -139,19 +136,26 @@
     </p>
 
     <section class="about-card">
-      <span class="tag">About Me</span>
-
       <h2>Hello, my friend!</h2>
+
       <p>
-        I am a high school student from Shenzhen who is soon going to the University of California, Davis for my undergraduate journey. Feel free to contact me through email, whether for general communication or potential cooperation, and I will respond when I have time. Have a nice day!
+        I am a high school student from Shenzhen who is soon going to the University of California,
+        Davis for my undergraduate journey. Feel free to contact me through email, whether for
+        general communication or potential cooperation, and I will respond when I have time.
+        Have a nice day!
       </p>
 
       <div class="section-divider"></div>
 
       <h3>Why did I create this website?</h3>
+
       <p>
-        Chess and GeoGuessr are by far two of my favorite hobbies, and I deem myself relatively good at them among the general public. Thus, I wanted to create this website in order to record my own journey as well as share my experience to help people who share similar interests out there.
+        Chess and GeoGuessr are by far two of my favorite hobbies, and I deem myself relatively
+        good at them among the general public. Thus, I wanted to create this website in order to
+        record my own journey as well as share my experience to help people who share similar
+        interests out there.
       </p>
+
       <p>
         It is my great pleasure if you find my content helpful, and thank you for visiting!
       </p>
