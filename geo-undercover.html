@@ -327,6 +327,18 @@
       margin-top: 8px;
     }
 
+    .timer {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(180, 35, 24, 0.10);
+      color: var(--bad);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      margin-left: 6px;
+    }
+
     @media (max-width: 880px) {
       .grid {
         grid-template-columns: 1fr;
@@ -427,13 +439,18 @@
         </div>
 
         <div id="readyVotePanel" class="hidden">
-          <h3>Ready to vote?</h3>
+          <h3>
+            Ready to vote?
+            <span class="timer" id="readyVoteTimer">10s</span>
+          </h3>
           <p class="status">
-            If at least half of the living players agree, voting begins.
+            Choose within 10 seconds. If you do not choose in time, your choice will automatically count as Refuse.
+            If at least half of the living players agree, voting begins; otherwise, a new description round begins.
           </p>
           <div class="row">
             <button id="agreeVoteBtn">Agree to Vote</button>
-            <button class="secondary" id="cancelAgreeVoteBtn">Cancel Agreement</button>
+            <button class="secondary" id="refuseVoteBtn">Refuse to Vote</button>
+            <button class="secondary" id="cancelAgreeVoteBtn">Cancel Choice</button>
           </div>
           <p class="status" id="readyVoteStatus"></p>
         </div>
@@ -485,6 +502,8 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
+    const READY_VOTE_SECONDS = 10;
 
     const wordPairs = [
       { civilian: "Norway", undercover: "Sweden", theme: "Nordic forest roads" },
@@ -632,7 +651,9 @@
     const descriptionList = document.getElementById("descriptionList");
 
     const readyVotePanel = document.getElementById("readyVotePanel");
+    const readyVoteTimer = document.getElementById("readyVoteTimer");
     const agreeVoteBtn = document.getElementById("agreeVoteBtn");
+    const refuseVoteBtn = document.getElementById("refuseVoteBtn");
     const cancelAgreeVoteBtn = document.getElementById("cancelAgreeVoteBtn");
     const readyVoteStatus = document.getElementById("readyVoteStatus");
 
@@ -727,6 +748,13 @@
       return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${location.lat},${location.lng}&heading=${location.heading || 0}&pitch=0&fov=90`;
     }
 
+    function getReadyVoteRemainingSeconds(room) {
+      if (!room.readyVoteStartedAt) return READY_VOTE_SECONDS;
+      const elapsedMs = Date.now() - room.readyVoteStartedAt;
+      const remaining = READY_VOTE_SECONDS - Math.floor(elapsedMs / 1000);
+      return Math.max(0, remaining);
+    }
+
     function escapeHtml(str) {
       return String(str ?? "")
         .replaceAll("&", "&amp;")
@@ -748,6 +776,7 @@
         maxPlayers,
         hostId: playerId,
         round: 0,
+        readyVoteStartedAt: null,
         createdAt: serverTimestamp(),
         players: {
           [playerId]: {
@@ -850,6 +879,7 @@
       updates[`rooms/${currentRoomId}/status`] = "playing";
       updates[`rooms/${currentRoomId}/phase`] = "describing";
       updates[`rooms/${currentRoomId}/round`] = 1;
+      updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
       updates[`rooms/${currentRoomId}/game`] = {
         theme: pair.theme,
         civilianCountry: pair.civilian,
@@ -878,7 +908,7 @@
         updates[`rooms/${currentRoomId}/players/${playerId}/location`] = loc;
         updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
         updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
-        updates[`rooms/${currentRoomId}/players/${playerId}/readyToVote`] = false;
+        updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
         updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
       }
 
@@ -897,9 +927,9 @@
       descriptionInput.value = "";
     }
 
-    async function setReadyToVote(value) {
+    async function setVoteIntent(value) {
       await update(ref(db), {
-        [`rooms/${currentRoomId}/players/${currentPlayerId}/readyToVote`]: value
+        [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntent`]: value
       });
     }
 
@@ -918,6 +948,7 @@
 
       updates[`rooms/${currentRoomId}/phase`] = "describing";
       updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
+      updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
       updates[`rooms/${currentRoomId}/game/lastResult`] = "";
 
       const playerCountryMap = {};
@@ -932,7 +963,7 @@
         const loc = assignedLocations[p.id];
 
         updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
-        updates[`rooms/${currentRoomId}/players/${p.id}/readyToVote`] = false;
+        updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
         updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
         updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
       }
@@ -947,6 +978,7 @@
       updates[`rooms/${currentRoomId}/status`] = "lobby";
       updates[`rooms/${currentRoomId}/phase`] = "lobby";
       updates[`rooms/${currentRoomId}/round`] = 0;
+      updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
       updates[`rooms/${currentRoomId}/game`] = null;
 
       for (const [playerId] of Object.entries(currentRoom.players || {})) {
@@ -955,8 +987,37 @@
         updates[`rooms/${currentRoomId}/players/${playerId}/location`] = null;
         updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
         updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
-        updates[`rooms/${currentRoomId}/players/${playerId}/readyToVote`] = false;
+        updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
         updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
+      }
+
+      await update(ref(db), updates);
+    }
+
+    async function beginNewDescriptionRoundAfterRefusal(room, alivePlayers) {
+      const updates = {};
+      const nextRoundNumber = (room.round || 1) + 1;
+
+      updates[`rooms/${currentRoomId}/phase`] = "describing";
+      updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
+      updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+      updates[`rooms/${currentRoomId}/game/lastResult`] = "Not enough players agreed to vote. A new description round begins.";
+
+      const playerCountryMap = {};
+
+      for (const p of alivePlayers) {
+        playerCountryMap[p.id] = p.country;
+      }
+
+      const assignedLocations = assignUniqueLocations(playerCountryMap);
+
+      for (const p of alivePlayers) {
+        const loc = assignedLocations[p.id];
+
+        updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
+        updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
+        updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
+        updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
       }
 
       await update(ref(db), updates);
@@ -974,20 +1035,26 @@
         if (allDescribed) {
           transitionLock = true;
           await update(ref(db), {
-            [`rooms/${currentRoomId}/phase`]: "readyVote"
+            [`rooms/${currentRoomId}/phase`]: "readyVote",
+            [`rooms/${currentRoomId}/readyVoteStartedAt`]: Date.now()
           });
           setTimeout(() => transitionLock = false, 500);
         }
       }
 
       if (phase === "readyVote") {
-        const readyCount = alivePlayers.filter(p => p.readyToVote === true).length;
+        const agreeCount = alivePlayers.filter(p => p.voteIntent === "agree").length;
+        const decidedCount = alivePlayers.filter(p => p.voteIntent === "agree" || p.voteIntent === "refuse").length;
         const needed = Math.ceil(alivePlayers.length / 2);
+        const remainingSeconds = getReadyVoteRemainingSeconds(room);
+        const expired = remainingSeconds <= 0;
 
-        if (readyCount >= needed) {
+        if (agreeCount >= needed) {
           transitionLock = true;
+
           const updates = {
-            [`rooms/${currentRoomId}/phase`]: "voting"
+            [`rooms/${currentRoomId}/phase`]: "voting",
+            [`rooms/${currentRoomId}/readyVoteStartedAt`]: null
           };
 
           for (const p of alivePlayers) {
@@ -995,6 +1062,31 @@
           }
 
           await update(ref(db), updates);
+          setTimeout(() => transitionLock = false, 500);
+          return;
+        }
+
+        if (expired) {
+          transitionLock = true;
+
+          const updates = {};
+          for (const p of alivePlayers) {
+            if (p.voteIntent !== "agree" && p.voteIntent !== "refuse") {
+              updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "refuse";
+            }
+          }
+
+          if (Object.keys(updates).length > 0) {
+            await update(ref(db), updates);
+          }
+
+          setTimeout(() => transitionLock = false, 500);
+          return;
+        }
+
+        if (decidedCount === alivePlayers.length && agreeCount < needed) {
+          transitionLock = true;
+          await beginNewDescriptionRoundAfterRefusal(room, alivePlayers);
           setTimeout(() => transitionLock = false, 500);
         }
       }
@@ -1054,11 +1146,13 @@
       if (win.gameOver) {
         updates[`rooms/${currentRoomId}/phase`] = "gameOver";
         updates[`rooms/${currentRoomId}/status`] = "finished";
+        updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
         updates[`rooms/${currentRoomId}/game/winner`] = win.winner;
         updates[`rooms/${currentRoomId}/game/lastResult`] = resultText;
         updates[`rooms/${currentRoomId}/game/gameOverText`] = win.text;
       } else {
         updates[`rooms/${currentRoomId}/phase`] = "roundResult";
+        updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
         updates[`rooms/${currentRoomId}/game/lastResult`] = resultText;
       }
 
@@ -1109,11 +1203,12 @@
         const hostMark = id === room.hostId ? " · Host" : "";
         const youMark = id === currentPlayerId ? " · You" : "";
         const deadMark = p.alive === false ? " · Out" : "";
+        const intentMark = p.voteIntent === "agree" ? "Agreed" : p.voteIntent === "refuse" ? "Refused" : "";
         const cls = p.alive === false ? "player dead" : "player";
         return `
           <div class="${cls}">
             <span><strong>${escapeHtml(p.name)}</strong>${hostMark}${youMark}${deadMark}</span>
-            <span>${p.description ? "Described" : ""} ${p.vote ? "Voted" : ""}</span>
+            <span>${p.description ? "Described" : ""} ${intentMark} ${p.vote ? "Voted" : ""}</span>
           </div>
         `;
       }).join("");
@@ -1165,9 +1260,15 @@
         descriptionsPanel.classList.remove("hidden");
         readyVotePanel.classList.remove("hidden");
 
-        const readyCount = alivePlayers.filter(p => p.readyToVote).length;
+        const agreeCount = alivePlayers.filter(p => p.voteIntent === "agree").length;
+        const refuseCount = alivePlayers.filter(p => p.voteIntent === "refuse").length;
+        const decidedCount = agreeCount + refuseCount;
         const needed = Math.ceil(alivePlayers.length / 2);
-        readyVoteStatus.textContent = `Agreed to vote: ${readyCount} / ${alivePlayers.length}. Needed: ${needed}.`;
+        const remainingSeconds = getReadyVoteRemainingSeconds(room);
+        const myChoice = me?.voteIntent ? ` Your choice: ${me.voteIntent}.` : " You have not chosen yet.";
+
+        readyVoteTimer.textContent = `${remainingSeconds}s`;
+        readyVoteStatus.textContent = `Agreed: ${agreeCount}. Refused: ${refuseCount}. Decided: ${decidedCount} / ${alivePlayers.length}. Needed to vote: ${needed}.${myChoice}`;
       }
 
       if (phase === "voting") {
@@ -1252,8 +1353,9 @@
     startGameBtn.addEventListener("click", startGame);
     resetRoomBtn.addEventListener("click", resetRoom);
     submitDescriptionBtn.addEventListener("click", submitDescription);
-    agreeVoteBtn.addEventListener("click", () => setReadyToVote(true));
-    cancelAgreeVoteBtn.addEventListener("click", () => setReadyToVote(false));
+    agreeVoteBtn.addEventListener("click", () => setVoteIntent("agree"));
+    refuseVoteBtn.addEventListener("click", () => setVoteIntent("refuse"));
+    cancelAgreeVoteBtn.addEventListener("click", () => setVoteIntent(""));
     nextRoundBtn.addEventListener("click", nextRound);
 
     const params = new URLSearchParams(window.location.search);
@@ -1263,6 +1365,13 @@
       roomInput.value = roomFromUrl.toUpperCase();
       entryStatus.textContent = "Room code loaded from invite link. Enter your name and join.";
     }
+
+    setInterval(() => {
+      if (currentRoom) {
+        renderRoom(currentRoom);
+        hostAutoAdvance(currentRoom);
+      }
+    }, 1000);
   </script>
 </body>
 </html>
