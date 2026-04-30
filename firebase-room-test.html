@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Firebase Room Test | GeoChess</title>
+
+  <style>
+    :root {
+      --bg: #f7f4ee;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --line: #ded7ca;
+      --accent: #7c4a21;
+      --accent-soft: #efe2d3;
+      --dark: #151515;
+      --shadow: 0 18px 45px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .page {
+      width: min(820px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 56px 0 96px;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 7vw, 5.6rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      color: var(--dark);
+      margin-bottom: 18px;
+    }
+
+    .intro {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 34px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--dark);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    button {
+      border: 1px solid var(--dark);
+      border-radius: 999px;
+      padding: 11px 16px;
+      background: var(--dark);
+      color: white;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.94rem;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: transparent;
+      color: var(--dark);
+    }
+
+    .status {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 8px;
+    }
+
+    .room-box {
+      display: none;
+    }
+
+    .room-code {
+      display: inline-block;
+      padding: 6px 11px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .messages {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .message {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.62);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+    }
+
+    .message strong {
+      color: var(--dark);
+    }
+
+    .share-link {
+      word-break: break-all;
+      color: var(--accent);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.92rem;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <h1>Room Test</h1>
+    <p class="intro">
+      A minimal Firebase realtime test. Create or join a room, then send messages between two browser windows.
+    </p>
+
+    <section class="card" id="joinCard">
+      <label for="nameInput">Your name</label>
+      <input id="nameInput" placeholder="TheChessplayer" />
+
+      <label for="roomInput">Room code</label>
+      <input id="roomInput" placeholder="Leave empty to create a new room" />
+
+      <div class="row">
+        <button id="createRoomBtn">Create Room</button>
+        <button class="secondary" id="joinRoomBtn">Join Room</button>
+      </div>
+
+      <p class="status" id="joinStatus">Create a room, then open the same link in another browser/window to test realtime sync.</p>
+    </section>
+
+    <section class="card room-box" id="roomCard">
+      <span class="room-code" id="roomCodeDisplay">Room: ----</span>
+
+      <label for="messageInput">Send a message</label>
+      <input id="messageInput" placeholder="Type something..." />
+
+      <div class="row">
+        <button id="sendBtn">Send</button>
+        <button class="secondary" id="copyLinkBtn">Copy Invite Link</button>
+      </div>
+
+      <p class="share-link" id="shareLink"></p>
+      <p class="status" id="roomStatus">Connected.</p>
+
+      <div class="messages" id="messages"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      set,
+      push,
+      onValue,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA16aGwlAfTj1_LJpyxW5RhTijEuITDXRI",
+      authDomain: "geochess-duel.firebaseapp.com",
+      databaseURL: "https://geochess-duel-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "geochess-duel",
+      storageBucket: "geochess-duel.firebasestorage.app",
+      messagingSenderId: "137946904030",
+      appId: "1:137946904030:web:37b7dd6b4976c43784594f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const nameInput = document.getElementById("nameInput");
+    const roomInput = document.getElementById("roomInput");
+    const createRoomBtn = document.getElementById("createRoomBtn");
+    const joinRoomBtn = document.getElementById("joinRoomBtn");
+    const joinStatus = document.getElementById("joinStatus");
+
+    const joinCard = document.getElementById("joinCard");
+    const roomCard = document.getElementById("roomCard");
+    const roomCodeDisplay = document.getElementById("roomCodeDisplay");
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const shareLink = document.getElementById("shareLink");
+    const roomStatus = document.getElementById("roomStatus");
+    const messages = document.getElementById("messages");
+
+    let currentRoomId = null;
+    let currentName = null;
+
+    function randomRoomCode() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "";
+      for (let i = 0; i < 4; i++) {
+        code += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return code;
+    }
+
+    function getInviteUrl(roomId) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("room", roomId);
+      return url.toString();
+    }
+
+    async function createRoom() {
+      const name = nameInput.value.trim() || "Player 1";
+      const roomId = randomRoomCode();
+
+      await set(ref(db, `rooms/${roomId}`), {
+        createdAt: serverTimestamp(),
+        status: "waiting",
+        players: {
+          p1: {
+            name,
+            joinedAt: serverTimestamp()
+          }
+        }
+      });
+
+      enterRoom(roomId, name);
+    }
+
+    async function joinRoom() {
+      const name = nameInput.value.trim() || "Player 2";
+      const roomId = roomInput.value.trim().toUpperCase();
+
+      if (!roomId) {
+        joinStatus.textContent = "Enter a room code, or create a new room.";
+        return;
+      }
+
+      await set(ref(db, `rooms/${roomId}/players/p2`), {
+        name,
+        joinedAt: serverTimestamp()
+      });
+
+      enterRoom(roomId, name);
+    }
+
+    function enterRoom(roomId, name) {
+      currentRoomId = roomId;
+      currentName = name;
+
+      joinCard.style.display = "none";
+      roomCard.style.display = "block";
+
+      roomCodeDisplay.textContent = `Room: ${roomId}`;
+      shareLink.textContent = getInviteUrl(roomId);
+
+      listenToRoom(roomId);
+    }
+
+    function listenToRoom(roomId) {
+      const roomRef = ref(db, `rooms/${roomId}`);
+
+      onValue(roomRef, (snapshot) => {
+        const room = snapshot.val();
+
+        if (!room) {
+          roomStatus.textContent = "Room not found.";
+          return;
+        }
+
+        const playerNames = room.players
+          ? Object.values(room.players).map(player => player.name).join(" vs ")
+          : "Waiting for players";
+
+        roomStatus.textContent = `Players: ${playerNames}`;
+
+        const roomMessages = room.messages || {};
+        const sortedMessages = Object.values(roomMessages).sort((a, b) => {
+          return (a.createdAt || 0) - (b.createdAt || 0);
+        });
+
+        messages.innerHTML = sortedMessages.map(msg => {
+          return `
+            <div class="message">
+              <strong>${escapeHtml(msg.name || "Player")}:</strong>
+              ${escapeHtml(msg.text || "")}
+            </div>
+          `;
+        }).join("");
+      });
+    }
+
+    async function sendMessage() {
+      const text = messageInput.value.trim();
+
+      if (!currentRoomId || !text) return;
+
+      const messageRef = push(ref(db, `rooms/${currentRoomId}/messages`));
+
+      await set(messageRef, {
+        name: currentName,
+        text,
+        createdAt: Date.now()
+      });
+
+      messageInput.value = "";
+    }
+
+    async function copyInviteLink() {
+      const link = getInviteUrl(currentRoomId);
+      await navigator.clipboard.writeText(link);
+      roomStatus.textContent = "Invite link copied.";
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    createRoomBtn.addEventListener("click", createRoom);
+    joinRoomBtn.addEventListener("click", joinRoom);
+    sendBtn.addEventListener("click", sendMessage);
+    copyLinkBtn.addEventListener("click", copyInviteLink);
+
+    messageInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") sendMessage();
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const roomFromUrl = params.get("room");
+
+    if (roomFromUrl) {
+      roomInput.value = roomFromUrl.toUpperCase();
+      joinStatus.textContent = "Room code loaded from invite link. Enter your name and click Join Room.";
+    }
+  </script>
+</body>
+</html>
