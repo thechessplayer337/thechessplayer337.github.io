@@ -251,6 +251,7 @@
       line-height: 1.1;
       color: white;
       margin-bottom: 12px;
+      letter-spacing: 0.03em;
     }
 
     .street-link {
@@ -402,9 +403,9 @@
         <h2 id="gameTitle">Game</h2>
 
         <div id="secretBox" class="secret hidden">
-          <div class="muted">Your secret country</div>
-          <div class="country" id="secretCountry">Unknown</div>
-          <div class="muted" id="secretRoleText">Your role is hidden from others.</div>
+          <div class="muted">Your hidden country</div>
+          <div class="country" id="secretCountry">???</div>
+          <div class="muted" id="secretRoleText">Your role and country are hidden from other players.</div>
           <a id="streetViewLink" class="street-link" href="#" target="_blank" rel="noopener noreferrer">
             Open your Street View
           </a>
@@ -1101,11 +1102,11 @@
 
       if (me && me.alive !== false && me.country) {
         secretBox.classList.remove("hidden");
-        secretCountry.textContent = me.country;
-        secretRoleText.textContent = "Your role is hidden from other players.";
+        secretCountry.textContent = "???";
+        secretRoleText.textContent = "Your role and country are hidden from other players. Open the Street View and describe what you see.";
         if (me.location) {
           streetViewLink.href = makeStreetViewUrl(me.location);
-          streetViewNote.textContent = `Coordinates are hidden in normal play, but this prototype uses Google Maps Street View links.`;
+          streetViewNote.textContent = `Country name is hidden during the game. Use only the Street View to make your description.`;
         }
       } else {
         secretBox.classList.add("hidden");
