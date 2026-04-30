@@ -789,7 +789,6 @@
       };
 
       await set(ref(db, `rooms/${roomId}`), roomData);
-
       enterRoom(roomId, playerId);
     }
 
@@ -1032,6 +1031,7 @@
 
       if (phase === "describing") {
         const allDescribed = alivePlayers.length > 0 && alivePlayers.every(p => (p.description || "").trim());
+
         if (allDescribed) {
           transitionLock = true;
           await update(ref(db), {
@@ -1066,6 +1066,13 @@
           return;
         }
 
+        if (decidedCount === alivePlayers.length && agreeCount < needed) {
+          transitionLock = true;
+          await beginNewDescriptionRoundAfterRefusal(room, alivePlayers);
+          setTimeout(() => transitionLock = false, 500);
+          return;
+        }
+
         if (expired) {
           transitionLock = true;
 
@@ -1078,16 +1085,12 @@
 
           if (Object.keys(updates).length > 0) {
             await update(ref(db), updates);
+          } else {
+            await beginNewDescriptionRoundAfterRefusal(room, alivePlayers);
           }
 
           setTimeout(() => transitionLock = false, 500);
           return;
-        }
-
-        if (decidedCount === alivePlayers.length && agreeCount < needed) {
-          transitionLock = true;
-          await beginNewDescriptionRoundAfterRefusal(room, alivePlayers);
-          setTimeout(() => transitionLock = false, 500);
         }
       }
 
