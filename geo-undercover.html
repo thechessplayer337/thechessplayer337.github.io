@@ -456,8 +456,13 @@
         </div>
 
         <div id="votingPanel" class="hidden">
-          <h3>Vote out the undercover</h3>
-          <p class="status">Choose one living player. The player with the most votes is eliminated. If tied, no one is eliminated.</p>
+          <h3>
+            Vote out the undercover
+            <span class="timer" id="votingTimer">60s</span>
+          </h3>
+          <p class="status">
+            Choose one living player. If time runs out, missing votes will be randomly assigned to another living player.
+          </p>
           <div class="vote-grid" id="voteGrid"></div>
           <p class="status" id="voteStatus"></p>
         </div>
@@ -504,6 +509,7 @@
     const db = getDatabase(app);
 
     const READY_VOTE_SECONDS = 10;
+    const VOTING_SECONDS = 60;
 
     const wordPairs = [
       { civilian: "Norway", undercover: "Sweden", theme: "Nordic forest roads" },
@@ -658,6 +664,7 @@
     const readyVoteStatus = document.getElementById("readyVoteStatus");
 
     const votingPanel = document.getElementById("votingPanel");
+    const votingTimer = document.getElementById("votingTimer");
     const voteGrid = document.getElementById("voteGrid");
     const voteStatus = document.getElementById("voteStatus");
 
@@ -755,6 +762,19 @@
       return Math.max(0, remaining);
     }
 
+    function getVotingRemainingSeconds(room) {
+      if (!room.votingStartedAt) return VOTING_SECONDS;
+      const elapsedMs = Date.now() - room.votingStartedAt;
+      const remaining = VOTING_SECONDS - Math.floor(elapsedMs / 1000);
+      return Math.max(0, remaining);
+    }
+
+    function pickRandomVoteTarget(voterId, alivePlayers) {
+      const candidates = alivePlayers.filter(p => p.id !== voterId);
+      if (candidates.length === 0) return "";
+      return pick(candidates).id;
+    }
+
     function escapeHtml(str) {
       return String(str ?? "")
         .replaceAll("&", "&amp;")
@@ -777,6 +797,7 @@
         hostId: playerId,
         round: 0,
         readyVoteStartedAt: null,
+        votingStartedAt: null,
         createdAt: serverTimestamp(),
         players: {
           [playerId]: {
@@ -879,6 +900,7 @@
       updates[`rooms/${currentRoomId}/phase`] = "describing";
       updates[`rooms/${currentRoomId}/round`] = 1;
       updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+      updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
       updates[`rooms/${currentRoomId}/game`] = {
         theme: pair.theme,
         civilianCountry: pair.civilian,
@@ -948,6 +970,7 @@
       updates[`rooms/${currentRoomId}/phase`] = "describing";
       updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
       updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+      updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
       updates[`rooms/${currentRoomId}/game/lastResult`] = "";
 
       const playerCountryMap = {};
@@ -978,6 +1001,7 @@
       updates[`rooms/${currentRoomId}/phase`] = "lobby";
       updates[`rooms/${currentRoomId}/round`] = 0;
       updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+      updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
       updates[`rooms/${currentRoomId}/game`] = null;
 
       for (const [playerId] of Object.entries(currentRoom.players || {})) {
@@ -1000,6 +1024,7 @@
       updates[`rooms/${currentRoomId}/phase`] = "describing";
       updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
       updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+      updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
       updates[`rooms/${currentRoomId}/game/lastResult`] = "Not enough players agreed to vote. A new description round begins.";
 
       const playerCountryMap = {};
@@ -1036,7 +1061,8 @@
           transitionLock = true;
           await update(ref(db), {
             [`rooms/${currentRoomId}/phase`]: "readyVote",
-            [`rooms/${currentRoomId}/readyVoteStartedAt`]: Date.now()
+            [`rooms/${currentRoomId}/readyVoteStartedAt`]: Date.now(),
+            [`rooms/${currentRoomId}/votingStartedAt`]: null
           });
           setTimeout(() => transitionLock = false, 500);
         }
@@ -1054,7 +1080,8 @@
 
           const updates = {
             [`rooms/${currentRoomId}/phase`]: "voting",
-            [`rooms/${currentRoomId}/readyVoteStartedAt`]: null
+            [`rooms/${currentRoomId}/readyVoteStartedAt`]: null,
+            [`rooms/${currentRoomId}/votingStartedAt`]: Date.now()
           };
 
           for (const p of alivePlayers) {
@@ -1096,11 +1123,34 @@
 
       if (phase === "voting") {
         const allVoted = alivePlayers.length > 0 && alivePlayers.every(p => !!p.vote);
+        const remainingSeconds = getVotingRemainingSeconds(room);
+        const expired = remainingSeconds <= 0;
 
         if (allVoted) {
           transitionLock = true;
           await resolveVote(room);
           setTimeout(() => transitionLock = false, 500);
+          return;
+        }
+
+        if (expired) {
+          transitionLock = true;
+
+          const updates = {};
+
+          for (const p of alivePlayers) {
+            if (!p.vote) {
+              const randomTarget = pickRandomVoteTarget(p.id, alivePlayers);
+              updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = randomTarget;
+            }
+          }
+
+          if (Object.keys(updates).length > 0) {
+            await update(ref(db), updates);
+          }
+
+          setTimeout(() => transitionLock = false, 500);
+          return;
         }
       }
     }
@@ -1150,12 +1200,14 @@
         updates[`rooms/${currentRoomId}/phase`] = "gameOver";
         updates[`rooms/${currentRoomId}/status`] = "finished";
         updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+        updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
         updates[`rooms/${currentRoomId}/game/winner`] = win.winner;
         updates[`rooms/${currentRoomId}/game/lastResult`] = resultText;
         updates[`rooms/${currentRoomId}/game/gameOverText`] = win.text;
       } else {
         updates[`rooms/${currentRoomId}/phase`] = "roundResult";
         updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+        updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
         updates[`rooms/${currentRoomId}/game/lastResult`] = resultText;
       }
 
@@ -1343,7 +1395,10 @@
       });
 
       const votedCount = alivePlayers.filter(p => p.vote).length;
-      voteStatus.textContent = `Votes submitted: ${votedCount} / ${alivePlayers.length}.`;
+      const remainingSeconds = getVotingRemainingSeconds(room);
+
+      votingTimer.textContent = `${remainingSeconds}s`;
+      voteStatus.textContent = `Votes submitted: ${votedCount} / ${alivePlayers.length}. If time runs out, missing votes will be randomly assigned.`;
     }
 
     copyInviteBtn.addEventListener("click", async () => {
