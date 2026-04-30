@@ -702,6 +702,27 @@
       return array[Math.floor(Math.random() * array.length)];
     }
 
+    function assignUniqueLocations(playerCountryMap) {
+      const poolsByCountry = {};
+      const assigned = {};
+
+      for (const [playerId, country] of Object.entries(playerCountryMap)) {
+        if (!poolsByCountry[country]) {
+          poolsByCountry[country] = shuffle(countryLocations[country] || []);
+        }
+
+        let loc = poolsByCountry[country].pop();
+
+        if (!loc) {
+          loc = pick(countryLocations[country] || []);
+        }
+
+        assigned[playerId] = loc;
+      }
+
+      return assigned;
+    }
+
     function makeStreetViewUrl(location) {
       return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${location.lat},${location.lng}&heading=${location.heading || 0}&pitch=0&fov=90`;
     }
@@ -837,10 +858,20 @@
         lastResult: ""
       };
 
+      const playerCountryMap = {};
+
       for (const [playerId] of players) {
         const isUndercover = undercoverIds.has(playerId);
         const country = isUndercover ? pair.undercover : pair.civilian;
-        const loc = pick(countryLocations[country] || countryLocations[pair.civilian]);
+        playerCountryMap[playerId] = country;
+      }
+
+      const assignedLocations = assignUniqueLocations(playerCountryMap);
+
+      for (const [playerId] of players) {
+        const isUndercover = undercoverIds.has(playerId);
+        const country = playerCountryMap[playerId];
+        const loc = assignedLocations[playerId];
 
         updates[`rooms/${currentRoomId}/players/${playerId}/role`] = isUndercover ? "undercover" : "civilian";
         updates[`rooms/${currentRoomId}/players/${playerId}/country`] = country;
@@ -889,9 +920,17 @@
       updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
       updates[`rooms/${currentRoomId}/game/lastResult`] = "";
 
+      const playerCountryMap = {};
+
       for (const p of alivePlayers) {
-        const country = p.country;
-        const loc = pick(countryLocations[country] || []);
+        playerCountryMap[p.id] = p.country;
+      }
+
+      const assignedLocations = assignUniqueLocations(playerCountryMap);
+
+      for (const p of alivePlayers) {
+        const loc = assignedLocations[p.id];
+
         updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
         updates[`rooms/${currentRoomId}/players/${p.id}/readyToVote`] = false;
         updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
@@ -1060,7 +1099,7 @@
       roundPill.textContent = `Round: ${room.round || 0}`;
 
       const playerCount = players.length;
-      roomStatus.textContent = `Players: ${playerCount} / ${room.maxPlayers}. ${room.game?.theme ? "Theme: " + room.game.theme : ""}`;
+      roomStatus.textContent = `Players: ${playerCount} / ${room.maxPlayers}.`;
 
       startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby"));
       startGameBtn.disabled = !(playerCount === room.maxPlayers);
@@ -1098,7 +1137,7 @@
       resultPanel.classList.add("hidden");
       gameOverPanel.classList.add("hidden");
 
-      gameTitle.textContent = `Geo Undercover · ${room.game?.theme || "Game"}`;
+      gameTitle.textContent = `Geo Undercover · Round ${room.round || 1}`;
 
       if (me && me.alive !== false && me.country) {
         secretBox.classList.remove("hidden");
@@ -1106,7 +1145,7 @@
         secretRoleText.textContent = "Your role and country are hidden from other players. Open the Street View and describe what you see.";
         if (me.location) {
           streetViewLink.href = makeStreetViewUrl(me.location);
-          streetViewNote.textContent = `Country name is hidden during the game. Use only the Street View to make your description.`;
+          streetViewNote.textContent = `Country name is hidden during the game. This prototype uses temporary test locations; official locations will be loaded from the Vali dataset later.`;
         }
       } else {
         secretBox.classList.add("hidden");
