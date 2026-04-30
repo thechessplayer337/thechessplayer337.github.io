@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Geo Undercover | The Chessplayer</title>
+  <title>GeoSpy | The Chessplayer</title>
 
   <style>
     :root {
@@ -352,10 +352,10 @@
     <a class="back" href="index.html">← Back to Home</a>
 
     <div class="eyebrow">Prototype · 3–6 Players · Firebase Realtime</div>
-    <h1>Geo Undercover</h1>
+    <h1>GeoSpy</h1>
     <p class="intro">
-      A GeoGuessr-style undercover game. Civilians receive street-view locations from one country,
-      while undercover players receive locations from a similar but different country.
+      A GeoGuessr-style social deduction game. Civilians receive street-view locations from one country,
+      while spies receive locations from a similar but different country.
     </p>
 
     <section class="grid">
@@ -367,10 +367,10 @@
 
         <label for="maxPlayersInput">Room size</label>
         <select id="maxPlayersInput">
-          <option value="3">3 players: 1 undercover + 2 civilians</option>
-          <option value="4" selected>4 players: 1 undercover + 3 civilians</option>
-          <option value="5">5 players: 1 undercover + 4 civilians</option>
-          <option value="6">6 players: 2 undercover + 4 civilians</option>
+          <option value="3">3 players: 1 spy + 2 civilians</option>
+          <option value="4" selected>4 players: 1 spy + 3 civilians</option>
+          <option value="5">5 players: 1 spy + 4 civilians</option>
+          <option value="6">6 players: 2 spies + 4 civilians</option>
         </select>
 
         <div class="row">
@@ -457,7 +457,7 @@
 
         <div id="votingPanel" class="hidden">
           <h3>
-            Vote out the undercover
+            Vote out the spy
             <span class="timer" id="votingTimer">60s</span>
           </h3>
           <p class="status">
@@ -1223,15 +1223,15 @@
         return {
           gameOver: true,
           winner: "civilians",
-          text: "All undercover players were voted out. Civilians win."
+          text: "All spies were voted out. Civilians win."
         };
       }
 
       if (undercoverAlive >= civilianAlive) {
         return {
           gameOver: true,
-          winner: "undercover",
-          text: "Undercover players are equal to or greater than civilians. Undercover wins."
+          winner: "spies",
+          text: "Spies are equal to or greater than civilians. Spies win."
         };
       }
 
@@ -1287,7 +1287,7 @@
       resultPanel.classList.add("hidden");
       gameOverPanel.classList.add("hidden");
 
-      gameTitle.textContent = `Geo Undercover · Round ${room.round || 1}`;
+      gameTitle.textContent = `GeoSpy · Round ${room.round || 1}`;
 
       if (me && me.alive !== false && me.country) {
         secretBox.classList.remove("hidden");
@@ -1352,7 +1352,8 @@
         gameOverPanel.classList.remove("hidden");
 
         const roles = Object.values(room.players || {}).map(p => {
-          return `${escapeHtml(p.name)}: ${escapeHtml(p.role || "?")} · ${escapeHtml(p.country || "?")}`;
+          const publicRole = p.role === "undercover" ? "spy" : p.role;
+          return `${escapeHtml(p.name)}: ${escapeHtml(publicRole || "?")} · ${escapeHtml(p.country || "?")}`;
         }).join("<br>");
 
         gameOverBox.innerHTML = `
