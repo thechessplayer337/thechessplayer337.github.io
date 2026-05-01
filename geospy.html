@@ -438,7 +438,7 @@
 
         <div id="lobbySettingsPanel" class="hidden">
           <h3>Lobby Settings</h3>
-          <label for="lobbyMaxPlayersInput">Change room size before the game starts</label>
+          <label for="lobbyMaxPlayersInput">Room size for reset / restart</label>
           <select id="lobbyMaxPlayersInput">
             <option value="3">3 players: 1 spy + 2 civilians</option>
             <option value="4">4 players: 1 spy + 3 civilians</option>
@@ -446,8 +446,7 @@
             <option value="6">6 players: 2 spies + 4 civilians</option>
           </select>
           <div class="row">
-            <button id="updateRoomSizeBtn">Update Room Size</button>
-          </div>
+</div>
           <p class="status" id="lobbySettingsStatus"></p>
         </div>
 
@@ -830,8 +829,7 @@
   const resetRoomBtn = document.getElementById("resetRoomBtn");
   const lobbySettingsPanel = document.getElementById("lobbySettingsPanel");
   const lobbyMaxPlayersInput = document.getElementById("lobbyMaxPlayersInput");
-  const updateRoomSizeBtn = document.getElementById("updateRoomSizeBtn");
-  const lobbySettingsStatus = document.getElementById("lobbySettingsStatus");
+const lobbySettingsStatus = document.getElementById("lobbySettingsStatus");
   const playersList = document.getElementById("playersList");
 
   const gameTitle = document.getElementById("gameTitle");
@@ -1217,384 +1215,37 @@
 
     enterRoom(roomId, playerId);
   }
-
-  async function updateRoomSize() {
-    if (!currentRoom || !isHost(currentRoom)) return;
-
-    if (currentRoom.status !== "lobby") {
-      lobbySettingsStatus.textContent = "Room size can only be changed before the game starts.";
-      return;
-    }
-
-    const newMaxPlayers = Number(lobbyMaxPlayersInput.value);
-    const playerCount = Object.keys(currentRoom.players || {}).length;
-
-    if (playerCount > newMaxPlayers) {
-      lobbySettingsStatus.textContent = `Cannot set room size to ${newMaxPlayers}; there are already ${playerCount} players in the room.`;
-      return;
-    }
-
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/maxPlayers`]: newMaxPlayers
-    });
-
-    lobbySettingsStatus.textContent = `Room size updated to ${newMaxPlayers}.`;
-  }
-
-  function enterRoom(roomId, playerId) {
-    currentRoomId = roomId;
-    currentPlayerId = playerId;
-
-    sessionStorage.setItem("geospyRoomId", roomId);
-    sessionStorage.setItem("geospyPlayerId", playerId);
-
-    entryCard.classList.add("hidden");
-    roomCard.classList.remove("hidden");
-
-    inviteLink.textContent = roomUrl(roomId);
-
-    if (unsubscribeRoom) unsubscribeRoom();
-
-    const roomRef = ref(db, `rooms/${roomId}`);
-    unsubscribeRoom = onValue(roomRef, (snapshot) => {
-      const room = snapshot.val();
-
-      if (!room) {
-        roomStatus.textContent = "Room not found or deleted.";
-        return;
-      }
-
-      currentRoom = room;
-      renderRoom(room);
-      hostAutoAdvance(room);
-    });
-  }
-
-  async function startGame() {
-    await locationDataPromise;
-
-    if (!currentRoom || !isHost(currentRoom)) return;
-
-    const players = Object.entries(currentRoom.players || {});
-    if (players.length !== currentRoom.maxPlayers) return;
-
-    const availablePairs = getAvailablePairs();
-
-    if (availablePairs.length === 0) {
-      roomStatus.textContent = "No usable country pairs found in the dataset.";
-      return;
-    }
-
-    const basePair = pick(availablePairs);
-    const flip = Math.random() < 0.5;
-
-    const civilianCountry = flip ? basePair.b : basePair.a;
-    const undercoverCountry = flip ? basePair.a : basePair.b;
-
-    const shuffledPlayers = shuffle(players.map(([id]) => id));
-    const speakingOrder = shuffle(players.map(([id]) => id));
-    const roleCounts = getRoleCounts(currentRoom.maxPlayers);
-    const undercoverIds = new Set(shuffledPlayers.slice(0, roleCounts.undercover));
-
-    const updates = {};
-    updates[`rooms/${currentRoomId}/status`] = "playing";
-    updates[`rooms/${currentRoomId}/phase`] = "describing";
-    updates[`rooms/${currentRoomId}/round`] = 1;
-    updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
-    updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
-    updates[`rooms/${currentRoomId}/privateChat`] = null;
-    updates[`rooms/${currentRoomId}/speakingOrder`] = speakingOrder;
-    updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
-    updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
-    updates[`rooms/${currentRoomId}/game`] = {
-      pairA: basePair.a,
-      pairB: basePair.b,
-      civilianCountry,
-      undercoverCountry,
-      civilianCountryName: countryLabel(civilianCountry),
-      undercoverCountryName: countryLabel(undercoverCountry),
-      startedAt: Date.now(),
-      lastResult: ""
-    };
-
-    const playerCountryMap = {};
-
-    for (const [playerId] of players) {
-      const isUndercover = undercoverIds.has(playerId);
-      const countryCode = isUndercover ? undercoverCountry : civilianCountry;
-      playerCountryMap[playerId] = countryCode;
-    }
-
-    const assignedLocations = assignUniqueLocations(playerCountryMap);
-
-    for (const [playerId] of players) {
-      const isUndercover = undercoverIds.has(playerId);
-      const countryCode = playerCountryMap[playerId];
-      const loc = assignedLocations[playerId];
-
-      updates[`rooms/${currentRoomId}/players/${playerId}/role`] = isUndercover ? "undercover" : "civilian";
-      updates[`rooms/${currentRoomId}/players/${playerId}/country`] = countryCode;
-      updates[`rooms/${currentRoomId}/players/${playerId}/countryCode`] = countryCode;
-      updates[`rooms/${currentRoomId}/players/${playerId}/location`] = loc;
-      updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
-      updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
-      updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
-      updates[`rooms/${currentRoomId}/players/${playerId}/voteIntentConfirmed`] = false;
-      updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
-      updates[`rooms/${currentRoomId}/players/${playerId}/privateChatUsed`] = false;
-    }
-
-    await update(ref(db), updates);
-  }
-
-  async function submitDescription() {
-    const text = descriptionInput.value.trim();
-    if (!text) return;
-
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/players/${currentPlayerId}/description`]: text
-    });
-
-    descriptionInput.value = "";
-  }
-
-  async function setVoteIntent(value) {
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntent`]: value,
-      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntentConfirmed`]: false
-    });
-  }
-
-  async function confirmVoteIntent() {
-    const me = getMe(currentRoom);
-    if (!me || me.alive === false) return;
-
-    if (me.voteIntent !== "agree" && me.voteIntent !== "refuse") {
-      readyVoteStatus.textContent = "Choose Agree or Refuse before confirming.";
-      return;
-    }
-
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntentConfirmed`]: true
-    });
-  }
-
-  async function cancelVoteIntent() {
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntent`]: "",
-      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntentConfirmed`]: false
-    });
-  }
-
-  async function submitVote(targetPlayerId) {
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/players/${currentPlayerId}/vote`]: targetPlayerId
-    });
-  }
-
-  function selectPendingVote(targetPlayerId) {
-    pendingVoteTarget = targetPlayerId;
-    if (currentRoom) renderRoom(currentRoom);
-  }
-
-  async function confirmPlayerVote() {
-    const me = getMe(currentRoom);
-    if (!me || me.alive === false) return;
-    if (me.vote) return;
-
-    if (!pendingVoteTarget) {
-      voteStatus.textContent = "Choose a player before confirming your vote.";
-      return;
-    }
-
-    await submitVote(pendingVoteTarget);
-    pendingVoteTarget = "";
-  }
-
-  function cancelPlayerVote() {
-    pendingVoteTarget = "";
-    if (currentRoom) renderRoom(currentRoom);
-  }
-
-  async function requestPrivateChat() {
-    const room = currentRoom;
-    const me = getMe(room);
-    if (!room || !me || me.alive === false) return;
-
-    const alivePlayers = getAlivePlayers(room);
-    const speakerState = getCurrentSpeaker(room, alivePlayers);
-
-    if (room.phase !== "describing" || speakerState.speakerId !== currentPlayerId) {
-      privateChatStatus.textContent = "You can only request private chat during your own speaking turn.";
-      return;
-    }
-
-    if (me.description) {
-      privateChatStatus.textContent = "You have already submitted your description this turn.";
-      return;
-    }
-
-    if (me.privateChatUsed) {
-      privateChatStatus.textContent = "You have already used your private chat this game.";
-      return;
-    }
-
-    if (room.privateChat) {
-      privateChatStatus.textContent = "A private chat is already pending or active.";
-      return;
-    }
-
-    const targetId = privateChatTargetSelect.value;
-    const target = alivePlayers.find(p => p.id === targetId);
-
-    if (!target || target.id === currentPlayerId) {
-      privateChatStatus.textContent = "Choose a valid living player.";
-      return;
-    }
-
-    const remainingDescriptionSeconds = getDescriptionRemainingSeconds(room);
-
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/privateChat`]: {
-        status: "request",
-        requesterId: currentPlayerId,
-        targetId,
-        requestedAt: Date.now(),
-        remainingDescriptionSeconds,
-        messages: []
-      },
-      [`rooms/${currentRoomId}/players/${currentPlayerId}/privateChatUsed`]: true
-    });
-  }
-
-  async function respondPrivateChat(accepted) {
-    const room = currentRoom;
-    const privateChat = room?.privateChat;
-    if (!room || !privateChat || privateChat.status !== "request") return;
-    if (privateChat.targetId !== currentPlayerId) return;
-
-    const remainingDescriptionSeconds = Number(privateChat.remainingDescriptionSeconds || DESCRIPTION_SECONDS);
-
-    if (!accepted) {
-      await update(ref(db), {
-        [`rooms/${currentRoomId}/privateChat`]: null,
-        [`rooms/${currentRoomId}/descriptionStartedAt`]: getDescriptionStartedAtForRemaining(remainingDescriptionSeconds)
-      });
-      return;
-    }
-
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/privateChat/status`]: "active",
-      [`rooms/${currentRoomId}/privateChat/startedAt`]: Date.now(),
-      [`rooms/${currentRoomId}/privateChat/messages`]: []
-    });
-  }
-
-  async function sendPrivateChatMessage() {
-    const room = currentRoom;
-    const privateChat = room?.privateChat;
-    const me = getMe(room);
-    if (!room || !privateChat || privateChat.status !== "active" || !me) return;
-    if (!isPrivateChatParticipant(room, currentPlayerId)) return;
-
-    const text = privateChatInput.value.trim();
-    if (!text) return;
-
-    const messages = Array.isArray(privateChat.messages) ? privateChat.messages : [];
-    messages.push({
-      senderId: currentPlayerId,
-      senderName: me.name || "Player",
-      text,
-      sentAt: Date.now()
-    });
-
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/privateChat/messages`]: messages
-    });
-
-    privateChatInput.value = "";
-  }
-
-  async function endPrivateChat() {
-    const room = currentRoom;
-    const privateChat = room?.privateChat;
-    if (!room || !privateChat || privateChat.status !== "active") return;
-    if (!isPrivateChatParticipant(room, currentPlayerId) && !isHost(room)) return;
-
-    const remainingDescriptionSeconds = Number(privateChat.remainingDescriptionSeconds || DESCRIPTION_SECONDS);
-
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/privateChat`]: null,
-      [`rooms/${currentRoomId}/descriptionStartedAt`]: getDescriptionStartedAtForRemaining(remainingDescriptionSeconds)
-    });
-  }
-
-  async function endPrivateChatByHost(room) {
-    const privateChat = room?.privateChat;
-    if (!privateChat || privateChat.status !== "active") return;
-
-    const remainingDescriptionSeconds = Number(privateChat.remainingDescriptionSeconds || DESCRIPTION_SECONDS);
-
-    await update(ref(db), {
-      [`rooms/${currentRoomId}/privateChat`]: null,
-      [`rooms/${currentRoomId}/descriptionStartedAt`]: getDescriptionStartedAtForRemaining(remainingDescriptionSeconds)
-    });
-  }
-
-  async function nextRound() {
-    if (!currentRoom || !isHost(currentRoom)) return;
-
-    const alivePlayers = getAlivePlayers(currentRoom);
-    const updates = {};
-    const nextRoundNumber = (currentRoom.round || 1) + 1;
-
-    updates[`rooms/${currentRoomId}/phase`] = "describing";
-    updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
-    updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
-    updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
-    updates[`rooms/${currentRoomId}/privateChat`] = null;
-    updates[`rooms/${currentRoomId}/speakingOrder`] = shuffle(alivePlayers.map(p => p.id));
-    updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
-    updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
-    updates[`rooms/${currentRoomId}/game/lastResult`] = "";
-
-    const playerCountryMap = {};
-
-    for (const p of alivePlayers) {
-      playerCountryMap[p.id] = p.country;
-    }
-
-    const assignedLocations = assignUniqueLocations(playerCountryMap);
-
-    for (const p of alivePlayers) {
-      const loc = assignedLocations[p.id];
-
-      updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
-      updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
-      updates[`rooms/${currentRoomId}/players/${p.id}/voteIntentConfirmed`] = false;
-      updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
-      updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
-    }
-
-    await update(ref(db), updates);
-  }
-
   async function resetRoom() {
     if (!currentRoom || !isHost(currentRoom)) return;
+
+    const players = currentRoom.players || {};
+    const playerCount = Object.keys(players).length;
+
+    let nextMaxPlayers = Number(currentRoom.maxPlayers || 4);
+
+    if (currentRoom.status === "lobby" && lobbyMaxPlayersInput) {
+      nextMaxPlayers = Number(lobbyMaxPlayersInput.value || currentRoom.maxPlayers || 4);
+    }
+
+    if (playerCount > nextMaxPlayers) {
+      roomStatus.textContent = `Cannot reset to ${nextMaxPlayers} players because ${playerCount} players are already in the room.`;
+      return;
+    }
 
     const updates = {};
     updates[`rooms/${currentRoomId}/status`] = "lobby";
     updates[`rooms/${currentRoomId}/phase`] = "lobby";
+    updates[`rooms/${currentRoomId}/maxPlayers`] = nextMaxPlayers;
     updates[`rooms/${currentRoomId}/round`] = 0;
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
-    updates[`rooms/${currentRoomId}/privateChat`] = null;
+    updates[`rooms/${currentRoomId}/descriptionStartedAt`] = null;
     updates[`rooms/${currentRoomId}/speakingOrder`] = null;
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = null;
-    updates[`rooms/${currentRoomId}/descriptionStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/privateChat`] = null;
     updates[`rooms/${currentRoomId}/game`] = null;
 
-    for (const [playerId] of Object.entries(currentRoom.players || {})) {
+    for (const [playerId] of Object.entries(players)) {
       updates[`rooms/${currentRoomId}/players/${playerId}/role`] = null;
       updates[`rooms/${currentRoomId}/players/${playerId}/country`] = null;
       updates[`rooms/${currentRoomId}/players/${playerId}/countryCode`] = null;
@@ -1608,6 +1259,7 @@
     }
 
     await update(ref(db), updates);
+    roomStatus.textContent = `Room reset. Room size is now ${nextMaxPlayers}.`;
   }
 
   async function beginNewDescriptionRoundAfterRefusal(room, alivePlayers) {
@@ -1944,8 +1596,7 @@
     lobbySettingsPanel.classList.toggle("hidden", !(isHost(room) && room.status === "lobby"));
     if (isHost(room) && room.status === "lobby") {
       lobbyMaxPlayersInput.value = String(room.maxPlayers || 4);
-      updateRoomSizeBtn.disabled = false;
-    }
+}
 
     playersList.innerHTML = players.map(([id, p]) => {
       const hostMark = id === room.hostId ? " · Host" : "";
@@ -2241,8 +1892,7 @@
   joinRoomBtn.addEventListener("click", joinRoom);
   startGameBtn.addEventListener("click", startGame);
   resetRoomBtn.addEventListener("click", resetRoom);
-  updateRoomSizeBtn.addEventListener("click", updateRoomSize);
-  submitDescriptionBtn.addEventListener("click", submitDescription);
+submitDescriptionBtn.addEventListener("click", submitDescription);
   agreeVoteBtn.addEventListener("click", () => setVoteIntent("agree"));
   refuseVoteBtn.addEventListener("click", () => setVoteIntent("refuse"));
   confirmVoteChoiceBtn.addEventListener("click", confirmVoteIntent);
