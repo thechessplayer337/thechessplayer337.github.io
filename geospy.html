@@ -1026,6 +1026,10 @@ const playersList = document.getElementById("playersList");
   }
 
   function getDescriptionRemainingSeconds(room) {
+    if (room.privateChat && typeof room.privateChat.pausedDescriptionRemainingMs === "number") {
+      return Math.ceil(room.privateChat.pausedDescriptionRemainingMs / 1000);
+    }
+
     if (!room.descriptionStartedAt) return DESCRIPTION_SECONDS;
     const elapsedMs = Date.now() - room.descriptionStartedAt;
     const remaining = DESCRIPTION_SECONDS - Math.floor(elapsedMs / 1000);
@@ -1033,6 +1037,10 @@ const playersList = document.getElementById("playersList");
   }
 
   function getDescriptionRemainingMs(room) {
+    if (room.privateChat && typeof room.privateChat.pausedDescriptionRemainingMs === "number") {
+      return Math.max(0, Number(room.privateChat.pausedDescriptionRemainingMs || 0));
+    }
+
     if (!room.descriptionStartedAt) return DESCRIPTION_SECONDS * 1000;
     const elapsedMs = Date.now() - room.descriptionStartedAt;
     return Math.max(0, DESCRIPTION_SECONDS * 1000 - elapsedMs);
@@ -1411,16 +1419,18 @@ const playersList = document.getElementById("playersList");
     }
 
     const remainingMs = getDescriptionRemainingMs(currentRoom);
+    const now = Date.now();
 
     await update(ref(db), {
       [`rooms/${currentRoomId}/privateChat`]: {
         status: "pending",
         requesterId: currentPlayerId,
         targetId,
-        requestedAt: Date.now(),
+        requestedAt: now,
         pausedDescriptionRemainingMs: remainingMs,
         messages: {}
       },
+      [`rooms/${currentRoomId}/descriptionStartedAt`]: null,
       [`rooms/${currentRoomId}/players/${currentPlayerId}/privateChatUsed`]: true
     });
   }
@@ -1434,7 +1444,8 @@ const playersList = document.getElementById("playersList");
 
     await update(ref(db), {
       [`rooms/${currentRoomId}/privateChat/status`]: "active",
-      [`rooms/${currentRoomId}/privateChat/activeStartedAt`]: Date.now()
+      [`rooms/${currentRoomId}/privateChat/activeStartedAt`]: Date.now(),
+      [`rooms/${currentRoomId}/descriptionStartedAt`]: null
     });
   }
 
@@ -1638,8 +1649,9 @@ const playersList = document.getElementById("playersList");
     const alivePlayers = getAlivePlayers(room);
 
     if (phase === "describing") {
-      const allDescribed = alivePlayers.length > 0 && alivePlayers.every(p => (p.description || "").trim());
-      const speakerState = getCurrentSpeaker(room, alivePlayers);
+      const alivePlayersStillHere = getAlivePlayers(room);
+      const allDescribed = alivePlayersStillHere.length > 0 && alivePlayersStillHere.every(p => (p.description || "").trim());
+      const speakerState = getCurrentSpeaker(room, alivePlayersStillHere);
 
       if (room.privateChat) {
         if (room.privateChat.status === "pending" && getPrivateChatRequestRemainingSeconds(room) <= 0) {
@@ -1676,10 +1688,10 @@ const playersList = document.getElementById("playersList");
         return;
       }
 
-      if (!speakerState.speaker && alivePlayers.length > 0) {
+      if (!speakerState.speaker && alivePlayersStillHere.length > 0) {
         transitionLock = true;
         await update(ref(db), {
-          [`rooms/${currentRoomId}/speakingOrder`]: shuffle(alivePlayers.map(p => p.id)),
+          [`rooms/${currentRoomId}/speakingOrder`]: shuffle(alivePlayersStillHere.map(p => p.id)),
           [`rooms/${currentRoomId}/currentSpeakerIndex`]: 0,
           [`rooms/${currentRoomId}/descriptionStartedAt`]: Date.now()
         });
@@ -1689,7 +1701,7 @@ const playersList = document.getElementById("playersList");
 
       if (speakerState.speaker && (speakerState.speaker.description || "").trim()) {
         transitionLock = true;
-        await advanceToNextSpeakerOrVote(room, alivePlayers, speakerState);
+        await advanceToNextSpeakerOrVote(room, alivePlayersStillHere, speakerState);
         setTimeout(() => transitionLock = false, 500);
         return;
       }
@@ -1701,7 +1713,7 @@ const playersList = document.getElementById("playersList");
           [`rooms/${currentRoomId}/players/${speakerState.speakerId}/description`]: "__NULL_TIMEOUT__"
         });
 
-        await advanceToNextSpeakerOrVote(room, alivePlayers, speakerState);
+        await advanceToNextSpeakerOrVote(room, alivePlayersStillHere, speakerState);
         setTimeout(() => transitionLock = false, 500);
         return;
       }
@@ -1970,9 +1982,8 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       speakingStatusBox.classList.remove("hidden");
 
       const speakerState = getCurrentSpeaker(room, alivePlayers);
-      const remainingSeconds = room.privateChat
-        ? Math.ceil(Number(room.privateChat.pausedDescriptionRemainingMs || 0) / 1000)
-        : getDescriptionRemainingSeconds(room);
+      const remainingSeconds = getDescriptionRemainingSeconds(room);
+      const timerLabel = room.privateChat ? `PAUSED at ${remainingSeconds}s` : `${remainingSeconds}s`;
       const speakerName = speakerState.speaker?.name || "Waiting...";
       const activeOrderNames = speakerState.activeOrder
         .map((id, index) => {
@@ -1982,7 +1993,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
         })
         .join(" → ");
 
-      speakerTurnStatus.innerHTML = `Current speaker: <strong>${escapeHtml(speakerName)}</strong>. Time left: <strong>${remainingSeconds}s</strong>.<br>Order: ${escapeHtml(activeOrderNames || "Waiting for order...")}`;
+      speakerTurnStatus.innerHTML = `Current speaker: <strong>${escapeHtml(speakerName)}</strong>. Time left: <strong>${timerLabel}</strong>.<br>Order: ${escapeHtml(activeOrderNames || "Waiting for order...")}`;
 
       renderPrivateChat(room, me, alivePlayers, speakerState);
 
@@ -2098,9 +2109,9 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       const requestRemainingSeconds = getPrivateChatRequestRemainingSeconds(room);
 
       if (isParticipant) {
-        privateChatStatus.textContent = `${requesterName} requested a private chat with ${targetName}. Description timer is paused. Response time left: ${requestRemainingSeconds}s.`;
+        privateChatStatus.textContent = `${requesterName} requested a private chat with ${targetName}. Description timer is paused/frozen. Response time left: ${requestRemainingSeconds}s.`;
       } else {
-        privateChatStatus.textContent = `A private chat request is pending. Description timer is paused. Response time left: ${requestRemainingSeconds}s.`;
+        privateChatStatus.textContent = `A private chat request is pending. Description timer is paused/frozen. Response time left: ${requestRemainingSeconds}s.`;
       }
 
       if (chat.targetId === currentPlayerId) {
