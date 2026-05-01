@@ -339,6 +339,35 @@
       margin-left: 6px;
     }
 
+    .chat-log {
+      display: grid;
+      gap: 8px;
+      max-height: 210px;
+      overflow-y: auto;
+      padding: 10px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.48);
+      margin: 10px 0;
+    }
+
+    .chat-message {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.92rem;
+      color: var(--muted);
+      border-bottom: 1px solid rgba(222, 215, 202, 0.7);
+      padding-bottom: 7px;
+    }
+
+    .chat-message:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .chat-message strong {
+      color: var(--dark);
+    }
+
     @media (max-width: 880px) {
       .grid {
         grid-template-columns: 1fr;
@@ -407,6 +436,21 @@
           <button class="danger hidden" id="resetRoomBtn">Reset Room</button>
         </div>
 
+        <div id="lobbySettingsPanel" class="hidden">
+          <h3>Lobby Settings</h3>
+          <label for="lobbyMaxPlayersInput">Change room size before the game starts</label>
+          <select id="lobbyMaxPlayersInput">
+            <option value="3">3 players: 1 spy + 2 civilians</option>
+            <option value="4">4 players: 1 spy + 3 civilians</option>
+            <option value="5">5 players: 1 spy + 4 civilians</option>
+            <option value="6">6 players: 2 spies + 4 civilians</option>
+          </select>
+          <div class="row">
+            <button id="updateRoomSizeBtn">Update Room Size</button>
+          </div>
+          <p class="status" id="lobbySettingsStatus"></p>
+        </div>
+
         <h3>Players</h3>
         <div class="players" id="playersList"></div>
       </section>
@@ -427,6 +471,36 @@
         <div id="speakingStatusBox" class="result-box hidden">
           <strong>Speaking turn</strong><br>
           <span id="speakerTurnStatus">Waiting for speaking order...</span>
+        </div>
+
+        <div id="privateChatPanel" class="result-box hidden">
+          <strong>Private chat</strong><br>
+          <p class="status" id="privateChatStatus"></p>
+
+          <div id="privateChatRequestControls" class="hidden">
+            <label for="privateChatTargetSelect">Choose one player to private chat with</label>
+            <select id="privateChatTargetSelect"></select>
+            <div class="row">
+              <button id="requestPrivateChatBtn">Request Private Chat</button>
+            </div>
+            <p class="small-note">You can use this once per game, only during your own speaking turn.</p>
+          </div>
+
+          <div id="privateChatResponseControls" class="row hidden">
+            <button id="acceptPrivateChatBtn">Accept Private Chat</button>
+            <button class="secondary" id="refusePrivateChatBtn">Refuse</button>
+          </div>
+
+          <div id="privateChatMessages" class="chat-log hidden"></div>
+
+          <div id="privateChatInputControls" class="hidden">
+            <label for="privateChatInput">Message</label>
+            <textarea id="privateChatInput" placeholder="Only the two private-chat players can see this."></textarea>
+            <div class="row">
+              <button id="sendPrivateChatBtn">Send</button>
+              <button class="secondary" id="endPrivateChatBtn">End Private Chat Early</button>
+            </div>
+          </div>
         </div>
 
         <div id="describePanel" class="hidden">
@@ -526,6 +600,7 @@
   const DESCRIPTION_SECONDS = 60;
   const READY_VOTE_SECONDS = 60;
   const VOTING_SECONDS = 60;
+  const PRIVATE_CHAT_SECONDS = 90;
   const LOCATION_DATA_URL = "data/geospy-locations-v1.json";
 
   const countryNames = {
@@ -753,6 +828,10 @@
   const copyInviteBtn = document.getElementById("copyInviteBtn");
   const startGameBtn = document.getElementById("startGameBtn");
   const resetRoomBtn = document.getElementById("resetRoomBtn");
+  const lobbySettingsPanel = document.getElementById("lobbySettingsPanel");
+  const lobbyMaxPlayersInput = document.getElementById("lobbyMaxPlayersInput");
+  const updateRoomSizeBtn = document.getElementById("updateRoomSizeBtn");
+  const lobbySettingsStatus = document.getElementById("lobbySettingsStatus");
   const playersList = document.getElementById("playersList");
 
   const gameTitle = document.getElementById("gameTitle");
@@ -764,6 +843,20 @@
 
   const speakingStatusBox = document.getElementById("speakingStatusBox");
   const speakerTurnStatus = document.getElementById("speakerTurnStatus");
+
+  const privateChatPanel = document.getElementById("privateChatPanel");
+  const privateChatStatus = document.getElementById("privateChatStatus");
+  const privateChatRequestControls = document.getElementById("privateChatRequestControls");
+  const privateChatTargetSelect = document.getElementById("privateChatTargetSelect");
+  const requestPrivateChatBtn = document.getElementById("requestPrivateChatBtn");
+  const privateChatResponseControls = document.getElementById("privateChatResponseControls");
+  const acceptPrivateChatBtn = document.getElementById("acceptPrivateChatBtn");
+  const refusePrivateChatBtn = document.getElementById("refusePrivateChatBtn");
+  const privateChatMessages = document.getElementById("privateChatMessages");
+  const privateChatInputControls = document.getElementById("privateChatInputControls");
+  const privateChatInput = document.getElementById("privateChatInput");
+  const sendPrivateChatBtn = document.getElementById("sendPrivateChatBtn");
+  const endPrivateChatBtn = document.getElementById("endPrivateChatBtn");
 
   const describePanel = document.getElementById("describePanel");
   const descriptionInput = document.getElementById("descriptionInput");
@@ -999,6 +1092,32 @@
     };
   }
 
+  function getPrivateChatRemainingSeconds(room) {
+    const privateChat = room?.privateChat;
+    if (!privateChat || privateChat.status !== "active" || !privateChat.startedAt) return PRIVATE_CHAT_SECONDS;
+    const elapsedMs = Date.now() - privateChat.startedAt;
+    const remaining = PRIVATE_CHAT_SECONDS - Math.floor(elapsedMs / 1000);
+    return Math.max(0, remaining);
+  }
+
+  function isPrivateChatParticipant(room, playerId) {
+    const privateChat = room?.privateChat;
+    if (!privateChat || !playerId) return false;
+    return privateChat.requesterId === playerId || privateChat.targetId === playerId;
+  }
+
+  function getPrivateChatOtherPlayerId(privateChat, playerId) {
+    if (!privateChat || !playerId) return "";
+    if (privateChat.requesterId === playerId) return privateChat.targetId || "";
+    if (privateChat.targetId === playerId) return privateChat.requesterId || "";
+    return "";
+  }
+
+  function getDescriptionStartedAtForRemaining(remainingSeconds) {
+    const safeRemaining = Math.max(1, Math.min(DESCRIPTION_SECONDS, Number(remainingSeconds || DESCRIPTION_SECONDS)));
+    return Date.now() - ((DESCRIPTION_SECONDS - safeRemaining) * 1000);
+  }
+
   function pickRandomVoteTarget(voterId, alivePlayers) {
     const candidates = alivePlayers.filter(p => p.id !== voterId);
     if (candidates.length === 0) return "";
@@ -1099,6 +1218,29 @@
     enterRoom(roomId, playerId);
   }
 
+  async function updateRoomSize() {
+    if (!currentRoom || !isHost(currentRoom)) return;
+
+    if (currentRoom.status !== "lobby") {
+      lobbySettingsStatus.textContent = "Room size can only be changed before the game starts.";
+      return;
+    }
+
+    const newMaxPlayers = Number(lobbyMaxPlayersInput.value);
+    const playerCount = Object.keys(currentRoom.players || {}).length;
+
+    if (playerCount > newMaxPlayers) {
+      lobbySettingsStatus.textContent = `Cannot set room size to ${newMaxPlayers}; there are already ${playerCount} players in the room.`;
+      return;
+    }
+
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/maxPlayers`]: newMaxPlayers
+    });
+
+    lobbySettingsStatus.textContent = `Room size updated to ${newMaxPlayers}.`;
+  }
+
   function enterRoom(roomId, playerId) {
     currentRoomId = roomId;
     currentPlayerId = playerId;
@@ -1160,6 +1302,7 @@
     updates[`rooms/${currentRoomId}/round`] = 1;
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/privateChat`] = null;
     updates[`rooms/${currentRoomId}/speakingOrder`] = speakingOrder;
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
     updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
@@ -1198,6 +1341,7 @@
       updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
       updates[`rooms/${currentRoomId}/players/${playerId}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/privateChatUsed`] = false;
     }
 
     await update(ref(db), updates);
@@ -1272,6 +1416,131 @@
     if (currentRoom) renderRoom(currentRoom);
   }
 
+  async function requestPrivateChat() {
+    const room = currentRoom;
+    const me = getMe(room);
+    if (!room || !me || me.alive === false) return;
+
+    const alivePlayers = getAlivePlayers(room);
+    const speakerState = getCurrentSpeaker(room, alivePlayers);
+
+    if (room.phase !== "describing" || speakerState.speakerId !== currentPlayerId) {
+      privateChatStatus.textContent = "You can only request private chat during your own speaking turn.";
+      return;
+    }
+
+    if (me.description) {
+      privateChatStatus.textContent = "You have already submitted your description this turn.";
+      return;
+    }
+
+    if (me.privateChatUsed) {
+      privateChatStatus.textContent = "You have already used your private chat this game.";
+      return;
+    }
+
+    if (room.privateChat) {
+      privateChatStatus.textContent = "A private chat is already pending or active.";
+      return;
+    }
+
+    const targetId = privateChatTargetSelect.value;
+    const target = alivePlayers.find(p => p.id === targetId);
+
+    if (!target || target.id === currentPlayerId) {
+      privateChatStatus.textContent = "Choose a valid living player.";
+      return;
+    }
+
+    const remainingDescriptionSeconds = getDescriptionRemainingSeconds(room);
+
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/privateChat`]: {
+        status: "request",
+        requesterId: currentPlayerId,
+        targetId,
+        requestedAt: Date.now(),
+        remainingDescriptionSeconds,
+        messages: []
+      },
+      [`rooms/${currentRoomId}/players/${currentPlayerId}/privateChatUsed`]: true
+    });
+  }
+
+  async function respondPrivateChat(accepted) {
+    const room = currentRoom;
+    const privateChat = room?.privateChat;
+    if (!room || !privateChat || privateChat.status !== "request") return;
+    if (privateChat.targetId !== currentPlayerId) return;
+
+    const remainingDescriptionSeconds = Number(privateChat.remainingDescriptionSeconds || DESCRIPTION_SECONDS);
+
+    if (!accepted) {
+      await update(ref(db), {
+        [`rooms/${currentRoomId}/privateChat`]: null,
+        [`rooms/${currentRoomId}/descriptionStartedAt`]: getDescriptionStartedAtForRemaining(remainingDescriptionSeconds)
+      });
+      return;
+    }
+
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/privateChat/status`]: "active",
+      [`rooms/${currentRoomId}/privateChat/startedAt`]: Date.now(),
+      [`rooms/${currentRoomId}/privateChat/messages`]: []
+    });
+  }
+
+  async function sendPrivateChatMessage() {
+    const room = currentRoom;
+    const privateChat = room?.privateChat;
+    const me = getMe(room);
+    if (!room || !privateChat || privateChat.status !== "active" || !me) return;
+    if (!isPrivateChatParticipant(room, currentPlayerId)) return;
+
+    const text = privateChatInput.value.trim();
+    if (!text) return;
+
+    const messages = Array.isArray(privateChat.messages) ? privateChat.messages : [];
+    messages.push({
+      senderId: currentPlayerId,
+      senderName: me.name || "Player",
+      text,
+      sentAt: Date.now()
+    });
+
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/privateChat/messages`]: messages
+    });
+
+    privateChatInput.value = "";
+  }
+
+  async function endPrivateChat() {
+    const room = currentRoom;
+    const privateChat = room?.privateChat;
+    if (!room || !privateChat || privateChat.status !== "active") return;
+    if (!isPrivateChatParticipant(room, currentPlayerId) && !isHost(room)) return;
+
+    const remainingDescriptionSeconds = Number(privateChat.remainingDescriptionSeconds || DESCRIPTION_SECONDS);
+
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/privateChat`]: null,
+      [`rooms/${currentRoomId}/descriptionStartedAt`]: getDescriptionStartedAtForRemaining(remainingDescriptionSeconds)
+    });
+  }
+
+  async function endPrivateChatByHost(room) {
+    const privateChat = room?.privateChat;
+    if (!privateChat || privateChat.status !== "active") return;
+
+    const remainingDescriptionSeconds = Number(privateChat.remainingDescriptionSeconds || DESCRIPTION_SECONDS);
+
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/privateChat`]: null,
+      [`rooms/${currentRoomId}/descriptionStartedAt`]: getDescriptionStartedAtForRemaining(remainingDescriptionSeconds)
+    });
+  }
+
   async function nextRound() {
     if (!currentRoom || !isHost(currentRoom)) return;
 
@@ -1283,6 +1552,7 @@
     updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/privateChat`] = null;
     updates[`rooms/${currentRoomId}/speakingOrder`] = shuffle(alivePlayers.map(p => p.id));
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
     updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
@@ -1318,6 +1588,7 @@
     updates[`rooms/${currentRoomId}/round`] = 0;
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/privateChat`] = null;
     updates[`rooms/${currentRoomId}/speakingOrder`] = null;
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = null;
     updates[`rooms/${currentRoomId}/descriptionStartedAt`] = null;
@@ -1333,6 +1604,7 @@
       updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
       updates[`rooms/${currentRoomId}/players/${playerId}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/privateChatUsed`] = false;
     }
 
     await update(ref(db), updates);
@@ -1346,6 +1618,7 @@
     updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/privateChat`] = null;
     updates[`rooms/${currentRoomId}/speakingOrder`] = shuffle(alivePlayers.map(p => p.id));
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
     updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
@@ -1407,6 +1680,20 @@
       const speakerState = getCurrentSpeaker(room, alivePlayers);
       const remainingSeconds = getDescriptionRemainingSeconds(room);
       const expired = remainingSeconds <= 0;
+      const privateChat = room.privateChat || null;
+
+      if (privateChat?.status === "request") {
+        return;
+      }
+
+      if (privateChat?.status === "active") {
+        if (getPrivateChatRemainingSeconds(room) <= 0) {
+          transitionLock = true;
+          await endPrivateChatByHost(room);
+          setTimeout(() => transitionLock = false, 500);
+        }
+        return;
+      }
 
       if (allDescribed) {
         transitionLock = true;
@@ -1652,6 +1939,13 @@
     startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby"));
     startGameBtn.disabled = !(playerCount === room.maxPlayers);
     resetRoomBtn.classList.toggle("hidden", !isHost(room));
+    resetRoomBtn.disabled = !isHost(room);
+
+    lobbySettingsPanel.classList.toggle("hidden", !(isHost(room) && room.status === "lobby"));
+    if (isHost(room) && room.status === "lobby") {
+      lobbyMaxPlayersInput.value = String(room.maxPlayers || 4);
+      updateRoomSizeBtn.disabled = false;
+    }
 
     playersList.innerHTML = players.map(([id, p]) => {
       const hostMark = id === room.hostId ? " · Host" : "";
@@ -1689,6 +1983,7 @@
     }
 
     speakingStatusBox.classList.add("hidden");
+    privateChatPanel.classList.add("hidden");
     describePanel.classList.add("hidden");
     descriptionsPanel.classList.add("hidden");
     readyVotePanel.classList.add("hidden");
@@ -1722,7 +2017,8 @@
       speakingStatusBox.classList.remove("hidden");
 
       const speakerState = getCurrentSpeaker(room, alivePlayers);
-      const remainingSeconds = getDescriptionRemainingSeconds(room);
+      const privateChat = room.privateChat || null;
+      const remainingSeconds = privateChat ? Number(privateChat.remainingDescriptionSeconds || DESCRIPTION_SECONDS) : getDescriptionRemainingSeconds(room);
       const speakerName = speakerState.speaker?.name || "Waiting...";
       const activeOrderNames = speakerState.activeOrder
         .map((id, index) => {
@@ -1734,7 +2030,9 @@
 
       speakerTurnStatus.innerHTML = `Current speaker: <strong>${escapeHtml(speakerName)}</strong>. Time left: <strong>${remainingSeconds}s</strong>.<br>Order: ${escapeHtml(activeOrderNames || "Waiting for order...")}`;
 
-      if (me?.alive !== false && me && !me.description && speakerState.speakerId === currentPlayerId) {
+      renderPrivateChat(room, me, alivePlayers, speakerState);
+
+      if (!privateChat && me?.alive !== false && me && !me.description && speakerState.speakerId === currentPlayerId) {
         describePanel.classList.remove("hidden");
       }
     }
@@ -1803,6 +2101,74 @@
         Last result: ${escapeHtml(room.game?.lastResult || "")}<br><br>
         <strong>Roles revealed:</strong><br>${roles}
       `;
+    }
+  }
+
+  function renderPrivateChat(room, me, alivePlayers, speakerState) {
+    const privateChat = room.privateChat || null;
+
+    privateChatPanel.classList.add("hidden");
+    privateChatRequestControls.classList.add("hidden");
+    privateChatResponseControls.classList.add("hidden");
+    privateChatMessages.classList.add("hidden");
+    privateChatInputControls.classList.add("hidden");
+
+    const isCurrentSpeaker = speakerState.speakerId === currentPlayerId;
+    const canRequest = room.phase === "describing" && me && me.alive !== false && isCurrentSpeaker && !me.description && !me.privateChatUsed && !privateChat;
+
+    if (canRequest) {
+      privateChatPanel.classList.remove("hidden");
+      privateChatRequestControls.classList.remove("hidden");
+      privateChatStatus.textContent = "Optional: use your once-per-game private chat before submitting your description. Your 60-second description timer pauses while the request/chat is active.";
+
+      const options = alivePlayers
+        .filter(p => p.id !== currentPlayerId)
+        .map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`)
+        .join("");
+
+      privateChatTargetSelect.innerHTML = options || `<option value="">No available player</option>`;
+      requestPrivateChatBtn.disabled = !options;
+      return;
+    }
+
+    if (!privateChat) return;
+
+    privateChatPanel.classList.remove("hidden");
+
+    const requester = room.players?.[privateChat.requesterId];
+    const target = room.players?.[privateChat.targetId];
+    const requesterName = requester?.name || "Requester";
+    const targetName = target?.name || "Target";
+    const participant = isPrivateChatParticipant(room, currentPlayerId);
+
+    if (privateChat.status === "request") {
+      privateChatStatus.textContent = `${requesterName} requested a private chat with ${targetName}. The description timer is paused.`;
+
+      if (privateChat.targetId === currentPlayerId) {
+        privateChatResponseControls.classList.remove("hidden");
+      }
+
+      return;
+    }
+
+    if (privateChat.status === "active") {
+      const chatRemaining = getPrivateChatRemainingSeconds(room);
+      privateChatStatus.textContent = `Private chat in progress: ${requesterName} ↔ ${targetName}. Chat time left: ${chatRemaining}s. The description timer is paused.`;
+
+      if (!participant) return;
+
+      const messages = Array.isArray(privateChat.messages) ? privateChat.messages : [];
+      privateChatMessages.classList.remove("hidden");
+      privateChatMessages.innerHTML = messages.length
+        ? messages.map(msg => `
+            <div class="chat-message">
+              <strong>${escapeHtml(msg.senderName || "Player")}:</strong> ${escapeHtml(msg.text || "")}
+            </div>
+          `).join("")
+        : `<div class="chat-message"><em>No messages yet.</em></div>`;
+
+      privateChatInputControls.classList.remove("hidden");
+      return;
     }
   }
 
@@ -1875,6 +2241,7 @@
   joinRoomBtn.addEventListener("click", joinRoom);
   startGameBtn.addEventListener("click", startGame);
   resetRoomBtn.addEventListener("click", resetRoom);
+  updateRoomSizeBtn.addEventListener("click", updateRoomSize);
   submitDescriptionBtn.addEventListener("click", submitDescription);
   agreeVoteBtn.addEventListener("click", () => setVoteIntent("agree"));
   refuseVoteBtn.addEventListener("click", () => setVoteIntent("refuse"));
@@ -1882,6 +2249,11 @@
   cancelVoteChoiceBtn.addEventListener("click", cancelVoteIntent);
   confirmPlayerVoteBtn.addEventListener("click", confirmPlayerVote);
   cancelPlayerVoteBtn.addEventListener("click", cancelPlayerVote);
+  requestPrivateChatBtn.addEventListener("click", requestPrivateChat);
+  acceptPrivateChatBtn.addEventListener("click", () => respondPrivateChat(true));
+  refusePrivateChatBtn.addEventListener("click", () => respondPrivateChat(false));
+  sendPrivateChatBtn.addEventListener("click", sendPrivateChatMessage);
+  endPrivateChatBtn.addEventListener("click", endPrivateChat);
   nextRoundBtn.addEventListener("click", nextRound);
 
   createRoomBtn.disabled = true;
