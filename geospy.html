@@ -484,953 +484,1183 @@
   </main>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      set,
-      update,
-      get,
-      onValue,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import {
+    getDatabase,
+    ref,
+    set,
+    update,
+    get,
+    onValue,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyA16aGwlAfTj1_LJpyxW5RhTijEuITDXRI",
-      authDomain: "geochess-duel.firebaseapp.com",
-      databaseURL: "https://geochess-duel-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "geochess-duel",
-      storageBucket: "geochess-duel.firebasestorage.app",
-      messagingSenderId: "137946904030",
-      appId: "1:137946904030:web:37b7dd6b4976c43784594f"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyA16aGwlAfTj1_LJpyxW5RhTijEuITDXRI",
+    authDomain: "geochess-duel.firebaseapp.com",
+    databaseURL: "https://geochess-duel-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "geochess-duel",
+    storageBucket: "geochess-duel.firebasestorage.app",
+    messagingSenderId: "137946904030",
+    appId: "1:137946904030:web:37b7dd6b4976c43784594f"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    const READY_VOTE_SECONDS = 10;
-    const VOTING_SECONDS = 60;
+  const READY_VOTE_SECONDS = 10;
+  const VOTING_SECONDS = 60;
+  const LOCATION_DATA_URL = "data/geospy-locations-v1.json";
 
-    const wordPairs = [
-      { civilian: "Norway", undercover: "Sweden", theme: "Nordic forest roads" },
-      { civilian: "Cambodia", undercover: "Thailand", theme: "Southeast Asia" },
-      { civilian: "Ecuador", undercover: "Peru", theme: "Andean roads" },
-      { civilian: "Turkey", undercover: "Greece", theme: "Mediterranean dry roads" },
-      { civilian: "Romania", undercover: "Hungary", theme: "Eastern Europe poles" },
-      { civilian: "Brazil", undercover: "Argentina", theme: "South America" },
-      { civilian: "Malaysia", undercover: "Indonesia", theme: "Tropical left-driving" },
-      { civilian: "Botswana", undercover: "South Africa", theme: "Southern Africa" },
-      { civilian: "Portugal", undercover: "Spain", theme: "Iberia" },
-      { civilian: "Estonia", undercover: "Latvia", theme: "Baltics" },
-      { civilian: "New Zealand", undercover: "Australia", theme: "Oceania" },
-      { civilian: "Colombia", undercover: "Ecuador", theme: "Andean / tropical mix" }
-    ];
+  const countryNames = {
+    AD: "安道尔",
+    AE: "阿联酋",
+    AL: "阿尔巴尼亚",
+    AR: "阿根廷",
+    AT: "奥地利",
+    AU: "澳大利亚",
+    BA: "波黑",
+    BD: "孟加拉国",
+    BE: "比利时",
+    BG: "保加利亚",
+    BO: "玻利维亚",
+    BR: "巴西",
+    BW: "博茨瓦纳",
+    CA: "加拿大",
+    CH: "瑞士",
+    CL: "智利",
+    CO: "哥伦比亚",
+    CR: "哥斯达黎加",
+    CY: "塞浦路斯",
+    CZ: "捷克",
+    DE: "德国",
+    DK: "丹麦",
+    EC: "厄瓜多尔",
+    EE: "爱沙尼亚",
+    ES: "西班牙",
+    FI: "芬兰",
+    FO: "法罗群岛",
+    FR: "法国",
+    GB: "英国",
+    GR: "希腊",
+    HK: "中国香港",
+    HR: "克罗地亚",
+    HU: "匈牙利",
+    ID: "印度尼西亚",
+    IE: "爱尔兰",
+    IL: "以色列",
+    IN: "印度",
+    IS: "冰岛",
+    IT: "意大利",
+    JO: "约旦",
+    JP: "日本",
+    KE: "肯尼亚",
+    KH: "柬埔寨",
+    LI: "列支敦士登",
+    LK: "斯里兰卡",
+    LS: "莱索托",
+    LT: "立陶宛",
+    LU: "卢森堡",
+    LV: "拉脱维亚",
+    ME: "黑山",
+    MK: "北马其顿",
+    MT: "马耳他",
+    MX: "墨西哥",
+    MY: "马来西亚",
+    NA: "纳米比亚",
+    NL: "荷兰",
+    NO: "挪威",
+    NP: "尼泊尔",
+    NZ: "新西兰",
+    OM: "阿曼",
+    PA: "巴拿马",
+    PE: "秘鲁",
+    PH: "菲律宾",
+    PL: "波兰",
+    PS: "巴勒斯坦",
+    PT: "葡萄牙",
+    PY: "巴拉圭",
+    QA: "卡塔尔",
+    RO: "罗马尼亚",
+    RS: "塞尔维亚",
+    RU: "俄罗斯",
+    RW: "卢旺达",
+    SE: "瑞典",
+    SG: "新加坡",
+    SI: "斯洛文尼亚",
+    SK: "斯洛伐克",
+    SM: "圣马力诺",
+    SN: "塞内加尔",
+    SZ: "斯威士兰/埃斯瓦蒂尼",
+    TH: "泰国",
+    TR: "土耳其",
+    TW: "中国台湾",
+    UA: "乌克兰",
+    US: "美国",
+    UY: "乌拉圭",
+    VN: "越南",
+    ZA: "南非"
+  };
 
-    const countryLocations = {
-      "Norway": [
-        { lat: 60.3913, lng: 5.3221, heading: 45 },
-        { lat: 63.4305, lng: 10.3951, heading: 110 }
-      ],
-      "Sweden": [
-        { lat: 59.3293, lng: 18.0686, heading: 80 },
-        { lat: 57.7089, lng: 11.9746, heading: 220 }
-      ],
-      "Cambodia": [
-        { lat: 11.5564, lng: 104.9282, heading: 160 },
-        { lat: 13.3671, lng: 103.8448, heading: 70 }
-      ],
-      "Thailand": [
-        { lat: 13.7563, lng: 100.5018, heading: 90 },
-        { lat: 18.7883, lng: 98.9853, heading: 230 }
-      ],
-      "Ecuador": [
-        { lat: -0.1807, lng: -78.4678, heading: 120 },
-        { lat: -2.1709, lng: -79.9224, heading: 300 }
-      ],
-      "Peru": [
-        { lat: -12.0464, lng: -77.0428, heading: 20 },
-        { lat: -13.5319, lng: -71.9675, heading: 210 }
-      ],
-      "Turkey": [
-        { lat: 39.9334, lng: 32.8597, heading: 130 },
-        { lat: 38.4237, lng: 27.1428, heading: 260 }
-      ],
-      "Greece": [
-        { lat: 37.9838, lng: 23.7275, heading: 40 },
-        { lat: 40.6401, lng: 22.9444, heading: 150 }
-      ],
-      "Romania": [
-        { lat: 44.4268, lng: 26.1025, heading: 65 },
-        { lat: 46.7712, lng: 23.6236, heading: 210 }
-      ],
-      "Hungary": [
-        { lat: 47.4979, lng: 19.0402, heading: 95 },
-        { lat: 46.2530, lng: 20.1414, heading: 185 }
-      ],
-      "Brazil": [
-        { lat: -23.5505, lng: -46.6333, heading: 140 },
-        { lat: -15.7939, lng: -47.8828, heading: 250 }
-      ],
-      "Argentina": [
-        { lat: -34.6037, lng: -58.3816, heading: 60 },
-        { lat: -31.4201, lng: -64.1888, heading: 170 }
-      ],
-      "Malaysia": [
-        { lat: 3.1390, lng: 101.6869, heading: 135 },
-        { lat: 5.4164, lng: 100.3327, heading: 20 }
-      ],
-      "Indonesia": [
-        { lat: -6.2088, lng: 106.8456, heading: 220 },
-        { lat: -7.7956, lng: 110.3695, heading: 80 }
-      ],
-      "Botswana": [
-        { lat: -24.6282, lng: 25.9231, heading: 35 },
-        { lat: -19.9833, lng: 23.4167, heading: 200 }
-      ],
-      "South Africa": [
-        { lat: -33.9249, lng: 18.4241, heading: 100 },
-        { lat: -26.2041, lng: 28.0473, heading: 240 }
-      ],
-      "Portugal": [
-        { lat: 38.7223, lng: -9.1393, heading: 90 },
-        { lat: 41.1579, lng: -8.6291, heading: 180 }
-      ],
-      "Spain": [
-        { lat: 40.4168, lng: -3.7038, heading: 50 },
-        { lat: 41.3851, lng: 2.1734, heading: 250 }
-      ],
-      "Estonia": [
-        { lat: 59.4370, lng: 24.7536, heading: 75 },
-        { lat: 58.3776, lng: 26.7290, heading: 190 }
-      ],
-      "Latvia": [
-        { lat: 56.9496, lng: 24.1052, heading: 110 },
-        { lat: 55.8747, lng: 26.5362, heading: 230 }
-      ],
-      "New Zealand": [
-        { lat: -36.8485, lng: 174.7633, heading: 160 },
-        { lat: -45.0312, lng: 168.6626, heading: 300 }
-      ],
-      "Australia": [
-        { lat: -33.8688, lng: 151.2093, heading: 120 },
-        { lat: -37.8136, lng: 144.9631, heading: 280 }
-      ],
-      "Colombia": [
-        { lat: 4.7110, lng: -74.0721, heading: 70 },
-        { lat: 6.2442, lng: -75.5812, heading: 210 }
+  const countryPairs = [
+    { a: "CA", b: "US" },
+    { a: "US", b: "MX" },
+    { a: "US", b: "AR" },
+    { a: "MX", b: "CO" },
+    { a: "MX", b: "BR" },
+    { a: "MX", b: "AR" },
+    { a: "PA", b: "CR" },
+    { a: "PA", b: "EC" },
+    { a: "CR", b: "EC" },
+    { a: "CO", b: "EC" },
+    { a: "PE", b: "BO" },
+    { a: "PE", b: "CL" },
+    { a: "PE", b: "AR" },
+    { a: "BO", b: "CL" },
+    { a: "BO", b: "AR" },
+    { a: "CL", b: "AR" },
+    { a: "BR", b: "AR" },
+    { a: "AR", b: "UY" },
+    { a: "PY", b: "BR" },
+
+    { a: "NO", b: "SE" },
+    { a: "NO", b: "FI" },
+    { a: "SE", b: "FI" },
+    { a: "EE", b: "LV" },
+    { a: "EE", b: "LT" },
+    { a: "LV", b: "LT" },
+
+    { a: "FR", b: "ES" },
+    { a: "FR", b: "PT" },
+    { a: "FR", b: "IT" },
+    { a: "ES", b: "PT" },
+    { a: "ES", b: "IT" },
+    { a: "ES", b: "GR" },
+    { a: "ES", b: "TR" },
+    { a: "PT", b: "IT" },
+    { a: "PT", b: "GR" },
+    { a: "PT", b: "TR" },
+    { a: "IT", b: "GR" },
+    { a: "IT", b: "TR" },
+    { a: "GR", b: "TR" },
+
+    { a: "DK", b: "NL" },
+    { a: "DK", b: "BE" },
+    { a: "NL", b: "BE" },
+    { a: "DE", b: "AT" },
+    { a: "AT", b: "SI" },
+    { a: "CH", b: "LI" },
+    { a: "PL", b: "HU" },
+    { a: "PL", b: "RO" },
+    { a: "HU", b: "RO" },
+    { a: "CZ", b: "SK" },
+    { a: "RS", b: "BG" },
+    { a: "RS", b: "MK" },
+    { a: "BG", b: "MK" },
+    { a: "ME", b: "AL" },
+    { a: "HR", b: "BA" },
+    { a: "RU", b: "UA" },
+
+    { a: "IN", b: "NP" },
+    { a: "IN", b: "BD" },
+    { a: "NP", b: "BD" },
+    { a: "TH", b: "KH" },
+    { a: "TH", b: "VN" },
+    { a: "TH", b: "PH" },
+    { a: "KH", b: "VN" },
+    { a: "KH", b: "PH" },
+    { a: "VN", b: "PH" },
+    { a: "MY", b: "SG" },
+    { a: "MY", b: "ID" },
+
+    { a: "ZA", b: "BW" },
+    { a: "ZA", b: "LS" },
+    { a: "ZA", b: "NA" },
+    { a: "ZA", b: "SZ" },
+    { a: "BW", b: "LS" },
+    { a: "BW", b: "NA" },
+    { a: "BW", b: "SZ" },
+    { a: "LS", b: "NA" },
+    { a: "LS", b: "SZ" },
+    { a: "NA", b: "SZ" },
+
+    { a: "KE", b: "SN" },
+    { a: "KE", b: "RW" },
+    { a: "SN", b: "RW" },
+
+    { a: "IL", b: "PS" },
+    { a: "IL", b: "JO" },
+    { a: "PS", b: "JO" },
+    { a: "OM", b: "AE" },
+    { a: "OM", b: "QA" },
+    { a: "AE", b: "QA" },
+    { a: "OM", b: "NA" },
+
+    { a: "GB", b: "IE" },
+    { a: "AU", b: "NZ" },
+    { a: "TW", b: "JP" },
+    { a: "SG", b: "HK" },
+    { a: "IS", b: "FO" },
+    { a: "LU", b: "DE" },
+    { a: "MT", b: "GR" },
+    { a: "MT", b: "IT" },
+    { a: "MT", b: "ES" },
+    { a: "SM", b: "IT" },
+    { a: "LK", b: "TH" },
+    { a: "LK", b: "IN" },
+    { a: "CY", b: "TR" },
+    { a: "CY", b: "GR" },
+    { a: "AD", b: "ES" }
+  ];
+
+  let locationsByCountry = {};
+  let locationCount = 0;
+  let dataLoaded = false;
+  let dataLoadError = "";
+
+  const entryCard = document.getElementById("entryCard");
+  const roomCard = document.getElementById("roomCard");
+  const gameCard = document.getElementById("gameCard");
+
+  const nameInput = document.getElementById("nameInput");
+  const maxPlayersInput = document.getElementById("maxPlayersInput");
+  const roomInput = document.getElementById("roomInput");
+  const createRoomBtn = document.getElementById("createRoomBtn");
+  const joinRoomBtn = document.getElementById("joinRoomBtn");
+  const entryStatus = document.getElementById("entryStatus");
+
+  const roomCodePill = document.getElementById("roomCodePill");
+  const phasePill = document.getElementById("phasePill");
+  const roundPill = document.getElementById("roundPill");
+  const roomStatus = document.getElementById("roomStatus");
+  const inviteLink = document.getElementById("inviteLink");
+  const copyInviteBtn = document.getElementById("copyInviteBtn");
+  const startGameBtn = document.getElementById("startGameBtn");
+  const resetRoomBtn = document.getElementById("resetRoomBtn");
+  const playersList = document.getElementById("playersList");
+
+  const gameTitle = document.getElementById("gameTitle");
+  const secretBox = document.getElementById("secretBox");
+  const secretCountry = document.getElementById("secretCountry");
+  const secretRoleText = document.getElementById("secretRoleText");
+  const streetViewLink = document.getElementById("streetViewLink");
+  const streetViewNote = document.getElementById("streetViewNote");
+
+  const describePanel = document.getElementById("describePanel");
+  const descriptionInput = document.getElementById("descriptionInput");
+  const submitDescriptionBtn = document.getElementById("submitDescriptionBtn");
+
+  const descriptionsPanel = document.getElementById("descriptionsPanel");
+  const descriptionList = document.getElementById("descriptionList");
+
+  const readyVotePanel = document.getElementById("readyVotePanel");
+  const readyVoteTimer = document.getElementById("readyVoteTimer");
+  const agreeVoteBtn = document.getElementById("agreeVoteBtn");
+  const refuseVoteBtn = document.getElementById("refuseVoteBtn");
+  const cancelAgreeVoteBtn = document.getElementById("cancelAgreeVoteBtn");
+  const readyVoteStatus = document.getElementById("readyVoteStatus");
+
+  const votingPanel = document.getElementById("votingPanel");
+  const votingTimer = document.getElementById("votingTimer");
+  const voteGrid = document.getElementById("voteGrid");
+  const voteStatus = document.getElementById("voteStatus");
+
+  const resultPanel = document.getElementById("resultPanel");
+  const resultBox = document.getElementById("resultBox");
+  const nextRoundBtn = document.getElementById("nextRoundBtn");
+
+  const gameOverPanel = document.getElementById("gameOverPanel");
+  const gameOverBox = document.getElementById("gameOverBox");
+
+  let currentRoomId = null;
+  let currentPlayerId = null;
+  let currentRoom = null;
+  let unsubscribeRoom = null;
+  let transitionLock = false;
+
+  async function loadLocationData() {
+    try {
+      entryStatus.textContent = "Loading GeoSpy location dataset...";
+
+      const res = await fetch(LOCATION_DATA_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error(`Failed to load ${LOCATION_DATA_URL}: ${res.status}`);
+
+      const raw = await res.json();
+      const locations = Array.isArray(raw.customCoordinates) ? raw.customCoordinates : [];
+
+      const grouped = {};
+
+      for (const loc of locations) {
+        const tag = loc.extra?.tags?.[0] || loc.countryCode;
+        if (!tag) continue;
+
+        if (!grouped[tag]) grouped[tag] = [];
+
+        grouped[tag].push({
+          lat: Number(loc.lat),
+          lng: Number(loc.lng),
+          heading: Number(loc.heading || 0),
+          pitch: Number(loc.pitch || 0),
+          zoom: Number(loc.zoom || 0),
+          panoId: loc.panoId || loc.extra?.panoId || null,
+          panoDate: loc.extra?.panoDate || null,
+          tag
+        });
+      }
+
+      locationsByCountry = grouped;
+      locationCount = locations.length;
+      dataLoaded = true;
+
+      const availablePairs = getAvailablePairs();
+      entryStatus.textContent = `Dataset loaded: ${locationCount} locations, ${Object.keys(locationsByCountry).length} tags, ${availablePairs.length} usable pairs. Create a room or join with a room code.`;
+
+      createRoomBtn.disabled = false;
+      joinRoomBtn.disabled = false;
+    } catch (err) {
+      console.error(err);
+      dataLoadError = err.message || String(err);
+      dataLoaded = false;
+      entryStatus.textContent = `Dataset failed to load: ${dataLoadError}`;
+      createRoomBtn.disabled = true;
+      joinRoomBtn.disabled = true;
+    }
+  }
+
+  const locationDataPromise = loadLocationData();
+
+  function getAvailablePairs() {
+    return countryPairs.filter(pair => {
+      const aCount = locationsByCountry[pair.a]?.length || 0;
+      const bCount = locationsByCountry[pair.b]?.length || 0;
+      return aCount > 0 && bCount > 0;
+    });
+  }
+
+  function countryLabel(code) {
+    return countryNames[code] || code || "?";
+  }
+
+  function randomCode(length = 4) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < length; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+
+  function randomId() {
+    return "p_" + Math.random().toString(36).slice(2, 10);
+  }
+
+  function roomUrl(roomId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("room", roomId);
+    return url.toString();
+  }
+
+  function getRoleCounts(maxPlayers) {
+    if (maxPlayers === 6) return { undercover: 2, civilian: 4 };
+    return { undercover: 1, civilian: maxPlayers - 1 };
+  }
+
+  function getAlivePlayers(room) {
+    return Object.entries(room.players || {})
+      .filter(([_, p]) => p.alive !== false)
+      .map(([id, p]) => ({ id, ...p }));
+  }
+
+  function isHost(room) {
+    return currentPlayerId && room && room.hostId === currentPlayerId;
+  }
+
+  function getMe(room) {
+    return room?.players?.[currentPlayerId] || null;
+  }
+
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function pick(array) {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+
+  function assignUniqueLocations(playerCountryMap) {
+    const poolsByCountry = {};
+    const assigned = {};
+
+    for (const [playerId, countryCode] of Object.entries(playerCountryMap)) {
+      if (!poolsByCountry[countryCode]) {
+        poolsByCountry[countryCode] = shuffle(locationsByCountry[countryCode] || []);
+      }
+
+      let loc = poolsByCountry[countryCode].pop();
+
+      if (!loc) {
+        loc = pick(locationsByCountry[countryCode] || []);
+      }
+
+      assigned[playerId] = loc || null;
+    }
+
+    return assigned;
+  }
+
+  function makeStreetViewUrl(location) {
+    const heading = Number(location?.heading || 0);
+    const pitch = Number(location?.pitch || 0);
+    return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${location.lat},${location.lng}&heading=${heading}&pitch=${pitch}&fov=90`;
+  }
+
+  function makeMmaSingleLocationJson(location) {
+    return {
+      name: "GeoSpy single location",
+      customCoordinates: [
+        {
+          lat: location.lat,
+          lng: location.lng,
+          heading: location.heading || 0,
+          pitch: location.pitch || 0,
+          zoom: location.zoom || 0,
+          panoId: location.panoId || null,
+          countryCode: null,
+          stateCode: null,
+          extra: {
+            tags: ["GeoSpy"]
+          }
+        }
       ]
     };
+  }
 
-    const entryCard = document.getElementById("entryCard");
-    const roomCard = document.getElementById("roomCard");
-    const gameCard = document.getElementById("gameCard");
+  function getReadyVoteRemainingSeconds(room) {
+    if (!room.readyVoteStartedAt) return READY_VOTE_SECONDS;
+    const elapsedMs = Date.now() - room.readyVoteStartedAt;
+    const remaining = READY_VOTE_SECONDS - Math.floor(elapsedMs / 1000);
+    return Math.max(0, remaining);
+  }
 
-    const nameInput = document.getElementById("nameInput");
-    const maxPlayersInput = document.getElementById("maxPlayersInput");
-    const roomInput = document.getElementById("roomInput");
-    const createRoomBtn = document.getElementById("createRoomBtn");
-    const joinRoomBtn = document.getElementById("joinRoomBtn");
-    const entryStatus = document.getElementById("entryStatus");
+  function getVotingRemainingSeconds(room) {
+    if (!room.votingStartedAt) return VOTING_SECONDS;
+    const elapsedMs = Date.now() - room.votingStartedAt;
+    const remaining = VOTING_SECONDS - Math.floor(elapsedMs / 1000);
+    return Math.max(0, remaining);
+  }
 
-    const roomCodePill = document.getElementById("roomCodePill");
-    const phasePill = document.getElementById("phasePill");
-    const roundPill = document.getElementById("roundPill");
-    const roomStatus = document.getElementById("roomStatus");
-    const inviteLink = document.getElementById("inviteLink");
-    const copyInviteBtn = document.getElementById("copyInviteBtn");
-    const startGameBtn = document.getElementById("startGameBtn");
-    const resetRoomBtn = document.getElementById("resetRoomBtn");
-    const playersList = document.getElementById("playersList");
+  function pickRandomVoteTarget(voterId, alivePlayers) {
+    const candidates = alivePlayers.filter(p => p.id !== voterId);
+    if (candidates.length === 0) return "";
+    return pick(candidates).id;
+  }
 
-    const gameTitle = document.getElementById("gameTitle");
-    const secretBox = document.getElementById("secretBox");
-    const secretCountry = document.getElementById("secretCountry");
-    const secretRoleText = document.getElementById("secretRoleText");
-    const streetViewLink = document.getElementById("streetViewLink");
-    const streetViewNote = document.getElementById("streetViewNote");
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
-    const describePanel = document.getElementById("describePanel");
-    const descriptionInput = document.getElementById("descriptionInput");
-    const submitDescriptionBtn = document.getElementById("submitDescriptionBtn");
+  async function createRoom() {
+    await locationDataPromise;
 
-    const descriptionsPanel = document.getElementById("descriptionsPanel");
-    const descriptionList = document.getElementById("descriptionList");
-
-    const readyVotePanel = document.getElementById("readyVotePanel");
-    const readyVoteTimer = document.getElementById("readyVoteTimer");
-    const agreeVoteBtn = document.getElementById("agreeVoteBtn");
-    const refuseVoteBtn = document.getElementById("refuseVoteBtn");
-    const cancelAgreeVoteBtn = document.getElementById("cancelAgreeVoteBtn");
-    const readyVoteStatus = document.getElementById("readyVoteStatus");
-
-    const votingPanel = document.getElementById("votingPanel");
-    const votingTimer = document.getElementById("votingTimer");
-    const voteGrid = document.getElementById("voteGrid");
-    const voteStatus = document.getElementById("voteStatus");
-
-    const resultPanel = document.getElementById("resultPanel");
-    const resultBox = document.getElementById("resultBox");
-    const nextRoundBtn = document.getElementById("nextRoundBtn");
-
-    const gameOverPanel = document.getElementById("gameOverPanel");
-    const gameOverBox = document.getElementById("gameOverBox");
-
-    let currentRoomId = null;
-    let currentPlayerId = null;
-    let currentRoom = null;
-    let unsubscribeRoom = null;
-    let transitionLock = false;
-
-    function randomCode(length = 4) {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let code = "";
-      for (let i = 0; i < length; i++) code += chars[Math.floor(Math.random() * chars.length)];
-      return code;
+    if (!dataLoaded) {
+      entryStatus.textContent = `Dataset is not ready: ${dataLoadError}`;
+      return;
     }
 
-    function randomId() {
-      return "p_" + Math.random().toString(36).slice(2, 10);
-    }
-
-    function roomUrl(roomId) {
-      const url = new URL(window.location.href);
-      url.searchParams.set("room", roomId);
-      return url.toString();
-    }
-
-    function getRoleCounts(maxPlayers) {
-      if (maxPlayers === 6) return { undercover: 2, civilian: 4 };
-      return { undercover: 1, civilian: maxPlayers - 1 };
-    }
-
-    function getAlivePlayers(room) {
-      return Object.entries(room.players || {})
-        .filter(([_, p]) => p.alive !== false)
-        .map(([id, p]) => ({ id, ...p }));
-    }
-
-    function isHost(room) {
-      return currentPlayerId && room && room.hostId === currentPlayerId;
-    }
-
-    function getMe(room) {
-      return room?.players?.[currentPlayerId] || null;
-    }
-
-    function shuffle(array) {
-      const arr = [...array];
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
-
-    function pick(array) {
-      return array[Math.floor(Math.random() * array.length)];
-    }
-
-    function assignUniqueLocations(playerCountryMap) {
-      const poolsByCountry = {};
-      const assigned = {};
-
-      for (const [playerId, country] of Object.entries(playerCountryMap)) {
-        if (!poolsByCountry[country]) {
-          poolsByCountry[country] = shuffle(countryLocations[country] || []);
-        }
-
-        let loc = poolsByCountry[country].pop();
-
-        if (!loc) {
-          loc = pick(countryLocations[country] || []);
-        }
-
-        assigned[playerId] = loc;
-      }
-
-      return assigned;
-    }
-
-    function makeStreetViewUrl(location) {
-      return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${location.lat},${location.lng}&heading=${location.heading || 0}&pitch=0&fov=90`;
-    }
-
-    function getReadyVoteRemainingSeconds(room) {
-      if (!room.readyVoteStartedAt) return READY_VOTE_SECONDS;
-      const elapsedMs = Date.now() - room.readyVoteStartedAt;
-      const remaining = READY_VOTE_SECONDS - Math.floor(elapsedMs / 1000);
-      return Math.max(0, remaining);
-    }
-
-    function getVotingRemainingSeconds(room) {
-      if (!room.votingStartedAt) return VOTING_SECONDS;
-      const elapsedMs = Date.now() - room.votingStartedAt;
-      const remaining = VOTING_SECONDS - Math.floor(elapsedMs / 1000);
-      return Math.max(0, remaining);
-    }
-
-    function pickRandomVoteTarget(voterId, alivePlayers) {
-      const candidates = alivePlayers.filter(p => p.id !== voterId);
-      if (candidates.length === 0) return "";
-      return pick(candidates).id;
-    }
-
-    function escapeHtml(str) {
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    async function createRoom() {
-      const name = nameInput.value.trim() || "Host";
-      const maxPlayers = Number(maxPlayersInput.value);
-      const roomId = randomCode();
-      const playerId = randomId();
-
-      const roomData = {
-        status: "lobby",
-        phase: "lobby",
-        maxPlayers,
-        hostId: playerId,
-        round: 0,
-        readyVoteStartedAt: null,
-        votingStartedAt: null,
-        createdAt: serverTimestamp(),
-        players: {
-          [playerId]: {
-            name,
-            joinedAt: Date.now(),
-            alive: true,
-            isHost: true
-          }
-        }
-      };
-
-      await set(ref(db, `rooms/${roomId}`), roomData);
-      enterRoom(roomId, playerId);
-    }
-
-    async function joinRoom() {
-      const name = nameInput.value.trim() || "Player";
-      const roomId = roomInput.value.trim().toUpperCase();
-
-      if (!roomId) {
-        entryStatus.textContent = "Enter a room code first.";
-        return;
-      }
-
-      const roomSnap = await get(ref(db, `rooms/${roomId}`));
-      const room = roomSnap.val();
-
-      if (!room) {
-        entryStatus.textContent = "Room not found.";
-        return;
-      }
-
-      if (room.status !== "lobby") {
-        entryStatus.textContent = "This room has already started.";
-        return;
-      }
-
-      const players = room.players || {};
-      const playerCount = Object.keys(players).length;
-
-      if (playerCount >= room.maxPlayers) {
-        entryStatus.textContent = "Room is full.";
-        return;
-      }
-
-      const playerId = randomId();
-
-      await set(ref(db, `rooms/${roomId}/players/${playerId}`), {
-        name,
-        joinedAt: Date.now(),
-        alive: true,
-        isHost: false
-      });
-
-      enterRoom(roomId, playerId);
-    }
-
-    function enterRoom(roomId, playerId) {
-      currentRoomId = roomId;
-      currentPlayerId = playerId;
-
-      sessionStorage.setItem("geoUndercoverRoomId", roomId);
-      sessionStorage.setItem("geoUndercoverPlayerId", playerId);
-
-      entryCard.classList.add("hidden");
-      roomCard.classList.remove("hidden");
-
-      inviteLink.textContent = roomUrl(roomId);
-
-      if (unsubscribeRoom) unsubscribeRoom();
-
-      const roomRef = ref(db, `rooms/${roomId}`);
-      unsubscribeRoom = onValue(roomRef, (snapshot) => {
-        const room = snapshot.val();
-
-        if (!room) {
-          roomStatus.textContent = "Room not found or deleted.";
-          return;
-        }
-
-        currentRoom = room;
-        renderRoom(room);
-        hostAutoAdvance(room);
-      });
-    }
-
-    async function startGame() {
-      if (!currentRoom || !isHost(currentRoom)) return;
-
-      const players = Object.entries(currentRoom.players || {});
-      if (players.length !== currentRoom.maxPlayers) return;
-
-      const pair = pick(wordPairs);
-      const shuffledPlayers = shuffle(players.map(([id]) => id));
-      const roleCounts = getRoleCounts(currentRoom.maxPlayers);
-      const undercoverIds = new Set(shuffledPlayers.slice(0, roleCounts.undercover));
-
-      const updates = {};
-      updates[`rooms/${currentRoomId}/status`] = "playing";
-      updates[`rooms/${currentRoomId}/phase`] = "describing";
-      updates[`rooms/${currentRoomId}/round`] = 1;
-      updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
-      updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
-      updates[`rooms/${currentRoomId}/game`] = {
-        theme: pair.theme,
-        civilianCountry: pair.civilian,
-        undercoverCountry: pair.undercover,
-        startedAt: Date.now(),
-        lastResult: ""
-      };
-
-      const playerCountryMap = {};
-
-      for (const [playerId] of players) {
-        const isUndercover = undercoverIds.has(playerId);
-        const country = isUndercover ? pair.undercover : pair.civilian;
-        playerCountryMap[playerId] = country;
-      }
-
-      const assignedLocations = assignUniqueLocations(playerCountryMap);
-
-      for (const [playerId] of players) {
-        const isUndercover = undercoverIds.has(playerId);
-        const country = playerCountryMap[playerId];
-        const loc = assignedLocations[playerId];
-
-        updates[`rooms/${currentRoomId}/players/${playerId}/role`] = isUndercover ? "undercover" : "civilian";
-        updates[`rooms/${currentRoomId}/players/${playerId}/country`] = country;
-        updates[`rooms/${currentRoomId}/players/${playerId}/location`] = loc;
-        updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
-        updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
-        updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
-        updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
-      }
-
-      await update(ref(db), updates);
-    }
-
-    async function submitDescription() {
-      const text = descriptionInput.value.trim();
-
-      if (!text) return;
-
-      await update(ref(db), {
-        [`rooms/${currentRoomId}/players/${currentPlayerId}/description`]: text
-      });
-
-      descriptionInput.value = "";
-    }
-
-    async function setVoteIntent(value) {
-      await update(ref(db), {
-        [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntent`]: value
-      });
-    }
-
-    async function submitVote(targetPlayerId) {
-      await update(ref(db), {
-        [`rooms/${currentRoomId}/players/${currentPlayerId}/vote`]: targetPlayerId
-      });
-    }
-
-    async function nextRound() {
-      if (!currentRoom || !isHost(currentRoom)) return;
-
-      const alivePlayers = getAlivePlayers(currentRoom);
-      const updates = {};
-      const nextRoundNumber = (currentRoom.round || 1) + 1;
-
-      updates[`rooms/${currentRoomId}/phase`] = "describing";
-      updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
-      updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
-      updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
-      updates[`rooms/${currentRoomId}/game/lastResult`] = "";
-
-      const playerCountryMap = {};
-
-      for (const p of alivePlayers) {
-        playerCountryMap[p.id] = p.country;
-      }
-
-      const assignedLocations = assignUniqueLocations(playerCountryMap);
-
-      for (const p of alivePlayers) {
-        const loc = assignedLocations[p.id];
-
-        updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
-        updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
-        updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
-        updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
-      }
-
-      await update(ref(db), updates);
-    }
-
-    async function resetRoom() {
-      if (!currentRoom || !isHost(currentRoom)) return;
-
-      const updates = {};
-      updates[`rooms/${currentRoomId}/status`] = "lobby";
-      updates[`rooms/${currentRoomId}/phase`] = "lobby";
-      updates[`rooms/${currentRoomId}/round`] = 0;
-      updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
-      updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
-      updates[`rooms/${currentRoomId}/game`] = null;
-
-      for (const [playerId] of Object.entries(currentRoom.players || {})) {
-        updates[`rooms/${currentRoomId}/players/${playerId}/role`] = null;
-        updates[`rooms/${currentRoomId}/players/${playerId}/country`] = null;
-        updates[`rooms/${currentRoomId}/players/${playerId}/location`] = null;
-        updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
-        updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
-        updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
-        updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
-      }
-
-      await update(ref(db), updates);
-    }
-
-    async function beginNewDescriptionRoundAfterRefusal(room, alivePlayers) {
-      const updates = {};
-      const nextRoundNumber = (room.round || 1) + 1;
-
-      updates[`rooms/${currentRoomId}/phase`] = "describing";
-      updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
-      updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
-      updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
-      updates[`rooms/${currentRoomId}/game/lastResult`] = "Not enough players agreed to vote. A new description round begins.";
-
-      const playerCountryMap = {};
-
-      for (const p of alivePlayers) {
-        playerCountryMap[p.id] = p.country;
-      }
-
-      const assignedLocations = assignUniqueLocations(playerCountryMap);
-
-      for (const p of alivePlayers) {
-        const loc = assignedLocations[p.id];
-
-        updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
-        updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
-        updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
-        updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
-      }
-
-      await update(ref(db), updates);
-    }
-
-    async function hostAutoAdvance(room) {
-      if (!isHost(room)) return;
-      if (transitionLock) return;
-
-      const phase = room.phase;
-      const alivePlayers = getAlivePlayers(room);
-
-      if (phase === "describing") {
-        const allDescribed = alivePlayers.length > 0 && alivePlayers.every(p => (p.description || "").trim());
-
-        if (allDescribed) {
-          transitionLock = true;
-          await update(ref(db), {
-            [`rooms/${currentRoomId}/phase`]: "readyVote",
-            [`rooms/${currentRoomId}/readyVoteStartedAt`]: Date.now(),
-            [`rooms/${currentRoomId}/votingStartedAt`]: null
-          });
-          setTimeout(() => transitionLock = false, 500);
+    const name = nameInput.value.trim() || "Host";
+    const maxPlayers = Number(maxPlayersInput.value);
+    const roomId = randomCode();
+    const playerId = randomId();
+
+    const roomData = {
+      status: "lobby",
+      phase: "lobby",
+      maxPlayers,
+      hostId: playerId,
+      round: 0,
+      readyVoteStartedAt: null,
+      votingStartedAt: null,
+      createdAt: serverTimestamp(),
+      players: {
+        [playerId]: {
+          name,
+          joinedAt: Date.now(),
+          alive: true,
+          isHost: true
         }
       }
+    };
 
-      if (phase === "readyVote") {
-        const agreeCount = alivePlayers.filter(p => p.voteIntent === "agree").length;
-        const decidedCount = alivePlayers.filter(p => p.voteIntent === "agree" || p.voteIntent === "refuse").length;
-        const needed = Math.ceil(alivePlayers.length / 2);
-        const remainingSeconds = getReadyVoteRemainingSeconds(room);
-        const expired = remainingSeconds <= 0;
+    await set(ref(db, `rooms/${roomId}`), roomData);
+    enterRoom(roomId, playerId);
+  }
 
-        if (agreeCount >= needed) {
-          transitionLock = true;
+  async function joinRoom() {
+    await locationDataPromise;
 
-          const updates = {
-            [`rooms/${currentRoomId}/phase`]: "voting",
-            [`rooms/${currentRoomId}/readyVoteStartedAt`]: null,
-            [`rooms/${currentRoomId}/votingStartedAt`]: Date.now()
-          };
-
-          for (const p of alivePlayers) {
-            updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
-          }
-
-          await update(ref(db), updates);
-          setTimeout(() => transitionLock = false, 500);
-          return;
-        }
-
-        if (decidedCount === alivePlayers.length && agreeCount < needed) {
-          transitionLock = true;
-          await beginNewDescriptionRoundAfterRefusal(room, alivePlayers);
-          setTimeout(() => transitionLock = false, 500);
-          return;
-        }
-
-        if (expired) {
-          transitionLock = true;
-
-          const updates = {};
-          for (const p of alivePlayers) {
-            if (p.voteIntent !== "agree" && p.voteIntent !== "refuse") {
-              updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "refuse";
-            }
-          }
-
-          if (Object.keys(updates).length > 0) {
-            await update(ref(db), updates);
-          } else {
-            await beginNewDescriptionRoundAfterRefusal(room, alivePlayers);
-          }
-
-          setTimeout(() => transitionLock = false, 500);
-          return;
-        }
-      }
-
-      if (phase === "voting") {
-        const allVoted = alivePlayers.length > 0 && alivePlayers.every(p => !!p.vote);
-        const remainingSeconds = getVotingRemainingSeconds(room);
-        const expired = remainingSeconds <= 0;
-
-        if (allVoted) {
-          transitionLock = true;
-          await resolveVote(room);
-          setTimeout(() => transitionLock = false, 500);
-          return;
-        }
-
-        if (expired) {
-          transitionLock = true;
-
-          const updates = {};
-
-          for (const p of alivePlayers) {
-            if (!p.vote) {
-              const randomTarget = pickRandomVoteTarget(p.id, alivePlayers);
-              updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = randomTarget;
-            }
-          }
-
-          if (Object.keys(updates).length > 0) {
-            await update(ref(db), updates);
-          }
-
-          setTimeout(() => transitionLock = false, 500);
-          return;
-        }
-      }
+    if (!dataLoaded) {
+      entryStatus.textContent = `Dataset is not ready: ${dataLoadError}`;
+      return;
     }
 
-    async function resolveVote(room) {
-      const alivePlayers = getAlivePlayers(room);
-      const voteCounts = {};
+    const name = nameInput.value.trim() || "Player";
+    const roomId = roomInput.value.trim().toUpperCase();
 
-      for (const p of alivePlayers) {
-        if (!p.vote) continue;
-        voteCounts[p.vote] = (voteCounts[p.vote] || 0) + 1;
-      }
-
-      const entries = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
-      let eliminatedId = null;
-      let resultText = "";
-
-      if (entries.length === 0) {
-        resultText = "No votes were submitted. No one was eliminated.";
-      } else {
-        const topVotes = entries[0][1];
-        const tied = entries.filter(([_, count]) => count === topVotes);
-
-        if (tied.length > 1) {
-          const tiedNames = tied.map(([id]) => room.players[id]?.name || "Unknown").join(", ");
-          resultText = `Tie vote between ${tiedNames}. No one was eliminated.`;
-        } else {
-          eliminatedId = entries[0][0];
-          const eliminated = room.players[eliminatedId];
-          resultText = `${eliminated?.name || "A player"} was voted out.`;
-        }
-      }
-
-      const updates = {};
-      if (eliminatedId) {
-        updates[`rooms/${currentRoomId}/players/${eliminatedId}/alive`] = false;
-      }
-
-      const projectedPlayers = JSON.parse(JSON.stringify(room.players || {}));
-      if (eliminatedId && projectedPlayers[eliminatedId]) {
-        projectedPlayers[eliminatedId].alive = false;
-      }
-
-      const win = checkWin(projectedPlayers);
-
-      if (win.gameOver) {
-        updates[`rooms/${currentRoomId}/phase`] = "gameOver";
-        updates[`rooms/${currentRoomId}/status`] = "finished";
-        updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
-        updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
-        updates[`rooms/${currentRoomId}/game/winner`] = win.winner;
-        updates[`rooms/${currentRoomId}/game/lastResult`] = resultText;
-        updates[`rooms/${currentRoomId}/game/gameOverText`] = win.text;
-      } else {
-        updates[`rooms/${currentRoomId}/phase`] = "roundResult";
-        updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
-        updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
-        updates[`rooms/${currentRoomId}/game/lastResult`] = resultText;
-      }
-
-      await update(ref(db), updates);
+    if (!roomId) {
+      entryStatus.textContent = "Enter a room code first.";
+      return;
     }
 
-    function checkWin(playersObj) {
-      const alive = Object.values(playersObj).filter(p => p.alive !== false);
-      const undercoverAlive = alive.filter(p => p.role === "undercover").length;
-      const civilianAlive = alive.filter(p => p.role === "civilian").length;
+    const roomSnap = await get(ref(db, `rooms/${roomId}`));
+    const room = roomSnap.val();
 
-      if (undercoverAlive === 0) {
-        return {
-          gameOver: true,
-          winner: "civilians",
-          text: "All spies were voted out. Civilians win."
-        };
-      }
-
-      if (undercoverAlive >= civilianAlive) {
-        return {
-          gameOver: true,
-          winner: "spies",
-          text: "Spies are equal to or greater than civilians. Spies win."
-        };
-      }
-
-      return { gameOver: false };
+    if (!room) {
+      entryStatus.textContent = "Room not found.";
+      return;
     }
 
-    function renderRoom(room) {
-      const me = getMe(room);
-      const players = Object.entries(room.players || {});
-      const alivePlayers = getAlivePlayers(room);
-
-      roomCodePill.textContent = `Room: ${currentRoomId}`;
-      phasePill.textContent = `Phase: ${room.phase || "lobby"}`;
-      roundPill.textContent = `Round: ${room.round || 0}`;
-
-      const playerCount = players.length;
-      roomStatus.textContent = `Players: ${playerCount} / ${room.maxPlayers}.`;
-
-      startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby"));
-      startGameBtn.disabled = !(playerCount === room.maxPlayers);
-      resetRoomBtn.classList.toggle("hidden", !isHost(room));
-
-      playersList.innerHTML = players.map(([id, p]) => {
-        const hostMark = id === room.hostId ? " · Host" : "";
-        const youMark = id === currentPlayerId ? " · You" : "";
-        const deadMark = p.alive === false ? " · Out" : "";
-        const intentMark = p.voteIntent === "agree" ? "Agreed" : p.voteIntent === "refuse" ? "Refused" : "";
-        const cls = p.alive === false ? "player dead" : "player";
-        return `
-          <div class="${cls}">
-            <span><strong>${escapeHtml(p.name)}</strong>${hostMark}${youMark}${deadMark}</span>
-            <span>${p.description ? "Described" : ""} ${intentMark} ${p.vote ? "Voted" : ""}</span>
-          </div>
-        `;
-      }).join("");
-
-      if (room.status === "lobby") {
-        gameCard.classList.add("hidden");
-        return;
-      }
-
-      gameCard.classList.remove("hidden");
-      renderGame(room, me, alivePlayers);
+    if (room.status !== "lobby") {
+      entryStatus.textContent = "This room has already started.";
+      return;
     }
 
-    function renderGame(room, me, alivePlayers) {
-      const phase = room.phase;
+    const players = room.players || {};
+    const playerCount = Object.keys(players).length;
 
-      describePanel.classList.add("hidden");
-      descriptionsPanel.classList.add("hidden");
-      readyVotePanel.classList.add("hidden");
-      votingPanel.classList.add("hidden");
-      resultPanel.classList.add("hidden");
-      gameOverPanel.classList.add("hidden");
-
-      gameTitle.textContent = `GeoSpy · Round ${room.round || 1}`;
-
-      if (me && me.alive !== false && me.country) {
-        secretBox.classList.remove("hidden");
-        secretCountry.textContent = "???";
-        secretRoleText.textContent = "Your role and country are hidden from other players. Open the Street View and describe what you see.";
-        if (me.location) {
-          streetViewLink.href = makeStreetViewUrl(me.location);
-          streetViewNote.textContent = `Country name is hidden during the game. This prototype uses temporary test locations; official locations will be loaded from the Vali dataset later.`;
-        }
-      } else {
-        secretBox.classList.add("hidden");
-      }
-
-      if (phase === "describing") {
-        renderDescriptions(room);
-        descriptionsPanel.classList.remove("hidden");
-
-        if (me?.alive !== false && me && !me.description) {
-          describePanel.classList.remove("hidden");
-        }
-      }
-
-      if (phase === "readyVote") {
-        renderDescriptions(room);
-        descriptionsPanel.classList.remove("hidden");
-        readyVotePanel.classList.remove("hidden");
-
-        const agreeCount = alivePlayers.filter(p => p.voteIntent === "agree").length;
-        const refuseCount = alivePlayers.filter(p => p.voteIntent === "refuse").length;
-        const decidedCount = agreeCount + refuseCount;
-        const needed = Math.ceil(alivePlayers.length / 2);
-        const remainingSeconds = getReadyVoteRemainingSeconds(room);
-        const myChoice = me?.voteIntent ? ` Your choice: ${me.voteIntent}.` : " You have not chosen yet.";
-
-        readyVoteTimer.textContent = `${remainingSeconds}s`;
-        readyVoteStatus.textContent = `Agreed: ${agreeCount}. Refused: ${refuseCount}. Decided: ${decidedCount} / ${alivePlayers.length}. Needed to vote: ${needed}.${myChoice}`;
-      }
-
-      if (phase === "voting") {
-        renderDescriptions(room);
-        descriptionsPanel.classList.remove("hidden");
-        votingPanel.classList.remove("hidden");
-        renderVoting(room, me, alivePlayers);
-      }
-
-      if (phase === "roundResult") {
-        renderDescriptions(room);
-        descriptionsPanel.classList.remove("hidden");
-        resultPanel.classList.remove("hidden");
-
-        resultBox.innerHTML = `
-          <strong>${escapeHtml(room.game?.lastResult || "Round ended.")}</strong><br>
-          Continue to the next round unless the game is over.
-        `;
-
-        nextRoundBtn.classList.toggle("hidden", !isHost(room));
-      }
-
-      if (phase === "gameOver") {
-        renderDescriptions(room);
-        descriptionsPanel.classList.remove("hidden");
-        gameOverPanel.classList.remove("hidden");
-
-        const roles = Object.values(room.players || {}).map(p => {
-          const publicRole = p.role === "undercover" ? "spy" : p.role;
-          return `${escapeHtml(p.name)}: ${escapeHtml(publicRole || "?")} · ${escapeHtml(p.country || "?")}`;
-        }).join("<br>");
-
-        gameOverBox.innerHTML = `
-          <strong>${escapeHtml(room.game?.gameOverText || "Game over.")}</strong><br><br>
-          Last result: ${escapeHtml(room.game?.lastResult || "")}<br><br>
-          <strong>Roles revealed:</strong><br>${roles}
-        `;
-      }
+    if (playerCount >= room.maxPlayers) {
+      entryStatus.textContent = "Room is full.";
+      return;
     }
 
-    function renderDescriptions(room) {
-      const players = Object.entries(room.players || {});
-      descriptionList.innerHTML = players.map(([id, p]) => {
-        if (p.alive === false && !p.description) return "";
-        return `
-          <div class="desc">
-            <strong>${escapeHtml(p.name)}${p.alive === false ? " (out)" : ""}:</strong>
-            ${p.description ? escapeHtml(p.description) : "<em>Waiting for description...</em>"}
-          </div>
-        `;
-      }).join("");
-    }
+    const playerId = randomId();
 
-    function renderVoting(room, me, alivePlayers) {
-      const canVote = me && me.alive !== false && !me.vote;
-
-      voteGrid.innerHTML = alivePlayers.map(p => {
-        if (p.id === currentPlayerId) return "";
-        return `
-          <button class="vote-btn" data-vote="${p.id}" ${canVote ? "" : "disabled"}>
-            Vote ${escapeHtml(p.name)}
-          </button>
-        `;
-      }).join("");
-
-      voteGrid.querySelectorAll("[data-vote]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          submitVote(btn.dataset.vote);
-        });
-      });
-
-      const votedCount = alivePlayers.filter(p => p.vote).length;
-      const remainingSeconds = getVotingRemainingSeconds(room);
-
-      votingTimer.textContent = `${remainingSeconds}s`;
-      voteStatus.textContent = `Votes submitted: ${votedCount} / ${alivePlayers.length}. If time runs out, missing votes will be randomly assigned.`;
-    }
-
-    copyInviteBtn.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(roomUrl(currentRoomId));
-      roomStatus.textContent = "Invite link copied.";
+    await set(ref(db, `rooms/${roomId}/players/${playerId}`), {
+      name,
+      joinedAt: Date.now(),
+      alive: true,
+      isHost: false
     });
 
-    createRoomBtn.addEventListener("click", createRoom);
-    joinRoomBtn.addEventListener("click", joinRoom);
-    startGameBtn.addEventListener("click", startGame);
-    resetRoomBtn.addEventListener("click", resetRoom);
-    submitDescriptionBtn.addEventListener("click", submitDescription);
-    agreeVoteBtn.addEventListener("click", () => setVoteIntent("agree"));
-    refuseVoteBtn.addEventListener("click", () => setVoteIntent("refuse"));
-    cancelAgreeVoteBtn.addEventListener("click", () => setVoteIntent(""));
-    nextRoundBtn.addEventListener("click", nextRound);
+    enterRoom(roomId, playerId);
+  }
 
-    const params = new URLSearchParams(window.location.search);
-    const roomFromUrl = params.get("room");
+  function enterRoom(roomId, playerId) {
+    currentRoomId = roomId;
+    currentPlayerId = playerId;
 
-    if (roomFromUrl) {
-      roomInput.value = roomFromUrl.toUpperCase();
-      entryStatus.textContent = "Room code loaded from invite link. Enter your name and join.";
+    sessionStorage.setItem("geospyRoomId", roomId);
+    sessionStorage.setItem("geospyPlayerId", playerId);
+
+    entryCard.classList.add("hidden");
+    roomCard.classList.remove("hidden");
+
+    inviteLink.textContent = roomUrl(roomId);
+
+    if (unsubscribeRoom) unsubscribeRoom();
+
+    const roomRef = ref(db, `rooms/${roomId}`);
+    unsubscribeRoom = onValue(roomRef, (snapshot) => {
+      const room = snapshot.val();
+
+      if (!room) {
+        roomStatus.textContent = "Room not found or deleted.";
+        return;
+      }
+
+      currentRoom = room;
+      renderRoom(room);
+      hostAutoAdvance(room);
+    });
+  }
+
+  async function startGame() {
+    await locationDataPromise;
+
+    if (!currentRoom || !isHost(currentRoom)) return;
+
+    const players = Object.entries(currentRoom.players || {});
+    if (players.length !== currentRoom.maxPlayers) return;
+
+    const availablePairs = getAvailablePairs();
+
+    if (availablePairs.length === 0) {
+      roomStatus.textContent = "No usable country pairs found in the dataset.";
+      return;
     }
 
-    setInterval(() => {
-      if (currentRoom) {
-        renderRoom(currentRoom);
-        hostAutoAdvance(currentRoom);
+    const basePair = pick(availablePairs);
+    const flip = Math.random() < 0.5;
+
+    const civilianCountry = flip ? basePair.b : basePair.a;
+    const undercoverCountry = flip ? basePair.a : basePair.b;
+
+    const shuffledPlayers = shuffle(players.map(([id]) => id));
+    const roleCounts = getRoleCounts(currentRoom.maxPlayers);
+    const undercoverIds = new Set(shuffledPlayers.slice(0, roleCounts.undercover));
+
+    const updates = {};
+    updates[`rooms/${currentRoomId}/status`] = "playing";
+    updates[`rooms/${currentRoomId}/phase`] = "describing";
+    updates[`rooms/${currentRoomId}/round`] = 1;
+    updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/game`] = {
+      pairA: basePair.a,
+      pairB: basePair.b,
+      civilianCountry,
+      undercoverCountry,
+      civilianCountryName: countryLabel(civilianCountry),
+      undercoverCountryName: countryLabel(undercoverCountry),
+      startedAt: Date.now(),
+      lastResult: ""
+    };
+
+    const playerCountryMap = {};
+
+    for (const [playerId] of players) {
+      const isUndercover = undercoverIds.has(playerId);
+      const countryCode = isUndercover ? undercoverCountry : civilianCountry;
+      playerCountryMap[playerId] = countryCode;
+    }
+
+    const assignedLocations = assignUniqueLocations(playerCountryMap);
+
+    for (const [playerId] of players) {
+      const isUndercover = undercoverIds.has(playerId);
+      const countryCode = playerCountryMap[playerId];
+      const loc = assignedLocations[playerId];
+
+      updates[`rooms/${currentRoomId}/players/${playerId}/role`] = isUndercover ? "undercover" : "civilian";
+      updates[`rooms/${currentRoomId}/players/${playerId}/country`] = countryCode;
+      updates[`rooms/${currentRoomId}/players/${playerId}/countryCode`] = countryCode;
+      updates[`rooms/${currentRoomId}/players/${playerId}/location`] = loc;
+      updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
+      updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
+    }
+
+    await update(ref(db), updates);
+  }
+
+  async function submitDescription() {
+    const text = descriptionInput.value.trim();
+    if (!text) return;
+
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/players/${currentPlayerId}/description`]: text
+    });
+
+    descriptionInput.value = "";
+  }
+
+  async function setVoteIntent(value) {
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntent`]: value
+    });
+  }
+
+  async function submitVote(targetPlayerId) {
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/players/${currentPlayerId}/vote`]: targetPlayerId
+    });
+  }
+
+  async function nextRound() {
+    if (!currentRoom || !isHost(currentRoom)) return;
+
+    const alivePlayers = getAlivePlayers(currentRoom);
+    const updates = {};
+    const nextRoundNumber = (currentRoom.round || 1) + 1;
+
+    updates[`rooms/${currentRoomId}/phase`] = "describing";
+    updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
+    updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/game/lastResult`] = "";
+
+    const playerCountryMap = {};
+
+    for (const p of alivePlayers) {
+      playerCountryMap[p.id] = p.country;
+    }
+
+    const assignedLocations = assignUniqueLocations(playerCountryMap);
+
+    for (const p of alivePlayers) {
+      const loc = assignedLocations[p.id];
+
+      updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
+      updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
+      updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
+      updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
+    }
+
+    await update(ref(db), updates);
+  }
+
+  async function resetRoom() {
+    if (!currentRoom || !isHost(currentRoom)) return;
+
+    const updates = {};
+    updates[`rooms/${currentRoomId}/status`] = "lobby";
+    updates[`rooms/${currentRoomId}/phase`] = "lobby";
+    updates[`rooms/${currentRoomId}/round`] = 0;
+    updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/game`] = null;
+
+    for (const [playerId] of Object.entries(currentRoom.players || {})) {
+      updates[`rooms/${currentRoomId}/players/${playerId}/role`] = null;
+      updates[`rooms/${currentRoomId}/players/${playerId}/country`] = null;
+      updates[`rooms/${currentRoomId}/players/${playerId}/countryCode`] = null;
+      updates[`rooms/${currentRoomId}/players/${playerId}/location`] = null;
+      updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
+      updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
+    }
+
+    await update(ref(db), updates);
+  }
+
+  async function beginNewDescriptionRoundAfterRefusal(room, alivePlayers) {
+    const updates = {};
+    const nextRoundNumber = (room.round || 1) + 1;
+
+    updates[`rooms/${currentRoomId}/phase`] = "describing";
+    updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
+    updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/game/lastResult`] = "Not enough players agreed to vote. A new description round begins.";
+
+    const playerCountryMap = {};
+
+    for (const p of alivePlayers) {
+      playerCountryMap[p.id] = p.country;
+    }
+
+    const assignedLocations = assignUniqueLocations(playerCountryMap);
+
+    for (const p of alivePlayers) {
+      const loc = assignedLocations[p.id];
+
+      updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
+      updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
+      updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
+      updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
+    }
+
+    await update(ref(db), updates);
+  }
+
+  async function hostAutoAdvance(room) {
+    if (!isHost(room)) return;
+    if (transitionLock) return;
+
+    const phase = room.phase;
+    const alivePlayers = getAlivePlayers(room);
+
+    if (phase === "describing") {
+      const allDescribed = alivePlayers.length > 0 && alivePlayers.every(p => (p.description || "").trim());
+
+      if (allDescribed) {
+        transitionLock = true;
+        await update(ref(db), {
+          [`rooms/${currentRoomId}/phase`]: "readyVote",
+          [`rooms/${currentRoomId}/readyVoteStartedAt`]: Date.now(),
+          [`rooms/${currentRoomId}/votingStartedAt`]: null
+        });
+        setTimeout(() => transitionLock = false, 500);
       }
-    }, 1000);
-  </script>
+    }
+
+    if (phase === "readyVote") {
+      const agreeCount = alivePlayers.filter(p => p.voteIntent === "agree").length;
+      const decidedCount = alivePlayers.filter(p => p.voteIntent === "agree" || p.voteIntent === "refuse").length;
+      const needed = Math.ceil(alivePlayers.length / 2);
+      const remainingSeconds = getReadyVoteRemainingSeconds(room);
+      const expired = remainingSeconds <= 0;
+
+      if (agreeCount >= needed) {
+        transitionLock = true;
+
+        const updates = {
+          [`rooms/${currentRoomId}/phase`]: "voting",
+          [`rooms/${currentRoomId}/readyVoteStartedAt`]: null,
+          [`rooms/${currentRoomId}/votingStartedAt`]: Date.now()
+        };
+
+        for (const p of alivePlayers) {
+          updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
+        }
+
+        await update(ref(db), updates);
+        setTimeout(() => transitionLock = false, 500);
+        return;
+      }
+
+      if (decidedCount === alivePlayers.length && agreeCount < needed) {
+        transitionLock = true;
+        await beginNewDescriptionRoundAfterRefusal(room, alivePlayers);
+        setTimeout(() => transitionLock = false, 500);
+        return;
+      }
+
+      if (expired) {
+        transitionLock = true;
+
+        const updates = {};
+        for (const p of alivePlayers) {
+          if (p.voteIntent !== "agree" && p.voteIntent !== "refuse") {
+            updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "refuse";
+          }
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await update(ref(db), updates);
+        } else {
+          await beginNewDescriptionRoundAfterRefusal(room, alivePlayers);
+        }
+
+        setTimeout(() => transitionLock = false, 500);
+        return;
+      }
+    }
+
+    if (phase === "voting") {
+      const allVoted = alivePlayers.length > 0 && alivePlayers.every(p => !!p.vote);
+      const remainingSeconds = getVotingRemainingSeconds(room);
+      const expired = remainingSeconds <= 0;
+
+      if (allVoted) {
+        transitionLock = true;
+        await resolveVote(room);
+        setTimeout(() => transitionLock = false, 500);
+        return;
+      }
+
+      if (expired) {
+        transitionLock = true;
+
+        const updates = {};
+
+        for (const p of alivePlayers) {
+          if (!p.vote) {
+            const randomTarget = pickRandomVoteTarget(p.id, alivePlayers);
+            updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = randomTarget;
+          }
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await update(ref(db), updates);
+        } else {
+          await resolveVote(room);
+        }
+
+        setTimeout(() => transitionLock = false, 500);
+        return;
+      }
+    }
+  }
+
+  async function resolveVote(room) {
+    const alivePlayers = getAlivePlayers(room);
+    const voteCounts = {};
+
+    for (const p of alivePlayers) {
+      if (!p.vote) continue;
+      voteCounts[p.vote] = (voteCounts[p.vote] || 0) + 1;
+    }
+
+    const entries = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
+    let eliminatedId = null;
+    let resultText = "";
+
+    if (entries.length === 0) {
+      resultText = "No votes were submitted. No one was eliminated.";
+    } else {
+      const topVotes = entries[0][1];
+      const tied = entries.filter(([_, count]) => count === topVotes);
+
+      if (tied.length > 1) {
+        const tiedNames = tied.map(([id]) => room.players[id]?.name || "Unknown").join(", ");
+        resultText = `Tie vote between ${tiedNames}. No one was eliminated.`;
+      } else {
+        eliminatedId = entries[0][0];
+        const eliminated = room.players[eliminatedId];
+        resultText = `${eliminated?.name || "A player"} was voted out.`;
+      }
+    }
+
+    const updates = {};
+    if (eliminatedId) {
+      updates[`rooms/${currentRoomId}/players/${eliminatedId}/alive`] = false;
+    }
+
+    const projectedPlayers = JSON.parse(JSON.stringify(room.players || {}));
+    if (eliminatedId && projectedPlayers[eliminatedId]) {
+      projectedPlayers[eliminatedId].alive = false;
+    }
+
+    const win = checkWin(projectedPlayers);
+
+    if (win.gameOver) {
+      updates[`rooms/${currentRoomId}/phase`] = "gameOver";
+      updates[`rooms/${currentRoomId}/status`] = "finished";
+      updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+      updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+      updates[`rooms/${currentRoomId}/game/winner`] = win.winner;
+      updates[`rooms/${currentRoomId}/game/lastResult`] = resultText;
+      updates[`rooms/${currentRoomId}/game/gameOverText`] = win.text;
+    } else {
+      updates[`rooms/${currentRoomId}/phase`] = "roundResult";
+      updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+      updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+      updates[`rooms/${currentRoomId}/game/lastResult`] = resultText;
+    }
+
+    await update(ref(db), updates);
+  }
+
+  function checkWin(playersObj) {
+    const alive = Object.values(playersObj).filter(p => p.alive !== false);
+    const undercoverAlive = alive.filter(p => p.role === "undercover").length;
+    const civilianAlive = alive.filter(p => p.role === "civilian").length;
+
+    if (undercoverAlive === 0) {
+      return {
+        gameOver: true,
+        winner: "civilians",
+        text: "All spies were voted out. Civilians win."
+      };
+    }
+
+    if (undercoverAlive >= civilianAlive) {
+      return {
+        gameOver: true,
+        winner: "spies",
+        text: "Spies are equal to or greater than civilians. Spies win."
+      };
+    }
+
+    return { gameOver: false };
+  }
+
+  function renderRoom(room) {
+    const me = getMe(room);
+    const players = Object.entries(room.players || {});
+    const alivePlayers = getAlivePlayers(room);
+
+    roomCodePill.textContent = `Room: ${currentRoomId}`;
+    phasePill.textContent = `Phase: ${room.phase || "lobby"}`;
+    roundPill.textContent = `Round: ${room.round || 0}`;
+
+    const playerCount = players.length;
+    roomStatus.textContent = `Players: ${playerCount} / ${room.maxPlayers}.`;
+
+    startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby"));
+    startGameBtn.disabled = !(playerCount === room.maxPlayers);
+    resetRoomBtn.classList.toggle("hidden", !isHost(room));
+
+    playersList.innerHTML = players.map(([id, p]) => {
+      const hostMark = id === room.hostId ? " · Host" : "";
+      const youMark = id === currentPlayerId ? " · You" : "";
+      const deadMark = p.alive === false ? " · Out" : "";
+      const intentMark = p.voteIntent === "agree" ? "Agreed" : p.voteIntent === "refuse" ? "Refused" : "";
+      const cls = p.alive === false ? "player dead" : "player";
+
+      return `
+        <div class="${cls}">
+          <span><strong>${escapeHtml(p.name)}</strong>${hostMark}${youMark}${deadMark}</span>
+          <span>${p.description ? "Described" : ""} ${intentMark} ${p.vote ? "Voted" : ""}</span>
+        </div>
+      `;
+    }).join("");
+
+    if (room.status === "lobby") {
+      gameCard.classList.add("hidden");
+      return;
+    }
+
+    gameCard.classList.remove("hidden");
+    renderGame(room, me, alivePlayers);
+  }
+
+  function renderGame(room, me, alivePlayers) {
+    const phase = room.phase;
+
+    describePanel.classList.add("hidden");
+    descriptionsPanel.classList.add("hidden");
+    readyVotePanel.classList.add("hidden");
+    votingPanel.classList.add("hidden");
+    resultPanel.classList.add("hidden");
+    gameOverPanel.classList.add("hidden");
+
+    gameTitle.textContent = `GeoSpy · Round ${room.round || 1}`;
+
+    if (me && me.alive !== false && me.country) {
+      secretBox.classList.remove("hidden");
+      secretCountry.textContent = "???";
+      secretRoleText.textContent = "Your role and country are hidden from other players. Open the location and describe what you see.";
+
+      if (me.location) {
+        streetViewLink.href = makeStreetViewUrl(me.location);
+        streetViewLink.textContent = "Open temporary Street View";
+
+        streetViewNote.innerHTML = `
+          Country is hidden in-game. This version now uses the official GeoSpy JSON dataset.
+          Temporary warning: direct Google Street View may still reveal location UI. Screenshot mode is the next step.
+        `;
+      }
+    } else {
+      secretBox.classList.add("hidden");
+    }
+
+    if (phase === "describing") {
+      renderDescriptions(room);
+      descriptionsPanel.classList.remove("hidden");
+
+      if (me?.alive !== false && me && !me.description) {
+        describePanel.classList.remove("hidden");
+      }
+    }
+
+    if (phase === "readyVote") {
+      renderDescriptions(room);
+      descriptionsPanel.classList.remove("hidden");
+      readyVotePanel.classList.remove("hidden");
+
+      const agreeCount = alivePlayers.filter(p => p.voteIntent === "agree").length;
+      const refuseCount = alivePlayers.filter(p => p.voteIntent === "refuse").length;
+      const decidedCount = agreeCount + refuseCount;
+      const needed = Math.ceil(alivePlayers.length / 2);
+      const remainingSeconds = getReadyVoteRemainingSeconds(room);
+      const myChoice = me?.voteIntent ? ` Your choice: ${me.voteIntent}.` : " You have not chosen yet.";
+
+      readyVoteTimer.textContent = `${remainingSeconds}s`;
+      readyVoteStatus.textContent = `Agreed: ${agreeCount}. Refused: ${refuseCount}. Decided: ${decidedCount} / ${alivePlayers.length}. Needed to vote: ${needed}.${myChoice}`;
+    }
+
+    if (phase === "voting") {
+      renderDescriptions(room);
+      descriptionsPanel.classList.remove("hidden");
+      votingPanel.classList.remove("hidden");
+      renderVoting(room, me, alivePlayers);
+    }
+
+    if (phase === "roundResult") {
+      renderDescriptions(room);
+      descriptionsPanel.classList.remove("hidden");
+      resultPanel.classList.remove("hidden");
+
+      resultBox.innerHTML = `
+        <strong>${escapeHtml(room.game?.lastResult || "Round ended.")}</strong><br>
+        Continue to the next round unless the game is over.
+      `;
+
+      nextRoundBtn.classList.toggle("hidden", !isHost(room));
+    }
+
+    if (phase === "gameOver") {
+      renderDescriptions(room);
+      descriptionsPanel.classList.remove("hidden");
+      gameOverPanel.classList.remove("hidden");
+
+      const roles = Object.values(room.players || {}).map(p => {
+        const publicRole = p.role === "undercover" ? "spy" : p.role;
+        return `${escapeHtml(p.name)}: ${escapeHtml(publicRole || "?")} · ${escapeHtml(countryLabel(p.country) || "?")}`;
+      }).join("<br>");
+
+      gameOverBox.innerHTML = `
+        <strong>${escapeHtml(room.game?.gameOverText || "Game over.")}</strong><br><br>
+        Last result: ${escapeHtml(room.game?.lastResult || "")}<br><br>
+        <strong>Roles revealed:</strong><br>${roles}
+      `;
+    }
+  }
+
+  function renderDescriptions(room) {
+    const players = Object.entries(room.players || {});
+
+    descriptionList.innerHTML = players.map(([id, p]) => {
+      if (p.alive === false && !p.description) return "";
+
+      return `
+        <div class="desc">
+          <strong>${escapeHtml(p.name)}${p.alive === false ? " (out)" : ""}:</strong>
+          ${p.description ? escapeHtml(p.description) : "<em>Waiting for description...</em>"}
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderVoting(room, me, alivePlayers) {
+    const canVote = me && me.alive !== false && !me.vote;
+
+    voteGrid.innerHTML = alivePlayers.map(p => {
+      if (p.id === currentPlayerId) return "";
+
+      return `
+        <button class="vote-btn" data-vote="${p.id}" ${canVote ? "" : "disabled"}>
+          Vote ${escapeHtml(p.name)}
+        </button>
+      `;
+    }).join("");
+
+    voteGrid.querySelectorAll("[data-vote]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        submitVote(btn.dataset.vote);
+      });
+    });
+
+    const votedCount = alivePlayers.filter(p => p.vote).length;
+    const remainingSeconds = getVotingRemainingSeconds(room);
+
+    votingTimer.textContent = `${remainingSeconds}s`;
+    voteStatus.textContent = `Votes submitted: ${votedCount} / ${alivePlayers.length}. If time runs out, missing votes will be randomly assigned.`;
+  }
+
+  copyInviteBtn.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(roomUrl(currentRoomId));
+    roomStatus.textContent = "Invite link copied.";
+  });
+
+  createRoomBtn.addEventListener("click", createRoom);
+  joinRoomBtn.addEventListener("click", joinRoom);
+  startGameBtn.addEventListener("click", startGame);
+  resetRoomBtn.addEventListener("click", resetRoom);
+  submitDescriptionBtn.addEventListener("click", submitDescription);
+  agreeVoteBtn.addEventListener("click", () => setVoteIntent("agree"));
+  refuseVoteBtn.addEventListener("click", () => setVoteIntent("refuse"));
+  cancelAgreeVoteBtn.addEventListener("click", () => setVoteIntent(""));
+  nextRoundBtn.addEventListener("click", nextRound);
+
+  createRoomBtn.disabled = true;
+  joinRoomBtn.disabled = true;
+
+  const params = new URLSearchParams(window.location.search);
+  const roomFromUrl = params.get("room");
+
+  if (roomFromUrl) {
+    roomInput.value = roomFromUrl.toUpperCase();
+    entryStatus.textContent = "Room code loaded from invite link. Loading dataset...";
+  }
+
+  setInterval(() => {
+    if (currentRoom) {
+      renderRoom(currentRoom);
+      hostAutoAdvance(currentRoom);
+    }
+  }, 1000);
+</script>
 </body>
 </html>
