@@ -284,6 +284,12 @@
       color: var(--dark);
     }
 
+    .null-desc {
+      color: var(--muted);
+      font-style: italic;
+      opacity: 0.62;
+    }
+
     .vote-grid {
       display: grid;
       gap: 10px;
@@ -552,6 +558,7 @@
   const db = getDatabase(app);
 
   const DESCRIPTION_SECONDS = 60;
+  const PRIVATE_CHAT_REQUEST_SECONDS = 15;
   const PRIVATE_CHAT_SECONDS = 90;
   const READY_VOTE_SECONDS = 60;
   const VOTING_SECONDS = 60;
@@ -1041,6 +1048,14 @@ const playersList = document.getElementById("playersList");
     if (!chat || chat.status !== "active" || !chat.activeStartedAt) return PRIVATE_CHAT_SECONDS;
     const elapsedMs = Date.now() - chat.activeStartedAt;
     const remaining = PRIVATE_CHAT_SECONDS - Math.floor(elapsedMs / 1000);
+    return Math.max(0, remaining);
+  }
+
+  function getPrivateChatRequestRemainingSeconds(room) {
+    const chat = room.privateChat;
+    if (!chat || chat.status !== "pending" || !chat.requestedAt) return PRIVATE_CHAT_REQUEST_SECONDS;
+    const elapsedMs = Date.now() - chat.requestedAt;
+    const remaining = PRIVATE_CHAT_REQUEST_SECONDS - Math.floor(elapsedMs / 1000);
     return Math.max(0, remaining);
   }
 
@@ -1582,6 +1597,39 @@ const playersList = document.getElementById("playersList");
     });
   }
 
+
+  async function autoRefusePrivateChat(room) {
+    const chat = room.privateChat;
+    if (!chat) return;
+
+    const resumedStartedAt = descriptionStartedAtFromRemainingMs(chat.pausedDescriptionRemainingMs);
+
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/privateChat`]: null,
+      [`rooms/${currentRoomId}/descriptionStartedAt`]: resumedStartedAt
+    });
+  }
+
+  async function advanceToNextSpeakerOrVote(room, alivePlayers, speakerState) {
+    const nextIndex = speakerState.index + 1;
+
+    if (nextIndex >= speakerState.activeOrder.length) {
+      await update(ref(db), {
+        [`rooms/${currentRoomId}/phase`]: "readyVote",
+        [`rooms/${currentRoomId}/readyVoteStartedAt`]: Date.now(),
+        [`rooms/${currentRoomId}/votingStartedAt`]: null,
+        [`rooms/${currentRoomId}/descriptionStartedAt`]: null,
+        [`rooms/${currentRoomId}/privateChat`]: null
+      });
+    } else {
+      await update(ref(db), {
+        [`rooms/${currentRoomId}/currentSpeakerIndex`]: nextIndex,
+        [`rooms/${currentRoomId}/descriptionStartedAt`]: Date.now(),
+        [`rooms/${currentRoomId}/privateChat`]: null
+      });
+    }
+  }
+
   async function hostAutoAdvance(room) {
     if (!isHost(room)) return;
     if (transitionLock) return;
@@ -1594,6 +1642,12 @@ const playersList = document.getElementById("playersList");
       const speakerState = getCurrentSpeaker(room, alivePlayers);
 
       if (room.privateChat) {
+        if (room.privateChat.status === "pending" && getPrivateChatRequestRemainingSeconds(room) <= 0) {
+          transitionLock = true;
+          await autoRefusePrivateChat(room);
+          setTimeout(() => transitionLock = false, 500);
+        }
+
         if (room.privateChat.status === "active" && getPrivateChatRemainingSeconds(room) <= 0) {
           transitionLock = true;
           const resumedStartedAt = descriptionStartedAtFromRemainingMs(room.privateChat.pausedDescriptionRemainingMs);
@@ -1603,6 +1657,7 @@ const playersList = document.getElementById("playersList");
           });
           setTimeout(() => transitionLock = false, 500);
         }
+
         return;
       }
 
@@ -1634,30 +1689,19 @@ const playersList = document.getElementById("playersList");
 
       if (speakerState.speaker && (speakerState.speaker.description || "").trim()) {
         transitionLock = true;
-
-        const nextIndex = speakerState.index + 1;
-
-        if (nextIndex >= speakerState.activeOrder.length) {
-          await update(ref(db), {
-            [`rooms/${currentRoomId}/phase`]: "readyVote",
-            [`rooms/${currentRoomId}/readyVoteStartedAt`]: Date.now(),
-            [`rooms/${currentRoomId}/votingStartedAt`]: null,
-            [`rooms/${currentRoomId}/descriptionStartedAt`]: null
-          });
-        } else {
-          await update(ref(db), {
-            [`rooms/${currentRoomId}/currentSpeakerIndex`]: nextIndex,
-            [`rooms/${currentRoomId}/descriptionStartedAt`]: Date.now()
-          });
-        }
-
+        await advanceToNextSpeakerOrVote(room, alivePlayers, speakerState);
         setTimeout(() => transitionLock = false, 500);
         return;
       }
 
       if (speakerState.speaker && expired) {
         transitionLock = true;
-        await endGameByDescriptionTimeout(room, speakerState.speakerId);
+
+        await update(ref(db), {
+          [`rooms/${currentRoomId}/players/${speakerState.speakerId}/description`]: "__NULL_TIMEOUT__"
+        });
+
+        await advanceToNextSpeakerOrVote(room, alivePlayers, speakerState);
         setTimeout(() => transitionLock = false, 500);
         return;
       }
@@ -1926,7 +1970,9 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       speakingStatusBox.classList.remove("hidden");
 
       const speakerState = getCurrentSpeaker(room, alivePlayers);
-      const remainingSeconds = getDescriptionRemainingSeconds(room);
+      const remainingSeconds = room.privateChat
+        ? Math.ceil(Number(room.privateChat.pausedDescriptionRemainingMs || 0) / 1000)
+        : getDescriptionRemainingSeconds(room);
       const speakerName = speakerState.speaker?.name || "Waiting...";
       const activeOrderNames = speakerState.activeOrder
         .map((id, index) => {
@@ -2049,10 +2095,12 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     const targetName = room.players?.[chat.targetId]?.name || "Unknown";
 
     if (chat.status === "pending") {
+      const requestRemainingSeconds = getPrivateChatRequestRemainingSeconds(room);
+
       if (isParticipant) {
-        privateChatStatus.textContent = `${requesterName} requested a private chat with ${targetName}. Description timer is paused.`;
+        privateChatStatus.textContent = `${requesterName} requested a private chat with ${targetName}. Description timer is paused. Response time left: ${requestRemainingSeconds}s.`;
       } else {
-        privateChatStatus.textContent = "A private chat request is pending. Description timer is paused.";
+        privateChatStatus.textContent = `A private chat request is pending. Description timer is paused. Response time left: ${requestRemainingSeconds}s.`;
       }
 
       if (chat.targetId === currentPlayerId) {
@@ -2093,10 +2141,17 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     descriptionList.innerHTML = players.map(([id, p]) => {
       if (p.alive === false && !p.description) return "";
 
+      const isNullTimeout = p.description === "__NULL_TIMEOUT__";
+      const descriptionHtml = isNullTimeout
+        ? `<span class="null-desc">NULL</span>`
+        : p.description
+          ? escapeHtml(p.description)
+          : "<em>Waiting for description...</em>";
+
       return `
         <div class="desc">
           <strong>${escapeHtml(p.name)}${p.alive === false ? " (out)" : ""}:</strong>
-          ${p.description ? escapeHtml(p.description) : "<em>Waiting for description...</em>"}
+          ${descriptionHtml}
         </div>
       `;
     }).join("");
