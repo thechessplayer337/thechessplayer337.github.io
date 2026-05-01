@@ -441,16 +441,20 @@
         <div id="readyVotePanel" class="hidden">
           <h3>
             Ready to vote?
-            <span class="timer" id="readyVoteTimer">10s</span>
+            <span class="timer" id="readyVoteTimer">60s</span>
           </h3>
           <p class="status">
-            Choose within 10 seconds. If you do not choose in time, your choice will automatically count as Refuse.
-            If at least half of the living players agree, voting begins; otherwise, a new description round begins.
+            First choose Agree or Refuse, then press Confirm. Only confirmed choices count.
+            Once at least half of the living players have confirmed, the game checks whether confirmed Agree is at least half.
+            If yes, voting begins; otherwise, a new description round begins. If time runs out, unconfirmed players count as Refuse.
           </p>
           <div class="row">
             <button id="agreeVoteBtn">Agree to Vote</button>
             <button class="secondary" id="refuseVoteBtn">Refuse to Vote</button>
-            <button class="secondary" id="cancelAgreeVoteBtn">Cancel Choice</button>
+          </div>
+          <div class="row">
+            <button id="confirmVoteChoiceBtn">Confirm</button>
+            <button class="secondary" id="cancelVoteChoiceBtn">Cancel</button>
           </div>
           <p class="status" id="readyVoteStatus"></p>
         </div>
@@ -757,7 +761,8 @@
   const readyVoteTimer = document.getElementById("readyVoteTimer");
   const agreeVoteBtn = document.getElementById("agreeVoteBtn");
   const refuseVoteBtn = document.getElementById("refuseVoteBtn");
-  const cancelAgreeVoteBtn = document.getElementById("cancelAgreeVoteBtn");
+  const confirmVoteChoiceBtn = document.getElementById("confirmVoteChoiceBtn");
+  const cancelVoteChoiceBtn = document.getElementById("cancelVoteChoiceBtn");
   const readyVoteStatus = document.getElementById("readyVoteStatus");
 
   const votingPanel = document.getElementById("votingPanel");
@@ -1145,6 +1150,7 @@
       updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
       updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
       updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
     }
 
@@ -1164,7 +1170,29 @@
 
   async function setVoteIntent(value) {
     await update(ref(db), {
-      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntent`]: value
+      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntent`]: value,
+      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntentConfirmed`]: false
+    });
+  }
+
+  async function confirmVoteIntent() {
+    const me = getMe(currentRoom);
+    if (!me || me.alive === false) return;
+
+    if (me.voteIntent !== "agree" && me.voteIntent !== "refuse") {
+      readyVoteStatus.textContent = "Choose Agree or Refuse before confirming.";
+      return;
+    }
+
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntentConfirmed`]: true
+    });
+  }
+
+  async function cancelVoteIntent() {
+    await update(ref(db), {
+      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntent`]: "",
+      [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntentConfirmed`]: false
     });
   }
 
@@ -1200,6 +1228,7 @@
 
       updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
       updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
+      updates[`rooms/${currentRoomId}/players/${p.id}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
       updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
     }
@@ -1226,6 +1255,7 @@
       updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
       updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
       updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
     }
 
@@ -1240,7 +1270,7 @@
     updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
-    updates[`rooms/${currentRoomId}/game/lastResult`] = "Not enough players agreed to vote. A new description round begins.";
+    updates[`rooms/${currentRoomId}/game/lastResult`] = "Not enough confirmed Agree votes. A new description round begins.";
 
     const playerCountryMap = {};
 
@@ -1255,6 +1285,7 @@
 
       updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
       updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
+      updates[`rooms/${currentRoomId}/players/${p.id}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
       updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
     }
@@ -1284,33 +1315,34 @@
     }
 
     if (phase === "readyVote") {
-      const agreeCount = alivePlayers.filter(p => p.voteIntent === "agree").length;
-      const decidedCount = alivePlayers.filter(p => p.voteIntent === "agree" || p.voteIntent === "refuse").length;
       const needed = Math.ceil(alivePlayers.length / 2);
+
+      const confirmedPlayers = alivePlayers.filter(p => p.voteIntentConfirmed === true);
+      const confirmedCount = confirmedPlayers.length;
+      const agreeCount = confirmedPlayers.filter(p => p.voteIntent === "agree").length;
+
       const remainingSeconds = getReadyVoteRemainingSeconds(room);
       const expired = remainingSeconds <= 0;
 
-      if (agreeCount >= needed) {
+      if (confirmedCount >= needed) {
         transitionLock = true;
 
-        const updates = {
-          [`rooms/${currentRoomId}/phase`]: "voting",
-          [`rooms/${currentRoomId}/readyVoteStartedAt`]: null,
-          [`rooms/${currentRoomId}/votingStartedAt`]: Date.now()
-        };
+        if (agreeCount >= needed) {
+          const updates = {
+            [`rooms/${currentRoomId}/phase`]: "voting",
+            [`rooms/${currentRoomId}/readyVoteStartedAt`]: null,
+            [`rooms/${currentRoomId}/votingStartedAt`]: Date.now()
+          };
 
-        for (const p of alivePlayers) {
-          updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
+          for (const p of alivePlayers) {
+            updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
+          }
+
+          await update(ref(db), updates);
+        } else {
+          await beginNewDescriptionRoundAfterRefusal(room, alivePlayers);
         }
 
-        await update(ref(db), updates);
-        setTimeout(() => transitionLock = false, 500);
-        return;
-      }
-
-      if (decidedCount === alivePlayers.length && agreeCount < needed) {
-        transitionLock = true;
-        await beginNewDescriptionRoundAfterRefusal(room, alivePlayers);
         setTimeout(() => transitionLock = false, 500);
         return;
       }
@@ -1319,9 +1351,11 @@
         transitionLock = true;
 
         const updates = {};
+
         for (const p of alivePlayers) {
-          if (p.voteIntent !== "agree" && p.voteIntent !== "refuse") {
+          if (p.voteIntentConfirmed !== true) {
             updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "refuse";
+            updates[`rooms/${currentRoomId}/players/${p.id}/voteIntentConfirmed`] = true;
           }
         }
 
@@ -1475,7 +1509,11 @@
       const hostMark = id === room.hostId ? " · Host" : "";
       const youMark = id === currentPlayerId ? " · You" : "";
       const deadMark = p.alive === false ? " · Out" : "";
-      const intentMark = p.voteIntent === "agree" ? "Agreed" : p.voteIntent === "refuse" ? "Refused" : "";
+
+      let intentMark = "";
+      if (p.voteIntent === "agree") intentMark = p.voteIntentConfirmed ? "Agreed ✓" : "Agree?";
+      if (p.voteIntent === "refuse") intentMark = p.voteIntentConfirmed ? "Refused ✓" : "Refuse?";
+
       const cls = p.alive === false ? "player dead" : "player";
 
       return `
@@ -1539,15 +1577,28 @@
       descriptionsPanel.classList.remove("hidden");
       readyVotePanel.classList.remove("hidden");
 
-      const agreeCount = alivePlayers.filter(p => p.voteIntent === "agree").length;
-      const refuseCount = alivePlayers.filter(p => p.voteIntent === "refuse").length;
-      const decidedCount = agreeCount + refuseCount;
       const needed = Math.ceil(alivePlayers.length / 2);
+      const confirmedPlayers = alivePlayers.filter(p => p.voteIntentConfirmed === true);
+      const confirmedCount = confirmedPlayers.length;
+      const agreeCount = confirmedPlayers.filter(p => p.voteIntent === "agree").length;
+      const refuseCount = confirmedPlayers.filter(p => p.voteIntent === "refuse").length;
       const remainingSeconds = getReadyVoteRemainingSeconds(room);
-      const myChoice = me?.voteIntent ? ` Your choice: ${me.voteIntent}.` : " You have not chosen yet.";
+
+      let myChoice = " You have not chosen yet.";
+      if (me?.voteIntent === "agree") myChoice = " Your current choice: Agree.";
+      if (me?.voteIntent === "refuse") myChoice = " Your current choice: Refuse.";
+      if (me?.voteIntentConfirmed) myChoice += " Confirmed.";
 
       readyVoteTimer.textContent = `${remainingSeconds}s`;
-      readyVoteStatus.textContent = `Agreed: ${agreeCount}. Refused: ${refuseCount}. Decided: ${decidedCount} / ${alivePlayers.length}. Needed to vote: ${needed}.${myChoice}`;
+      readyVoteStatus.textContent = `Confirmed: ${confirmedCount} / ${alivePlayers.length}. Confirm needed: ${needed}. Confirmed Agree: ${agreeCount}. Confirmed Refuse: ${refuseCount}. Agree needed to vote: ${needed}.${myChoice}`;
+
+      const hasChoice = me?.voteIntent === "agree" || me?.voteIntent === "refuse";
+      const confirmed = me?.voteIntentConfirmed === true;
+
+      agreeVoteBtn.disabled = confirmed;
+      refuseVoteBtn.disabled = confirmed;
+      confirmVoteChoiceBtn.disabled = !hasChoice || confirmed;
+      cancelVoteChoiceBtn.disabled = false;
     }
 
     if (phase === "voting") {
@@ -1641,7 +1692,8 @@
   submitDescriptionBtn.addEventListener("click", submitDescription);
   agreeVoteBtn.addEventListener("click", () => setVoteIntent("agree"));
   refuseVoteBtn.addEventListener("click", () => setVoteIntent("refuse"));
-  cancelAgreeVoteBtn.addEventListener("click", () => setVoteIntent(""));
+  confirmVoteChoiceBtn.addEventListener("click", confirmVoteIntent);
+  cancelVoteChoiceBtn.addEventListener("click", cancelVoteIntent);
   nextRoundBtn.addEventListener("click", nextRound);
 
   createRoomBtn.disabled = true;
