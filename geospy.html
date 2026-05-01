@@ -465,9 +465,15 @@
             <span class="timer" id="votingTimer">60s</span>
           </h3>
           <p class="status">
-            Choose one living player. If time runs out, missing votes will be randomly assigned to another living player.
+            Choose one living player, then press Confirm Vote. If time runs out, missing votes will be randomly assigned to another living player.
           </p>
           <div class="vote-grid" id="voteGrid"></div>
+
+          <div class="row">
+            <button id="confirmPlayerVoteBtn">Confirm Vote</button>
+            <button class="secondary" id="cancelPlayerVoteBtn">Cancel</button>
+          </div>
+
           <p class="status" id="voteStatus"></p>
         </div>
 
@@ -768,6 +774,8 @@
   const votingPanel = document.getElementById("votingPanel");
   const votingTimer = document.getElementById("votingTimer");
   const voteGrid = document.getElementById("voteGrid");
+  const confirmPlayerVoteBtn = document.getElementById("confirmPlayerVoteBtn");
+  const cancelPlayerVoteBtn = document.getElementById("cancelPlayerVoteBtn");
   const voteStatus = document.getElementById("voteStatus");
 
   const resultPanel = document.getElementById("resultPanel");
@@ -782,6 +790,7 @@
   let currentRoom = null;
   let unsubscribeRoom = null;
   let transitionLock = false;
+  let pendingVoteTarget = "";
 
   async function loadLocationData() {
     try {
@@ -1202,6 +1211,30 @@
     });
   }
 
+  function selectPendingVote(targetPlayerId) {
+    pendingVoteTarget = targetPlayerId;
+    if (currentRoom) renderRoom(currentRoom);
+  }
+
+  async function confirmPlayerVote() {
+    const me = getMe(currentRoom);
+    if (!me || me.alive === false) return;
+    if (me.vote) return;
+
+    if (!pendingVoteTarget) {
+      voteStatus.textContent = "Choose a player before confirming your vote.";
+      return;
+    }
+
+    await submitVote(pendingVoteTarget);
+    pendingVoteTarget = "";
+  }
+
+  function cancelPlayerVote() {
+    pendingVoteTarget = "";
+    if (currentRoom) renderRoom(currentRoom);
+  }
+
   async function nextRound() {
     if (!currentRoom || !isHost(currentRoom)) return;
 
@@ -1536,6 +1569,10 @@
   function renderGame(room, me, alivePlayers) {
     const phase = room.phase;
 
+    if (phase !== "voting") {
+      pendingVoteTarget = "";
+    }
+
     describePanel.classList.add("hidden");
     descriptionsPanel.classList.add("hidden");
     readyVotePanel.classList.add("hidden");
@@ -1655,13 +1692,20 @@
   }
 
   function renderVoting(room, me, alivePlayers) {
-    const canVote = me && me.alive !== false && !me.vote;
+    const alreadyVoted = !!me?.vote;
+    const canChoose = me && me.alive !== false && !alreadyVoted;
+
+    if (alreadyVoted) {
+      pendingVoteTarget = "";
+    }
 
     voteGrid.innerHTML = alivePlayers.map(p => {
       if (p.id === currentPlayerId) return "";
 
+      const selectedClass = pendingVoteTarget === p.id ? " selected" : "";
+
       return `
-        <button class="vote-btn" data-vote="${p.id}" ${canVote ? "" : "disabled"}>
+        <button class="vote-btn${selectedClass}" data-vote="${p.id}" ${canChoose ? "" : "disabled"}>
           Vote ${escapeHtml(p.name)}
         </button>
       `;
@@ -1669,7 +1713,7 @@
 
     voteGrid.querySelectorAll("[data-vote]").forEach(btn => {
       btn.addEventListener("click", () => {
-        submitVote(btn.dataset.vote);
+        selectPendingVote(btn.dataset.vote);
       });
     });
 
@@ -1677,7 +1721,19 @@
     const remainingSeconds = getVotingRemainingSeconds(room);
 
     votingTimer.textContent = `${remainingSeconds}s`;
-    voteStatus.textContent = `Votes submitted: ${votedCount} / ${alivePlayers.length}. If time runs out, missing votes will be randomly assigned.`;
+
+    if (alreadyVoted) {
+      const votedName = room.players?.[me.vote]?.name || "Unknown";
+      voteStatus.textContent = `Your vote has been confirmed: ${votedName}. Votes submitted: ${votedCount} / ${alivePlayers.length}.`;
+    } else if (pendingVoteTarget) {
+      const selectedName = room.players?.[pendingVoteTarget]?.name || "Unknown";
+      voteStatus.textContent = `Selected: ${selectedName}. Press Confirm Vote to submit, or Cancel to choose again. Votes submitted: ${votedCount} / ${alivePlayers.length}.`;
+    } else {
+      voteStatus.textContent = `Choose a player, then press Confirm Vote. Votes submitted: ${votedCount} / ${alivePlayers.length}. If time runs out, missing votes will be randomly assigned.`;
+    }
+
+    confirmPlayerVoteBtn.disabled = !canChoose || !pendingVoteTarget;
+    cancelPlayerVoteBtn.disabled = !canChoose || !pendingVoteTarget;
   }
 
   copyInviteBtn.addEventListener("click", async () => {
@@ -1694,6 +1750,8 @@
   refuseVoteBtn.addEventListener("click", () => setVoteIntent("refuse"));
   confirmVoteChoiceBtn.addEventListener("click", confirmVoteIntent);
   cancelVoteChoiceBtn.addEventListener("click", cancelVoteIntent);
+  confirmPlayerVoteBtn.addEventListener("click", confirmPlayerVote);
+  cancelPlayerVoteBtn.addEventListener("click", cancelPlayerVote);
   nextRoundBtn.addEventListener("click", nextRound);
 
   createRoomBtn.disabled = true;
