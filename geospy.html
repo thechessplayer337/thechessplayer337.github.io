@@ -397,6 +397,83 @@
       margin-left: 6px;
     }
 
+
+    .feedback-launcher {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 50;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--dark);
+      box-shadow: var(--shadow);
+      padding: 10px 14px;
+      font-size: 0.86rem;
+    }
+
+    .feedback-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(21, 21, 21, 0.34);
+    }
+
+    .feedback-box {
+      width: min(520px, 100%);
+      max-height: min(760px, calc(100vh - 36px));
+      overflow: auto;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      box-shadow: 0 24px 70px rgba(21, 21, 21, 0.22);
+      padding: 22px;
+    }
+
+    .feedback-box h2 {
+      margin-bottom: 8px;
+    }
+
+    .feedback-meta {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.58);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .feedback-success {
+      color: var(--good);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+
+    .feedback-error {
+      color: var(--bad);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .feedback-launcher {
+        right: 12px;
+        bottom: 12px;
+        padding: 9px 12px;
+      }
+
+      .feedback-box {
+        border-radius: 22px;
+        padding: 18px;
+      }
+    }
+
     @media (max-width: 880px) {
       .grid {
         grid-template-columns: 1fr;
@@ -481,6 +558,9 @@
           <a id="streetViewLink" class="street-link" href="#" target="_blank" rel="noopener noreferrer">
             Open full screenshot
           </a>
+          <button class="secondary" id="reportCurrentImageBtn" style="margin-left: 8px; border-color: rgba(255,255,255,0.4); color: white;">
+            Report this image
+          </button>
           <p class="small-note" id="streetViewNote"></p>
         </div>
 
@@ -589,6 +669,42 @@
         </div>
       </section>
     </section>
+
+    <button class="feedback-launcher" id="feedbackOpenBtn">Feedback</button>
+
+    <div class="feedback-modal hidden" id="feedbackModal">
+      <div class="feedback-box">
+        <h2>Feedback / Report Issue</h2>
+        <p class="status">
+          Use this form to report a bad image, wrong country, unfair pair, game-flow bug, or general suggestion.
+        </p>
+
+        <div class="feedback-meta" id="feedbackMeta">
+          Current game information will be attached automatically when available.
+        </div>
+
+        <label for="feedbackTypeInput">Issue type</label>
+        <select id="feedbackTypeInput">
+          <option value="bad_image">Bad / blurry image</option>
+          <option value="broken_image">Black or broken image</option>
+          <option value="wrong_country">Wrong country / wrong screenshot</option>
+          <option value="unfair_pair">Unfair or questionable country pair</option>
+          <option value="game_bug">Bug in game flow</option>
+          <option value="general_suggestion">General suggestion</option>
+        </select>
+
+        <label for="feedbackMessageInput">Details</label>
+        <textarea id="feedbackMessageInput" placeholder="Briefly describe the issue. If this is about an image, mention what looks wrong."></textarea>
+
+        <div class="row">
+          <button id="feedbackSubmitBtn">Submit Feedback</button>
+          <button class="secondary" id="feedbackCancelBtn">Cancel</button>
+        </div>
+
+        <p id="feedbackStatus" class="status"></p>
+      </div>
+    </div>
+
   </main>
 
   <script type="module">
@@ -857,6 +973,7 @@ const playersList = document.getElementById("playersList");
   const secretRoleText = document.getElementById("secretRoleText");
   const streetViewLink = document.getElementById("streetViewLink");
   const streetViewNote = document.getElementById("streetViewNote");
+  const reportCurrentImageBtn = document.getElementById("reportCurrentImageBtn");
   const locationImageFrame = document.getElementById("locationImageFrame");
   const locationImage = document.getElementById("locationImage");
 
@@ -905,6 +1022,16 @@ const playersList = document.getElementById("playersList");
 
   const gameOverPanel = document.getElementById("gameOverPanel");
   const gameOverBox = document.getElementById("gameOverBox");
+
+  const feedbackOpenBtn = document.getElementById("feedbackOpenBtn");
+  const feedbackModal = document.getElementById("feedbackModal");
+  const feedbackMeta = document.getElementById("feedbackMeta");
+  const feedbackTypeInput = document.getElementById("feedbackTypeInput");
+  const feedbackMessageInput = document.getElementById("feedbackMessageInput");
+  const feedbackSubmitBtn = document.getElementById("feedbackSubmitBtn");
+  const feedbackCancelBtn = document.getElementById("feedbackCancelBtn");
+  const feedbackStatus = document.getElementById("feedbackStatus");
+
   const toggleOtherImagesBtn = document.getElementById("toggleOtherImagesBtn");
   const otherImagesPanel = document.getElementById("otherImagesPanel");
 
@@ -1150,6 +1277,104 @@ const playersList = document.getElementById("playersList");
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+  }
+
+
+  function getCurrentFeedbackContext() {
+    const room = currentRoom || {};
+    const me = getMe(room) || {};
+    const location = me.location || {};
+
+    return {
+      roomId: currentRoomId || "",
+      playerId: currentPlayerId || "",
+      playerName: me.name || nameInput.value.trim() || "",
+      phase: room.phase || "",
+      round: room.round || 0,
+      role: me.role || "",
+      countryCode: me.countryCode || me.country || location.countryCode || "",
+      countryName: countryLabel(me.countryCode || me.country || location.countryCode || ""),
+      filename: location.filename || "",
+      imagePath: location.imagePath || "",
+      pairA: room.game?.pairA || "",
+      pairB: room.game?.pairB || "",
+      civilianCountry: room.game?.civilianCountry || "",
+      undercoverCountry: room.game?.undercoverCountry || "",
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+      createdAt: Date.now()
+    };
+  }
+
+  function renderFeedbackMeta() {
+    const ctx = getCurrentFeedbackContext();
+
+    if (!currentRoomId || !currentPlayerId) {
+      feedbackMeta.innerHTML = "No active room detected. General feedback can still be submitted.";
+      return;
+    }
+
+    feedbackMeta.innerHTML = `
+      <strong>Attached context</strong><br>
+      Room: ${escapeHtml(ctx.roomId || "N/A")} · Round: ${escapeHtml(ctx.round || 0)} · Phase: ${escapeHtml(ctx.phase || "N/A")}<br>
+      Player: ${escapeHtml(ctx.playerName || "N/A")} · Role: ${escapeHtml(ctx.role || "N/A")}<br>
+      Country: ${escapeHtml(ctx.countryName || "N/A")} (${escapeHtml(ctx.countryCode || "N/A")})<br>
+      Image: ${escapeHtml(ctx.filename || "N/A")}
+    `;
+  }
+
+  function openFeedbackModal(defaultType = "") {
+    if (defaultType) feedbackTypeInput.value = defaultType;
+    feedbackMessageInput.value = "";
+    feedbackStatus.textContent = "";
+    feedbackStatus.className = "status";
+    renderFeedbackMeta();
+    feedbackModal.classList.remove("hidden");
+    feedbackMessageInput.focus();
+  }
+
+  function closeFeedbackModal() {
+    feedbackModal.classList.add("hidden");
+  }
+
+  async function submitFeedback() {
+    const type = feedbackTypeInput.value || "general_suggestion";
+    const message = feedbackMessageInput.value.trim();
+    const ctx = getCurrentFeedbackContext();
+
+    if (!message) {
+      feedbackStatus.textContent = "Please write a short description before submitting.";
+      feedbackStatus.className = "feedback-error";
+      return;
+    }
+
+    feedbackSubmitBtn.disabled = true;
+    feedbackStatus.textContent = "Submitting...";
+    feedbackStatus.className = "status";
+
+    const feedbackId = "fb_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+
+    try {
+      await set(ref(db, `feedback/${feedbackId}`), {
+        type,
+        message,
+        ...ctx
+      });
+
+      feedbackStatus.textContent = "Feedback submitted. Thank you.";
+      feedbackStatus.className = "feedback-success";
+      feedbackMessageInput.value = "";
+
+      setTimeout(() => {
+        closeFeedbackModal();
+        feedbackSubmitBtn.disabled = false;
+      }, 900);
+    } catch (err) {
+      console.error(err);
+      feedbackStatus.textContent = "Failed to submit feedback. Please try again.";
+      feedbackStatus.className = "feedback-error";
+      feedbackSubmitBtn.disabled = false;
+    }
   }
 
   async function createRoom() {
@@ -2342,6 +2567,15 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
   copyInviteBtn.addEventListener("click", async () => {
     await navigator.clipboard.writeText(roomUrl(currentRoomId));
     roomStatus.textContent = "Invite link copied.";
+  });
+
+
+  feedbackOpenBtn.addEventListener("click", () => openFeedbackModal());
+  reportCurrentImageBtn.addEventListener("click", () => openFeedbackModal("bad_image"));
+  feedbackCancelBtn.addEventListener("click", closeFeedbackModal);
+  feedbackSubmitBtn.addEventListener("click", submitFeedback);
+  feedbackModal.addEventListener("click", (event) => {
+    if (event.target === feedbackModal) closeFeedbackModal();
   });
 
   createRoomBtn.addEventListener("click", createRoom);
