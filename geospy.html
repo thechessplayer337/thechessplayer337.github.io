@@ -539,8 +539,8 @@
           </h3>
           <p class="status">
             First choose Agree or Refuse, then press Confirm. Only confirmed choices count.
-            Once at least half of the living players have confirmed, the game checks whether confirmed Agree is at least half.
-            If yes, voting begins; otherwise, a new description round begins. If time runs out, unconfirmed players count as Refuse.
+            The game moves on only when the outcome is decided: enough confirmed Agree votes start voting, or enough confirmed Refuse votes make voting impossible.
+            If time runs out, unconfirmed players count as Refuse.
           </p>
           <div class="row">
             <button id="agreeVoteBtn">Agree to Vote</button>
@@ -1768,10 +1768,15 @@ const playersList = document.getElementById("playersList");
       const remainingSeconds = getReadyVoteRemainingSeconds(room);
       const expired = remainingSeconds <= 0;
 
-      if (confirmedCount >= needed) {
+      const unconfirmedCount = alivePlayers.length - confirmedCount;
+      const refuseCount = confirmedPlayers.filter(p => p.voteIntent === "refuse").length;
+      const agreeOutcomeDecided = agreeCount >= needed;
+      const refuseOutcomeDecided = agreeCount + unconfirmedCount < needed;
+
+      if (agreeOutcomeDecided || refuseOutcomeDecided) {
         transitionLock = true;
 
-        if (agreeCount >= needed) {
+        if (agreeOutcomeDecided) {
           const updates = {
             [`rooms/${currentRoomId}/phase`]: "voting",
             [`rooms/${currentRoomId}/readyVoteStartedAt`]: null,
@@ -2082,7 +2087,15 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       if (me?.voteIntentConfirmed) myChoice += " Confirmed.";
 
       readyVoteTimer.textContent = `${remainingSeconds}s`;
-      readyVoteStatus.textContent = `Confirmed: ${confirmedCount} / ${alivePlayers.length}. Confirm needed: ${needed}. Confirmed Agree: ${agreeCount}. Confirmed Refuse: ${refuseCount}. Agree needed to vote: ${needed}.${myChoice}`;
+      const unconfirmedCount = alivePlayers.length - confirmedCount;
+      const possibleAgreeCount = agreeCount + unconfirmedCount;
+      const outcomeHint = agreeCount >= needed
+        ? " Voting will begin."
+        : possibleAgreeCount < needed
+          ? " Voting is impossible now; a new description round will begin."
+          : " Waiting for more confirmed choices.";
+
+      readyVoteStatus.textContent = `Confirmed: ${confirmedCount} / ${alivePlayers.length}. Confirmed Agree: ${agreeCount}. Confirmed Refuse: ${refuseCount}. Agree needed to vote: ${needed}. Max possible Agree if all remaining agree: ${possibleAgreeCount}.${outcomeHint}${myChoice}`;
 
       const hasChoice = me?.voteIntent === "agree" || me?.voteIntent === "refuse";
       const confirmed = me?.voteIntentConfirmed === true;
