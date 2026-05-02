@@ -2243,8 +2243,8 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
   cancelPlayerVoteBtn.addEventListener("click", cancelPlayerVote);
   nextRoundBtn.addEventListener("click", nextRound);
 
-  createRoomBtn.disabled = true;
-  joinRoomBtn.disabled = true;
+  createRoomBtn.disabled = !dataLoaded;
+  joinRoomBtn.disabled = !dataLoaded;
 
   const params = new URLSearchParams(window.location.search);
   const roomFromUrl = params.get("room");
