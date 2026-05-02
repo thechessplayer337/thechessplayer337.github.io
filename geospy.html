@@ -281,6 +281,42 @@
       background: #050505;
     }
 
+    .other-images-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .other-image-card {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.62);
+      border-radius: 18px;
+      padding: 12px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+    }
+
+    .other-image-card strong {
+      color: var(--dark);
+    }
+
+    .other-image-card img {
+      display: block;
+      width: 100%;
+      max-height: 58vh;
+      object-fit: contain;
+      background: #050505;
+      border-radius: 14px;
+      margin-top: 10px;
+    }
+
+    .other-image-card a {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--accent);
+      font-weight: 750;
+    }
+
     .description-list {
       display: grid;
       gap: 10px;
@@ -546,6 +582,10 @@
         <div id="gameOverPanel" class="hidden">
           <h3>Game Over</h3>
           <div class="result-box" id="gameOverBox"></div>
+          <div class="row" style="margin-top: 14px;">
+            <button class="secondary" id="toggleOtherImagesBtn">See other players' images</button>
+          </div>
+          <div id="otherImagesPanel" class="other-images-list hidden"></div>
         </div>
       </section>
     </section>
@@ -865,6 +905,8 @@ const playersList = document.getElementById("playersList");
 
   const gameOverPanel = document.getElementById("gameOverPanel");
   const gameOverBox = document.getElementById("gameOverBox");
+  const toggleOtherImagesBtn = document.getElementById("toggleOtherImagesBtn");
+  const otherImagesPanel = document.getElementById("otherImagesPanel");
 
   let currentRoomId = null;
   let currentPlayerId = null;
@@ -872,6 +914,7 @@ const playersList = document.getElementById("playersList");
   let unsubscribeRoom = null;
   let transitionLock = false;
   let pendingVoteTarget = "";
+  let otherImagesVisible = false;
 
   async function loadLocationData() {
     try {
@@ -1193,6 +1236,7 @@ const playersList = document.getElementById("playersList");
     currentRoom = null;
     transitionLock = false;
     pendingVoteTarget = "";
+    otherImagesVisible = false;
 
     sessionStorage.removeItem("geospyRoomId");
     sessionStorage.removeItem("geospyPlayerId");
@@ -1950,6 +1994,11 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     votingPanel.classList.add("hidden");
     resultPanel.classList.add("hidden");
     gameOverPanel.classList.add("hidden");
+    otherImagesPanel.classList.add("hidden");
+
+    if (phase !== "gameOver") {
+      otherImagesVisible = false;
+    }
 
     gameTitle.textContent = `GeoSpy · Round ${room.round || 1}`;
 
@@ -2079,7 +2128,57 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
         Last result: ${escapeHtml(room.game?.lastResult || "")}<br><br>
         <strong>Roles revealed:</strong><br>${roles}
       `;
+
+      toggleOtherImagesBtn.textContent = otherImagesVisible ? "Hide other players' images" : "See other players' images";
+      otherImagesPanel.classList.toggle("hidden", !otherImagesVisible);
+
+      if (otherImagesVisible) {
+        renderOtherPlayerImages(room);
+      } else {
+        otherImagesPanel.innerHTML = "";
+      }
     }
+  }
+
+
+  function renderOtherPlayerImages(room) {
+    const players = Object.entries(room.players || {})
+      .filter(([id]) => id !== currentPlayerId)
+      .sort((a, b) => String(a[1]?.name || "").localeCompare(String(b[1]?.name || "")));
+
+    if (players.length === 0) {
+      otherImagesPanel.innerHTML = `<div class="desc"><em>No other players to reveal.</em></div>`;
+      return;
+    }
+
+    otherImagesPanel.innerHTML = players.map(([id, p]) => {
+      const location = p.location || {};
+      const imageUrl = makeScreenshotUrl(location);
+      const publicRole = p.role === "undercover" ? "spy" : p.role;
+      const countryCode = p.countryCode || p.country || location.countryCode || location.locationCountryCode || "?";
+      const description = p.description === "__NULL_TIMEOUT__"
+        ? "NULL"
+        : (p.description || "No description submitted.");
+
+      if (!location?.imagePath) {
+        return `
+          <div class="other-image-card">
+            <strong>${escapeHtml(p.name || "Unknown")}</strong> · ${escapeHtml(publicRole || "?")} · ${escapeHtml(countryLabel(countryCode))}<br>
+            <span>Description: ${escapeHtml(description)}</span><br>
+            <em>Screenshot unavailable.</em>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="other-image-card">
+          <strong>${escapeHtml(p.name || "Unknown")}</strong> · ${escapeHtml(publicRole || "?")} · ${escapeHtml(countryLabel(countryCode))}<br>
+          <span>Description: ${escapeHtml(description)}</span>
+          <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name || "Player")}'s GeoSpy screenshot" loading="lazy" />
+          <a href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener noreferrer">Open full screenshot</a>
+        </div>
+      `;
+    }).join("");
   }
 
 
@@ -2242,6 +2341,10 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
   confirmPlayerVoteBtn.addEventListener("click", confirmPlayerVote);
   cancelPlayerVoteBtn.addEventListener("click", cancelPlayerVote);
   nextRoundBtn.addEventListener("click", nextRound);
+  toggleOtherImagesBtn.addEventListener("click", () => {
+    otherImagesVisible = !otherImagesVisible;
+    if (currentRoom) renderRoom(currentRoom);
+  });
 
   createRoomBtn.disabled = !dataLoaded;
   joinRoomBtn.disabled = !dataLoaded;
