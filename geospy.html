@@ -443,7 +443,7 @@
         </div>
 
         <p class="status" id="entryStatus">
-          Create a room or join with a room code. This is a temporary prototype page.
+          Create a room or join with a room code. If you disconnect, rejoin with the same name and room code.
         </p>
       </section>
 
@@ -1008,6 +1008,19 @@ const playersList = document.getElementById("playersList");
     return room?.players?.[currentPlayerId] || null;
   }
 
+  function findExistingPlayerByName(room, name) {
+    const normalized = String(name || "").trim().toLowerCase();
+    if (!normalized) return null;
+
+    for (const [id, player] of Object.entries(room.players || {})) {
+      if (String(player.name || "").trim().toLowerCase() === normalized) {
+        return { id, player };
+      }
+    }
+
+    return null;
+  }
+
   function shuffle(array) {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -1199,13 +1212,26 @@ const playersList = document.getElementById("playersList");
       return;
     }
 
+    const players = room.players || {};
+    const playerCount = Object.keys(players).length;
+    const existing = findExistingPlayerByName(room, name);
+
     if (room.status !== "lobby") {
-      entryStatus.textContent = "This room has already started.";
+      if (!existing) {
+        entryStatus.textContent = "This room has already started. To rejoin, enter the same name you used before.";
+        return;
+      }
+
+      enterRoom(roomId, existing.id);
+      entryStatus.textContent = `Rejoined room ${roomId} as ${existing.player.name || name}.`;
       return;
     }
 
-    const players = room.players || {};
-    const playerCount = Object.keys(players).length;
+    if (existing) {
+      enterRoom(roomId, existing.id);
+      entryStatus.textContent = `Rejoined lobby room ${roomId} as ${existing.player.name || name}.`;
+      return;
+    }
 
     if (playerCount >= room.maxPlayers) {
       entryStatus.textContent = "Room is full.";
