@@ -1,5 +1,69 @@
 # GeoSpy Changelog
 
+## v1.0.3 — Rejoin Support Hotfix
+
+**Release date:** 2026-05-02
+
+This hotfix adds support for players rejoining an active game after accidentally refreshing, closing the page, or disconnecting.
+
+### Room Rejoin
+
+- Added rejoin support for active games.
+- Players can now rejoin an existing room by entering:
+  - the same room code
+  - the same player name used earlier in the game
+- Rejoining restores the original player slot instead of creating a new player.
+- Rejoining preserves the player’s:
+  - role
+  - country/region
+  - screenshot
+  - alive/out status
+  - description state
+  - vote state
+- New players are still prevented from joining after a game has started.
+- Lobby-stage rejoin is also supported for players who disconnect before the game begins.
+
+---
+
+## v1.0.2 — Fixed Images Across Rounds Hotfix
+
+**Release date:** 2026-05-02
+
+This hotfix fixes an important gameplay issue where players could receive new screenshots after a tied vote or a failed vote-to-vote round.
+
+### Gameplay Fixes
+
+- Fixed an issue where player screenshots could change between rounds within the same game.
+- Player screenshots now remain fixed for the entire game.
+- A new description round no longer reassigns images.
+- Tied votes now correctly proceed to the next round while keeping all surviving players’ original screenshots.
+- Failed ready-to-vote rounds now correctly proceed to the next description round without changing screenshots.
+- Only round-specific state is reset between rounds:
+  - descriptions
+  - vote intent
+  - vote confirmation
+  - votes
+  - speaking order
+  - timers
+
+---
+
+## v1.0.1 — Ready Vote Logic Hotfix
+
+**Release date:** 2026-05-02
+
+This hotfix fixes the ready-to-vote stage so that the system does not resolve the stage before the final outcome is determined.
+
+### Gameplay Fixes
+
+- Fixed an issue where the ready-to-vote stage could end too early.
+- The system no longer moves directly to a new description round while remaining unconfirmed players could still change the result.
+- Voting now begins immediately if confirmed Agree votes reach the required threshold.
+- A new description round begins only if reaching the Agree threshold has become mathematically impossible.
+- Unconfirmed players are still treated as Refuse when the ready-to-vote timer expires.
+
+---
+
 ## v1.0 — Official Playable Release
 
 **Release date:** 2026-05-02
