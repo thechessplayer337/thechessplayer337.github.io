@@ -1,5 +1,62 @@
 # GeoSpy Changelog
 
+## v1.1 — Feedback and Bad Image Reporting
+
+**Release date:** 2026-05-03
+
+GeoSpy v1.1 adds an in-game feedback and issue reporting system for long-term dataset maintenance and gameplay improvement.
+
+### Feedback System
+
+- Added a low-profile **Feedback** button to the bottom-right corner of the page.
+- Added a **Report this image** button in the player’s own screenshot panel.
+- Added feedback categories:
+  - Bad / blurry image
+  - Black or broken image
+  - Wrong country / wrong screenshot
+  - Unfair or questionable country pair
+  - Bug in game flow
+  - General suggestion
+- Feedback is submitted directly to Firebase under:
+
+```text
+feedback/{feedbackId}
+```
+
+### Automatic Context Attachment
+
+Each feedback submission automatically records relevant game context, including:
+
+- room ID
+- player ID
+- player name
+- current phase
+- round number
+- player role
+- country/region code
+- country/region name
+- screenshot filename
+- screenshot URL
+- selected country pair
+- civilian country
+- spy country
+- page URL
+- browser user agent
+- submission time
+
+### Dataset Maintenance
+
+- Bad image reports now include the exact screenshot filename, making later image removal or replacement possible.
+- Reports can be used to identify:
+  - blurry screenshots
+  - broken screenshots
+  - wrong-country images
+  - unfair or questionable country pairs
+  - game-flow bugs
+- This update prepares the project for future screenshot quality control and dataset patch releases.
+
+---
+
 ## v1.0.3 — Rejoin Support Hotfix
 
 **Release date:** 2026-05-02
@@ -84,7 +141,6 @@ GeoSpy v1.0 is the first complete playable release of the project. This version 
 - Added 60-second speaking timer for each player.
 - Added `NULL` display when a player fails to submit a description in time.
 - Added ready-to-vote confirmation stage.
-- Fixed ready-to-vote logic so the system does not resolve early while the result can still change.
 - Added player voting stage with confirm/cancel voting.
 - Added automatic random vote assignment for players who fail to vote in time.
 - Added tie-vote handling.
@@ -146,22 +202,18 @@ GeoSpy v1.0 is the first complete playable release of the project. This version 
 ### Known Issues
 
 - Some screenshots may be blurry or visually low quality.
-- A future version may add a feedback/report system for bad images and general suggestions.
-- A future version may further clean or replace low-quality screenshots.
+- Some country/region pairs may need further balancing after more real-player testing.
+- Future versions may further clean, replace, or expand the screenshot dataset.
 
 ---
 
 ## Planned Next Updates
 
-### v1.1
-
-- Add Suggestions / Report Bad Image system.
-- Allow players to report blurry, broken, unfair, or wrong-country images.
-- Store feedback records for later dataset maintenance.
-- Improve screenshot quality control.
-
 ### v1.2
 
+- Build an admin/review workflow for submitted feedback.
+- Add tools for removing or replacing reported bad images.
+- Improve screenshot quality control.
 - Possible country-pair balancing updates.
 - Possible dataset expansion.
 - Possible statistics or admin review tools.
