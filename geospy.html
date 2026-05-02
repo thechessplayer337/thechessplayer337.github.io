@@ -265,6 +265,22 @@
       font-size: 0.9rem;
     }
 
+    .location-frame {
+      margin-top: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #050505;
+    }
+
+    .location-frame img {
+      display: block;
+      width: 100%;
+      max-height: 68vh;
+      object-fit: contain;
+      background: #050505;
+    }
+
     .description-list {
       display: grid;
       gap: 10px;
@@ -360,8 +376,8 @@
     <div class="eyebrow">Prototype · 3–6 Players · Firebase Realtime</div>
     <h1>GeoSpy</h1>
     <p class="intro">
-      A GeoGuessr-style social deduction game. Civilians receive street-view locations from one country,
-      while spies receive locations from a similar but different country.
+      A GeoGuessr-style social deduction game. Civilians receive screenshots from one country,
+      while spies receive screenshots from a similar but different country.
     </p>
 
     <section class="grid">
@@ -423,8 +439,11 @@
           <div class="muted">Your hidden country</div>
           <div class="country" id="secretCountry">???</div>
           <div class="muted" id="secretRoleText">Your role and country are hidden from other players.</div>
+          <div id="locationImageFrame" class="location-frame hidden">
+            <img id="locationImage" alt="Your GeoSpy screenshot" loading="eager" />
+          </div>
           <a id="streetViewLink" class="street-link" href="#" target="_blank" rel="noopener noreferrer">
-            Open your Street View
+            Open full screenshot
           </a>
           <p class="small-note" id="streetViewNote"></p>
         </div>
@@ -543,6 +562,7 @@
     onValue,
     serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+  import { screenshotLocationsByCountry } from "./data/geospy-screenshot-locations-r2-lean.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyA16aGwlAfTj1_LJpyxW5RhTijEuITDXRI",
@@ -562,7 +582,7 @@
   const PRIVATE_CHAT_SECONDS = 90;
   const READY_VOTE_SECONDS = 60;
   const VOTING_SECONDS = 60;
-  const LOCATION_DATA_URL = "data/geospy-locations-v1.json";
+  const SCREENSHOT_DATA_SOURCE = "data/geospy-screenshot-locations-r2-lean.js";
 
   const countryNames = {
     AD: "安道尔",
@@ -797,6 +817,8 @@ const playersList = document.getElementById("playersList");
   const secretRoleText = document.getElementById("secretRoleText");
   const streetViewLink = document.getElementById("streetViewLink");
   const streetViewNote = document.getElementById("streetViewNote");
+  const locationImageFrame = document.getElementById("locationImageFrame");
+  const locationImage = document.getElementById("locationImage");
 
   const speakingStatusBox = document.getElementById("speakingStatusBox");
   const speakerTurnStatus = document.getElementById("speakerTurnStatus");
@@ -853,40 +875,33 @@ const playersList = document.getElementById("playersList");
 
   async function loadLocationData() {
     try {
-      entryStatus.textContent = "Loading GeoSpy location dataset...";
-
-      const res = await fetch(LOCATION_DATA_URL, { cache: "no-store" });
-      if (!res.ok) throw new Error(`Failed to load ${LOCATION_DATA_URL}: ${res.status}`);
-
-      const raw = await res.json();
-      const locations = Array.isArray(raw.customCoordinates) ? raw.customCoordinates : [];
+      entryStatus.textContent = "Loading GeoSpy screenshot dataset...";
 
       const grouped = {};
+      let total = 0;
 
-      for (const loc of locations) {
-        const tag = loc.extra?.tags?.[0] || loc.countryCode;
-        if (!tag) continue;
+      for (const [countryCode, locations] of Object.entries(screenshotLocationsByCountry || {})) {
+        if (!Array.isArray(locations) || locations.length === 0) continue;
 
-        if (!grouped[tag]) grouped[tag] = [];
+        grouped[countryCode] = locations
+          .filter(item => item && item.imagePath && item.countryCode)
+          .map(item => ({
+            index: Number(item.index || 0),
+            filename: item.filename || "",
+            imagePath: item.imagePath,
+            countryCode: item.countryCode || countryCode,
+            tag: item.countryCode || countryCode
+          }));
 
-        grouped[tag].push({
-          lat: Number(loc.lat),
-          lng: Number(loc.lng),
-          heading: Number(loc.heading || 0),
-          pitch: Number(loc.pitch || 0),
-          zoom: Number(loc.zoom || 0),
-          panoId: loc.panoId || loc.extra?.panoId || null,
-          panoDate: loc.extra?.panoDate || null,
-          tag
-        });
+        total += grouped[countryCode].length;
       }
 
       locationsByCountry = grouped;
-      locationCount = locations.length;
+      locationCount = total;
       dataLoaded = true;
 
       const availablePairs = getAvailablePairs();
-      entryStatus.textContent = `Dataset loaded: ${locationCount} locations, ${Object.keys(locationsByCountry).length} tags, ${availablePairs.length} usable pairs. Create a room or join with a room code.`;
+      entryStatus.textContent = `Screenshot dataset loaded: ${locationCount} screenshots, ${Object.keys(locationsByCountry).length} countries, ${availablePairs.length} usable pairs. Create a room or join with a room code.`;
 
       createRoomBtn.disabled = false;
       joinRoomBtn.disabled = false;
@@ -894,7 +909,7 @@ const playersList = document.getElementById("playersList");
       console.error(err);
       dataLoadError = err.message || String(err);
       dataLoaded = false;
-      entryStatus.textContent = `Dataset failed to load: ${dataLoadError}`;
+      entryStatus.textContent = `Screenshot dataset failed to load from ${SCREENSHOT_DATA_SOURCE}: ${dataLoadError}`;
       createRoomBtn.disabled = true;
       joinRoomBtn.disabled = true;
     }
@@ -984,31 +999,8 @@ const playersList = document.getElementById("playersList");
     return assigned;
   }
 
-  function makeStreetViewUrl(location) {
-    const heading = Number(location?.heading || 0);
-    const pitch = Number(location?.pitch || 0);
-    return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${location.lat},${location.lng}&heading=${heading}&pitch=${pitch}&fov=90`;
-  }
-
-  function makeMmaSingleLocationJson(location) {
-    return {
-      name: "GeoSpy single location",
-      customCoordinates: [
-        {
-          lat: location.lat,
-          lng: location.lng,
-          heading: location.heading || 0,
-          pitch: location.pitch || 0,
-          zoom: location.zoom || 0,
-          panoId: location.panoId || null,
-          countryCode: null,
-          stateCode: null,
-          extra: {
-            tags: ["GeoSpy"]
-          }
-        }
-      ]
-    };
+  function makeScreenshotUrl(location) {
+    return location?.imagePath || "#";
   }
 
   function getReadyVoteRemainingSeconds(room) {
@@ -1313,6 +1305,7 @@ const playersList = document.getElementById("playersList");
       updates[`rooms/${currentRoomId}/players/${playerId}/country`] = countryCode;
       updates[`rooms/${currentRoomId}/players/${playerId}/countryCode`] = countryCode;
       updates[`rooms/${currentRoomId}/players/${playerId}/location`] = loc;
+      updates[`rooms/${currentRoomId}/players/${playerId}/locationCountryCode`] = loc?.countryCode || countryCode;
       updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
       updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
       updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
@@ -1536,6 +1529,7 @@ const playersList = document.getElementById("playersList");
       updates[`rooms/${currentRoomId}/players/${p.id}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
       updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
+      updates[`rooms/${currentRoomId}/players/${p.id}/locationCountryCode`] = loc?.countryCode || p.country;
     }
 
     await update(ref(db), updates);
@@ -1580,6 +1574,7 @@ const playersList = document.getElementById("playersList");
       updates[`rooms/${currentRoomId}/players/${p.id}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
       updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
+      updates[`rooms/${currentRoomId}/players/${p.id}/locationCountryCode`] = loc?.countryCode || p.country;
     }
 
     await update(ref(db), updates);
@@ -1963,16 +1958,28 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       secretCountry.textContent = "???";
       secretRoleText.textContent = "Your role and country are hidden from other players. Open the location and describe what you see.";
 
-      if (me.location) {
-        streetViewLink.href = makeStreetViewUrl(me.location);
-        streetViewLink.textContent = "Open temporary Street View";
+      if (me.location?.imagePath) {
+        const screenshotUrl = makeScreenshotUrl(me.location);
+        locationImage.src = screenshotUrl;
+        locationImage.alt = "Your GeoSpy location screenshot";
+        locationImageFrame.classList.remove("hidden");
+        streetViewLink.href = screenshotUrl;
+        streetViewLink.textContent = "Open full screenshot";
 
         streetViewNote.innerHTML = `
-          Country is hidden in-game. This version now uses the official GeoSpy JSON dataset.
-          Temporary warning: direct Google Street View may still reveal location UI. Screenshot mode is the next step.
+          Country is hidden in-game. This version uses the R2 screenshot dataset.
+          The game still stores the screenshot's country code for role assignment and results.
         `;
+      } else {
+        locationImage.removeAttribute("src");
+        locationImageFrame.classList.add("hidden");
+        streetViewLink.href = "#";
+        streetViewLink.textContent = "Screenshot unavailable";
+        streetViewNote.textContent = "No screenshot was assigned to you. Ask the host to reset the room.";
       }
     } else {
+      locationImage.removeAttribute("src");
+      locationImageFrame.classList.add("hidden");
       secretBox.classList.add("hidden");
     }
 
