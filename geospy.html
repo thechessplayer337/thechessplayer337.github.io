@@ -1557,23 +1557,13 @@ const playersList = document.getElementById("playersList");
     updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
     updates[`rooms/${currentRoomId}/game/lastResult`] = "";
 
-    const playerCountryMap = {};
-
+    // Important: locations/images are fixed for the entire game.
+    // Later description rounds should not redraw screenshots.
     for (const p of alivePlayers) {
-      playerCountryMap[p.id] = p.country;
-    }
-
-    const assignedLocations = assignUniqueLocations(playerCountryMap);
-
-    for (const p of alivePlayers) {
-      const loc = assignedLocations[p.id];
-
       updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
       updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
       updates[`rooms/${currentRoomId}/players/${p.id}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
-      updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
-      updates[`rooms/${currentRoomId}/players/${p.id}/locationCountryCode`] = loc?.countryCode || p.country;
     }
 
     await update(ref(db), updates);
@@ -1597,28 +1587,19 @@ const playersList = document.getElementById("playersList");
     updates[`rooms/${currentRoomId}/round`] = nextRoundNumber;
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/privateChat`] = null;
     updates[`rooms/${currentRoomId}/speakingOrder`] = shuffle(alivePlayers.map(p => p.id));
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
     updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
     updates[`rooms/${currentRoomId}/game/lastResult`] = "Not enough confirmed Agree votes. A new description round begins.";
 
-    const playerCountryMap = {};
-
+    // Important: locations/images are fixed for the entire game.
+    // Refusing to vote starts a new description round, but keeps the same screenshots.
     for (const p of alivePlayers) {
-      playerCountryMap[p.id] = p.country;
-    }
-
-    const assignedLocations = assignUniqueLocations(playerCountryMap);
-
-    for (const p of alivePlayers) {
-      const loc = assignedLocations[p.id];
-
       updates[`rooms/${currentRoomId}/players/${p.id}/description`] = "";
       updates[`rooms/${currentRoomId}/players/${p.id}/voteIntent`] = "";
       updates[`rooms/${currentRoomId}/players/${p.id}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
-      updates[`rooms/${currentRoomId}/players/${p.id}/location`] = loc;
-      updates[`rooms/${currentRoomId}/players/${p.id}/locationCountryCode`] = loc?.countryCode || p.country;
     }
 
     await update(ref(db), updates);
