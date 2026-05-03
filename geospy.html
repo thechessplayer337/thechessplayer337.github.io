@@ -685,6 +685,7 @@
         <div class="row">
           <button id="copyInviteBtn">Copy Invite Link</button>
           <button class="secondary hidden" id="startGameBtn">Start Game</button>
+          <button class="secondary hidden" id="restartGameRoomBtn">Restart game</button>
           <button class="danger hidden" id="resetRoomBtn">Back to Lobby</button>
         </div>
 <h3>Players</h3>
@@ -1124,6 +1125,7 @@
   const inviteLink = document.getElementById("inviteLink");
   const copyInviteBtn = document.getElementById("copyInviteBtn");
   const startGameBtn = document.getElementById("startGameBtn");
+  const restartGameRoomBtn = document.getElementById("restartGameRoomBtn");
   const resetRoomBtn = document.getElementById("resetRoomBtn");
 const playersList = document.getElementById("playersList");
 
@@ -1908,7 +1910,7 @@ const playersList = document.getElementById("playersList");
     await locationDataPromise;
 
     if (!currentRoom || !isHost(currentRoom)) return;
-    if (currentRoom.status !== "finished") return;
+    if (currentRoom.status !== "playing" && currentRoom.status !== "finished") return;
 
     const players = Object.entries(currentRoom.players || {});
     if (players.length !== currentRoom.maxPlayers) {
@@ -2563,11 +2565,18 @@ const playersList = document.getElementById("playersList");
     } else if (room.status === "finished") {
       roomStatus.textContent = `Game over. Host can restart with the same players or return everyone to the clean lobby screen.`;
     } else {
-      roomStatus.textContent = `Players: ${playerCount} / ${room.maxPlayers}.`;
+      roomStatus.textContent = `Players: ${playerCount} / ${room.maxPlayers}. Host can restart the game if needed.`;
     }
 startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby"));
     startGameBtn.disabled = !(playerCount === room.maxPlayers);
-    resetRoomBtn.classList.toggle("hidden", !(isHost(room) && room.status !== "lobby"));
+
+    const hostCanManageActiveGame = isHost(room) && (room.status === "playing" || room.status === "finished");
+
+    restartGameRoomBtn.classList.toggle("hidden", !hostCanManageActiveGame);
+    restartGameRoomBtn.disabled = !(playerCount === room.maxPlayers);
+
+    resetRoomBtn.classList.toggle("hidden", !hostCanManageActiveGame);
+
     restartGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "finished"));
     backToLobbyGameOverBtn.classList.toggle("hidden", !(isHost(room) && room.status === "finished"));
     restartGameBtn.disabled = !(playerCount === room.maxPlayers);
@@ -2974,6 +2983,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
   createRoomBtn.addEventListener("click", createRoom);
   joinRoomBtn.addEventListener("click", joinRoom);
   startGameBtn.addEventListener("click", startGame);
+  restartGameRoomBtn.addEventListener("click", restartGame);
   restartGameBtn.addEventListener("click", restartGame);
   resetRoomBtn.addEventListener("click", resetRoom);
   backToLobbyGameOverBtn.addEventListener("click", resetRoom);
