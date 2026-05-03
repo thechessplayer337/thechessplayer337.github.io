@@ -1,5 +1,86 @@
 # GeoSpy Changelog
 
+## v1.1.4 — Clean Back to Lobby Hotfix
+
+**Release date:** 2026-05-03
+
+This hotfix clarifies and fixes the post-game room reset flow.
+
+### Room Management Fixes
+
+- Updated **Back to Lobby** so it fully resets the current room.
+- Back to Lobby now deletes the active room and returns all players to the clean Create / Join screen.
+- Players who want to change room size must now create a new room after returning to lobby.
+- This prevents confusion between restarting the same game room and creating a fresh room with a different player count.
+- **Restart game** remains available for the host after game over and keeps the same room and same players.
+
+---
+
+## v1.1.3 — Restart Game and Back to Lobby Controls
+
+**Release date:** 2026-05-03
+
+This update improves the post-game host controls.
+
+### Post-game Controls
+
+- Added a host-only **Restart game** button after game over.
+- Restart game keeps the same room and the same players.
+- Restart game immediately starts a new game with new roles, countries/regions, and screenshots.
+- Added a host-only **Back to Lobby** button after game over.
+- Separated the meaning of restarting a game from resetting the room flow.
+
+---
+
+## v1.1.2 — Game Start Notification
+
+**Release date:** 2026-05-03
+
+This update adds a clearer notification when a game begins.
+
+### Start Notification
+
+- Added a visible top notification when the game starts.
+- The notification tells players that their screenshot is ready.
+- Added a **View image** button that scrolls directly to the player’s role and screenshot area.
+- Added a **Dismiss** button.
+- The notification is shown once per player per game.
+
+---
+
+## v1.1.1 — Feedback Privacy and Storage Hotfix
+
+**Release date:** 2026-05-03
+
+This hotfix improves the feedback system introduced in v1.1.
+
+### Feedback Privacy Fixes
+
+- Fixed an issue where the feedback window could display hidden role and country information during the game.
+- The feedback window no longer displays:
+  - player role
+  - country/region
+  - country/region code
+- The feedback window now only displays non-secret context, such as:
+  - room
+  - round
+  - phase
+  - player name
+  - screenshot filename
+
+### Feedback Storage Fixes
+
+- Updated feedback storage so all feedback records are saved under a single root-level Firebase path:
+
+```text
+feedback/{feedbackId}
+```
+
+- This makes feedback easier to find and review.
+- Feedback records still automatically include the relevant room, player, screenshot, country/region, and game context internally for maintenance purposes.
+
+---
+
 ## v1.1 — Feedback and Bad Image Reporting
 
 **Release date:** 2026-05-03
