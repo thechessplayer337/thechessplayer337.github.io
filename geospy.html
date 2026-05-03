@@ -1363,11 +1363,7 @@ const playersList = document.getElementById("playersList");
         ...ctx
       };
 
-      if (currentRoomId) {
-        await set(ref(db, `rooms/${currentRoomId}/feedback/${feedbackId}`), feedbackRecord);
-      } else {
-        await set(ref(db, `feedback/${feedbackId}`), feedbackRecord);
-      }
+      await set(ref(db, `feedback/${feedbackId}`), feedbackRecord);
 
       feedbackStatus.textContent = "Feedback submitted. Thank you.";
       feedbackStatus.className = "feedback-success";
