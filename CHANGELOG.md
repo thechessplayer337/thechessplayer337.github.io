@@ -1,5 +1,39 @@
 # GeoSpy Changelog
 
+## v1.1.6 — Active Game Restart Hotfix
+
+**Release date:** 2026-05-03
+
+This hotfix improves host control during active games.
+
+### Room Management Fixes
+
+- Added a host-only **Restart game** button during active rounds.
+- The host can now restart the current game before it ends.
+- Restart game keeps the same room and the same players.
+- Restart game immediately assigns new roles, countries/regions, and screenshots.
+- This is useful when a game needs to be restarted because of a bad image, a flow issue, or a player-side problem.
+- **Back to Lobby** remains available as a full room reset option.
+
+---
+
+## v1.1.5 — Notification Timing and Sound Hotfix
+
+**Release date:** 2026-05-03
+
+This hotfix improves the game start notification experience.
+
+### Start Notification Fixes
+
+- Fixed an issue where non-host players could miss the game start notification.
+- The game start notification now appears for all players.
+- If a player's page is in the background when the game starts, the notification appears when they return to the tab.
+- Reduced the notification duration to **3 seconds**.
+- Added a short notification sound when the game starts.
+- If the browser blocks autoplay audio, the notification still appears silently.
+
+---
+
 ## v1.1.4 — Clean Back to Lobby Hotfix
 
 **Release date:** 2026-05-03
