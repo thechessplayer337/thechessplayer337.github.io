@@ -685,7 +685,7 @@
         <div class="row">
           <button id="copyInviteBtn">Copy Invite Link</button>
           <button class="secondary hidden" id="startGameBtn">Start Game</button>
-          <button class="danger hidden" id="resetRoomBtn">Reset Room</button>
+          <button class="danger hidden" id="resetRoomBtn">Back to Lobby</button>
         </div>
 <h3>Players</h3>
         <div class="players" id="playersList"></div>
@@ -809,7 +809,9 @@
           <h3>Game Over</h3>
           <div class="result-box" id="gameOverBox"></div>
           <div class="row" style="margin-top: 14px;">
+            <button id="restartGameBtn">Restart game</button>
             <button class="secondary" id="toggleOtherImagesBtn">See other players' images</button>
+            <button class="danger hidden" id="backToLobbyGameOverBtn">Back to Lobby</button>
           </div>
           <div id="otherImagesPanel" class="other-images-list hidden"></div>
         </div>
@@ -1180,6 +1182,8 @@ const playersList = document.getElementById("playersList");
 
   const gameOverPanel = document.getElementById("gameOverPanel");
   const gameOverBox = document.getElementById("gameOverBox");
+  const restartGameBtn = document.getElementById("restartGameBtn");
+  const backToLobbyGameOverBtn = document.getElementById("backToLobbyGameOverBtn");
 
   const feedbackOpenBtn = document.getElementById("feedbackOpenBtn");
   const feedbackModal = document.getElementById("feedbackModal");
@@ -1852,6 +1856,92 @@ const playersList = document.getElementById("playersList");
     await update(ref(db), updates);
   }
 
+
+  async function restartGame() {
+    await locationDataPromise;
+
+    if (!currentRoom || !isHost(currentRoom)) return;
+    if (currentRoom.status !== "finished") return;
+
+    const players = Object.entries(currentRoom.players || {});
+    if (players.length !== currentRoom.maxPlayers) {
+      roomStatus.textContent = "All original players must still be in the room to restart.";
+      return;
+    }
+
+    const availablePairs = getAvailablePairs();
+
+    if (availablePairs.length === 0) {
+      roomStatus.textContent = "No usable country pairs found in the dataset.";
+      return;
+    }
+
+    const basePair = pick(availablePairs);
+    const flip = Math.random() < 0.5;
+
+    const civilianCountry = flip ? basePair.b : basePair.a;
+    const undercoverCountry = flip ? basePair.a : basePair.b;
+
+    const shuffledPlayers = shuffle(players.map(([id]) => id));
+    const speakingOrder = shuffle(players.map(([id]) => id));
+    const roleCounts = getRoleCounts(currentRoom.maxPlayers);
+    const undercoverIds = new Set(shuffledPlayers.slice(0, roleCounts.undercover));
+
+    const updates = {};
+    updates[`rooms/${currentRoomId}/status`] = "playing";
+    updates[`rooms/${currentRoomId}/phase`] = "describing";
+    updates[`rooms/${currentRoomId}/round`] = 1;
+    updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
+    updates[`rooms/${currentRoomId}/privateChat`] = null;
+    updates[`rooms/${currentRoomId}/speakingOrder`] = speakingOrder;
+    updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
+    updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
+    updates[`rooms/${currentRoomId}/game`] = {
+      pairA: basePair.a,
+      pairB: basePair.b,
+      civilianCountry,
+      undercoverCountry,
+      civilianCountryName: countryLabel(civilianCountry),
+      undercoverCountryName: countryLabel(undercoverCountry),
+      startedAt: Date.now(),
+      restartedAt: Date.now(),
+      lastResult: ""
+    };
+
+    const playerCountryMap = {};
+
+    for (const [playerId] of players) {
+      const isUndercover = undercoverIds.has(playerId);
+      const countryCode = isUndercover ? undercoverCountry : civilianCountry;
+      playerCountryMap[playerId] = countryCode;
+    }
+
+    const assignedLocations = assignUniqueLocations(playerCountryMap);
+
+    for (const [playerId] of players) {
+      const isUndercover = undercoverIds.has(playerId);
+      const countryCode = playerCountryMap[playerId];
+      const loc = assignedLocations[playerId];
+
+      updates[`rooms/${currentRoomId}/players/${playerId}/role`] = isUndercover ? "undercover" : "civilian";
+      updates[`rooms/${currentRoomId}/players/${playerId}/country`] = countryCode;
+      updates[`rooms/${currentRoomId}/players/${playerId}/countryCode`] = countryCode;
+      updates[`rooms/${currentRoomId}/players/${playerId}/location`] = loc;
+      updates[`rooms/${currentRoomId}/players/${playerId}/locationCountryCode`] = loc?.countryCode || countryCode;
+      updates[`rooms/${currentRoomId}/players/${playerId}/alive`] = true;
+      updates[`rooms/${currentRoomId}/players/${playerId}/description`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/voteIntent`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/voteIntentConfirmed`] = false;
+      updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
+      updates[`rooms/${currentRoomId}/players/${playerId}/privateChatUsed`] = false;
+      updates[`rooms/${currentRoomId}/players/${playerId}/hasSeenStartNotification`] = false;
+    }
+
+    otherImagesVisible = false;
+    await update(ref(db), updates);
+  }
+
   async function submitDescription() {
     const text = descriptionInput.value.trim();
     if (!text) return;
@@ -2065,9 +2155,11 @@ const playersList = document.getElementById("playersList");
 
     const roomIdToReset = currentRoomId;
 
+    otherImagesVisible = false;
+
     await set(ref(db, `rooms/${roomIdToReset}`), null);
 
-    returnToEntry("Room reset. You can now create a new room and choose a new room size.");
+    returnToEntry("Returned to lobby. Create a new room to choose a new room size.");
   }
 
   async function beginNewDescriptionRoundAfterRefusal(room, alivePlayers) {
@@ -2420,10 +2512,19 @@ const playersList = document.getElementById("playersList");
     roundPill.textContent = `Round: ${room.round || 0}`;
 
     const playerCount = players.length;
-    roomStatus.textContent = `Players: ${playerCount} / ${room.maxPlayers}.`;
+    if (room.status === "lobby") {
+      roomStatus.textContent = `Lobby: ${playerCount} / ${room.maxPlayers} players. Host can start when the room is full.`;
+    } else if (room.status === "finished") {
+      roomStatus.textContent = `Game over. Host can restart with the same players or return everyone to the clean lobby screen.`;
+    } else {
+      roomStatus.textContent = `Players: ${playerCount} / ${room.maxPlayers}.`;
+    }
 startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby"));
     startGameBtn.disabled = !(playerCount === room.maxPlayers);
-    resetRoomBtn.classList.toggle("hidden", !isHost(room));
+    resetRoomBtn.classList.toggle("hidden", !(isHost(room) && room.status !== "lobby"));
+    restartGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "finished"));
+    backToLobbyGameOverBtn.classList.toggle("hidden", !(isHost(room) && room.status === "finished"));
+    restartGameBtn.disabled = !(playerCount === room.maxPlayers);
 
     playersList.innerHTML = players.map(([id, p]) => {
       const hostMark = id === room.hostId ? " · Host" : "";
@@ -2825,7 +2926,9 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
   createRoomBtn.addEventListener("click", createRoom);
   joinRoomBtn.addEventListener("click", joinRoom);
   startGameBtn.addEventListener("click", startGame);
+  restartGameBtn.addEventListener("click", restartGame);
   resetRoomBtn.addEventListener("click", resetRoom);
+  backToLobbyGameOverBtn.addEventListener("click", resetRoom);
   submitDescriptionBtn.addEventListener("click", submitDescription);
   requestPrivateChatBtn.addEventListener("click", requestPrivateChat);
   acceptPrivateChatBtn.addEventListener("click", acceptPrivateChat);
