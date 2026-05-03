@@ -680,7 +680,7 @@
         </p>
 
         <div class="feedback-meta" id="feedbackMeta">
-          Current game information will be attached automatically when available.
+          Non-secret game information will be shown here. Hidden role/country data is not displayed in this window.
         </div>
 
         <label for="feedbackTypeInput">Issue type</label>
@@ -1317,9 +1317,11 @@ const playersList = document.getElementById("playersList");
     feedbackMeta.innerHTML = `
       <strong>Attached context</strong><br>
       Room: ${escapeHtml(ctx.roomId || "N/A")} · Round: ${escapeHtml(ctx.round || 0)} · Phase: ${escapeHtml(ctx.phase || "N/A")}<br>
-      Player: ${escapeHtml(ctx.playerName || "N/A")} · Role: ${escapeHtml(ctx.role || "N/A")}<br>
-      Country: ${escapeHtml(ctx.countryName || "N/A")} (${escapeHtml(ctx.countryCode || "N/A")})<br>
-      Image: ${escapeHtml(ctx.filename || "N/A")}
+      Player: ${escapeHtml(ctx.playerName || "N/A")}<br>
+      Image: ${escapeHtml(ctx.filename || "N/A")}<br>
+      <span style="font-size: 0.82rem; opacity: 0.78;">
+        Hidden role and country information is not displayed in this window.
+      </span>
     `;
   }
 
@@ -1355,11 +1357,17 @@ const playersList = document.getElementById("playersList");
     const feedbackId = "fb_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
 
     try {
-      await set(ref(db, `feedback/${feedbackId}`), {
+      const feedbackRecord = {
         type,
         message,
         ...ctx
-      });
+      };
+
+      if (currentRoomId) {
+        await set(ref(db, `rooms/${currentRoomId}/feedback/${feedbackId}`), feedbackRecord);
+      } else {
+        await set(ref(db, `feedback/${feedbackId}`), feedbackRecord);
+      }
 
       feedbackStatus.textContent = "Feedback submitted. Thank you.";
       feedbackStatus.className = "feedback-success";
