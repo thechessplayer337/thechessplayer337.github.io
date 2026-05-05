@@ -1,5 +1,42 @@
 # GeoSpy Changelog
 
+## v1.1.7 — Website Integration and Visual Refresh
+
+**Release date:** 2026-05-05
+
+This update improves how GeoSpy appears on The Chessplayer website and makes the playable prototype easier to access from the homepage.
+
+### Homepage Integration
+
+- Added a direct **GeoSpy** item to the main homepage navigation bar.
+- Added a **Try GeoSpy** button to the homepage hero section.
+- Updated the button layout so **Try GeoSpy** aligns with the two main hero buttons and no longer appears too short.
+- Connected the homepage call-to-action directly to `geospy.html`.
+
+### Homepage Visual Refresh
+
+- Reworked the homepage hero illustration around the slogan **“From board vision to world vision.”**
+- Added a board-to-world visual concept:
+  - left side: chessboard-style grid
+  - right side: latitude/longitude globe-style grid
+  - center: chess piece bridge between board vision and world vision
+- Reduced the feeling of a separate beige illustration block by integrating the board and map elements into one blended visual panel.
+
+### GeoSpy Landing Page Design
+
+- Centered the GeoSpy entry layout and Create / Join card.
+- Added a subtle world-map / globe-projection background behind the page.
+- Increased background color depth while keeping text readable.
+- Adjusted the animated light orbit so it surrounds the **GeoSpy** title without covering the letters.
+- Moved **Back to Home** to the far left of the page for clearer navigation.
+
+### Notes
+
+- This is a visual and navigation update only.
+- Core gameplay logic, Firebase room flow, screenshot assignment, feedback submission, and voting systems are unchanged.
+
+---
+
 ## v1.1.6 — Active Game Restart Hotfix
 
 **Release date:** 2026-05-03
