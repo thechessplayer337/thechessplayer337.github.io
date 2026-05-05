@@ -30,14 +30,46 @@
     }
 
     body {
+      position: relative;
       font-family: Georgia, "Times New Roman", serif;
       background:
-        radial-gradient(circle at 18% 18%, rgba(124, 74, 33, 0.09), transparent 30rem),
-        radial-gradient(circle at 86% 22%, rgba(62, 103, 142, 0.10), transparent 34rem),
-        linear-gradient(180deg, #f8f5ef 0%, var(--bg) 46%, #f4efe6 100%);
+        radial-gradient(circle at 12% 14%, rgba(124, 74, 33, 0.18), transparent 28rem),
+        radial-gradient(circle at 82% 16%, rgba(62, 103, 142, 0.22), transparent 34rem),
+        radial-gradient(circle at 64% 42%, rgba(119, 146, 179, 0.14), transparent 26rem),
+        linear-gradient(180deg, #fbf8f2 0%, #f5efe6 48%, #f1eadf 100%);
       color: var(--text);
       line-height: 1.6;
       overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 72px auto 0 0;
+      width: 54vw;
+      min-width: 420px;
+      background:
+        conic-gradient(from 90deg at 56px 56px, rgba(138, 90, 52, 0.14) 90deg, rgba(240, 223, 195, 0.22) 0 180deg, rgba(138, 90, 52, 0.14) 0 270deg, rgba(240, 223, 195, 0.22) 0),
+        linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0));
+      background-size: 112px 112px, auto;
+      mask-image: linear-gradient(to right, rgba(0,0,0,0.98) 0 72%, rgba(0,0,0,0.16) 88%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.98) 0 72%, rgba(0,0,0,0.16) 88%, transparent 100%);
+      opacity: 0.95;
+      pointer-events: none;
+      z-index: -4;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 72px 0 0 38%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 900'%3E%3Cg fill='none' stroke='%23567ea3' stroke-width='2' opacity='0.26'%3E%3Cpath d='M80 210h1020M80 390h1020M80 570h1020M80 750h1020M220 70c-58 195-58 535 0 730M430 54c-30 218-30 566 0 786M640 42v816M850 54c30 218 30 566 0 786M1060 70c58 195 58 535 0 730'/%3E%3Cellipse cx='650' cy='430' rx='360' ry='260'/%3E%3Cellipse cx='650' cy='430' rx='250' ry='260'/%3E%3Cpath d='M292 430h716'/%3E%3Cpath d='M340 300c96 60 184 84 308 84s212-24 308-84'/%3E%3Cpath d='M340 560c96-60 184-84 308-84s212 24 308 84'/%3E%3C/g%3E%3Cg fill='%23567ea3' opacity='0.10'%3E%3Cpath d='M418 248c64-56 164-68 233-28 53 31 54 82 108 97 67 19 108-34 183-10 72 24 146 106 108 165-34 52-123 50-187 20-67-31-83-77-147-77-74 0-109 63-184 52-82-11-156-111-114-219z'/%3E%3Cpath d='M728 578c56-18 109 28 102 79-9 65-92 98-146 57-48-36-26-114 44-136z'/%3E%3C/g%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center 40px;
+      background-size: cover;
+      opacity: 0.7;
+      pointer-events: none;
+      z-index: -4;
     }
 
     a {
@@ -100,14 +132,26 @@
     .hero::before {
       content: "";
       position: absolute;
-      inset: 7% -7% auto auto;
-      width: min(640px, 52vw);
-      height: min(640px, 52vw);
+      left: -8%;
+      top: 12%;
+      width: min(420px, 38vw);
+      height: min(420px, 38vw);
       border-radius: 50%;
-      background:
-        radial-gradient(circle, rgba(255,255,255,0.55), transparent 56%),
-        conic-gradient(from 140deg, rgba(124,74,33,0.05), rgba(62,103,142,0.14), rgba(239,226,211,0.14), rgba(124,74,33,0.05));
-      filter: blur(4px);
+      background: radial-gradient(circle, rgba(124,74,33,0.18), rgba(124,74,33,0.03) 58%, transparent 72%);
+      filter: blur(8px);
+      z-index: -2;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -6%;
+      top: 2%;
+      width: min(560px, 50vw);
+      height: min(560px, 50vw);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(86,126,163,0.20), rgba(86,126,163,0.05) 60%, transparent 76%);
+      filter: blur(10px);
       z-index: -2;
     }
 
@@ -154,10 +198,6 @@
       gap: 14px;
       width: max-content;
       align-items: stretch;
-    }
-
-    .hero-actions .button {
-      min-width: 0;
     }
 
     .hero-actions .button.geospy {
@@ -243,137 +283,95 @@
       border-color: #cbbca7;
     }
 
-    .fusion-visual {
+    .hero-card {
       position: relative;
-      margin-bottom: 24px;
-      border: 1px solid var(--line);
-      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(222, 215, 202, 0.9);
+      border-radius: 28px;
+      padding: 30px;
+      box-shadow: 0 24px 60px rgba(31, 41, 51, 0.10);
+      backdrop-filter: blur(12px);
       overflow: hidden;
-      background: linear-gradient(90deg, rgba(248,244,236,0.98), rgba(244,239,230,0.98));
-      min-height: 360px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
-      isolation: isolate;
     }
 
-    .fusion-underlay {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      grid-template-columns: 1.03fr 0.97fr;
-    }
-
-    .fusion-left-grid {
-      position: relative;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0)),
-        linear-gradient(90deg, rgba(21,21,21,0.08) 1px, transparent 1px),
-        linear-gradient(rgba(21,21,21,0.08) 1px, transparent 1px),
-        conic-gradient(from 90deg at 56px 56px, #8a5a34 90deg, #f0dfc3 0 180deg, #8a5a34 0 270deg, #f0dfc3 0);
-      background-size: auto, 56px 56px, 56px 56px, 112px 112px;
-      background-position: 0 0, 0 0, 0 0, 0 0;
-    }
-
-    .fusion-right-grid {
-      position: relative;
-      background:
-        radial-gradient(circle at 70% 30%, rgba(76,111,147,0.20), transparent 18rem),
-        radial-gradient(circle at 45% 65%, rgba(124,74,33,0.12), transparent 15rem),
-        linear-gradient(90deg, rgba(62,103,142,0.16) 1px, transparent 1px),
-        linear-gradient(rgba(62,103,142,0.16) 1px, transparent 1px),
-        linear-gradient(180deg, rgba(247,244,238,0.62), rgba(255,255,255,0.42));
-      background-size: auto, auto, 64px 100%, 100% 64px, auto;
-      background-position: center;
-    }
-
-    .fusion-right-grid::before,
-    .fusion-right-grid::after {
+    .hero-card::before {
       content: "";
       position: absolute;
-      border-radius: 50%;
-      border: 1.5px solid rgba(62,103,142,0.22);
-      inset: 14% 10%;
-    }
-
-    .fusion-right-grid::after {
-      inset: 14% 24%;
-      border-left-color: rgba(62,103,142,0.16);
-      border-right-color: rgba(62,103,142,0.16);
-      border-top-color: transparent;
-      border-bottom-color: transparent;
-    }
-
-    .fusion-seam {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: calc(50% - 11%);
-      width: 24%;
-      background: linear-gradient(90deg, rgba(248,244,236,0) 0%, rgba(248,244,236,0.88) 48%, rgba(248,244,236,0.16) 100%);
-      pointer-events: none;
-    }
-
-    .fusion-map {
-      position: absolute;
       inset: 0;
-      opacity: 0.20;
-      background-image:
-        radial-gradient(circle at 68% 38%, rgba(62,103,142,0.22), transparent 18rem),
-        radial-gradient(circle at 26% 70%, rgba(124,74,33,0.14), transparent 16rem);
+      background:
+        radial-gradient(circle at 80% 14%, rgba(86,126,163,0.16), transparent 16rem),
+        radial-gradient(circle at 18% 90%, rgba(124,74,33,0.14), transparent 14rem),
+        linear-gradient(135deg, rgba(255,255,255,0.30), transparent 35%);
       pointer-events: none;
     }
 
-    .fusion-route {
-      position: absolute;
-      left: 58%;
-      top: 43%;
-      width: 44%;
-      height: 30%;
-      transform: translate(-50%, -50%) rotate(-4deg);
-      border: 2px solid rgba(62, 103, 142, 0.34);
-      border-left-color: transparent;
-      border-right-color: transparent;
-      border-radius: 50%;
-      filter: drop-shadow(0 0 12px rgba(62,103,142,0.22));
+    .hero-card > * {
+      position: relative;
+      z-index: 1;
     }
 
-    .map-pin {
-      position: absolute;
-      width: 12px;
-      height: 12px;
-      border-radius: 50% 50% 50% 0;
-      background: var(--accent);
-      transform: rotate(-45deg);
-      box-shadow: 0 0 0 6px rgba(124,74,33,0.12);
+    .vision-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
     }
 
-    .map-pin.one { top: 18%; right: 28%; }
-    .map-pin.two { top: 48%; right: 16%; }
-    .map-pin.three { top: 60%; left: 58%; }
+    .vision-kicker::before {
+      content: "";
+      width: 34px;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(124,74,33,0.7), rgba(86,126,163,0.5));
+    }
 
-    .fusion-piece {
-      position: absolute;
-      right: 13%;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 28%;
-      aspect-ratio: 1;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.74);
-      border: 1px solid rgba(255,255,255,0.85);
-      box-shadow: 0 24px 55px rgba(31, 41, 51, 0.16);
-      font-size: clamp(4.8rem, 10vw, 8rem);
+    .hero-card .card-title {
+      font-size: clamp(2rem, 3vw, 2.7rem);
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+      margin-bottom: 12px;
       color: var(--dark);
-      backdrop-filter: blur(7px);
     }
 
-    .hero-card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 28px;
-      padding: 28px;
-      box-shadow: var(--shadow);
+    .hero-card .card-text {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    .vision-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .vision-tags span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(222,215,202,0.92);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .vision-note {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.56);
+      border: 1px solid rgba(222,215,202,0.86);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 0.95rem;
     }
 
     .board {
@@ -606,9 +604,6 @@
         grid-column: auto;
       }
 
-      .fusion-visual {
-        min-height: 300px;
-      }
       nav {
         align-items: flex-start;
         flex-direction: column;
@@ -694,25 +689,21 @@
         </div>
       </div>
 
-      <aside class="hero-card" aria-label="Board vision and world vision illustration">
-        <div class="fusion-visual">
-          <div class="fusion-underlay" aria-hidden="true">
-            <div class="fusion-left-grid"></div>
-            <div class="fusion-right-grid"></div>
-            <div class="fusion-seam"></div>
-          </div>
-          <div class="fusion-map" aria-hidden="true"></div>
-          <div class="fusion-route" aria-hidden="true"></div>
-          <span class="map-pin one" aria-hidden="true"></span>
-          <span class="map-pin two" aria-hidden="true"></span>
-          <span class="map-pin three" aria-hidden="true"></span>
-          <div class="fusion-piece" aria-hidden="true">♘</div>
-        </div>
-
+      <aside class="hero-card" aria-label="Board vision and world vision summary">
+        <div class="vision-kicker">Pattern notebook</div>
         <h2 class="card-title">From board vision to world vision.</h2>
         <p class="card-text">
-          Pattern recognition starts on sixty-four squares, then expands to roads, landscapes, maps, and tools.
+          Pattern recognition starts on sixty-four squares, then expands into roads, landscapes, maps, and tools.
         </p>
+        <div class="vision-tags" aria-label="Topics covered on the site">
+          <span>Chess</span>
+          <span>GeoGuessr</span>
+          <span>Maps</span>
+          <span>Tools</span>
+        </div>
+        <div class="vision-note">
+          This site brings together chess teaching, GeoGuessr notes, map-making ideas, and small practical tools in one place.
+        </div>
       </aside>
     </section>
 
