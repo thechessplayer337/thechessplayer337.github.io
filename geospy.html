@@ -132,9 +132,9 @@
     .magic-orbit {
       position: absolute;
       left: 50%;
-      top: 29%;
-      width: min(620px, 84vw);
-      height: 150px;
+      top: 22%;
+      width: min(560px, 78vw);
+      height: 112px;
       transform: translate(-50%, -50%) rotate(-7deg);
       border-radius: 50%;
       border: 2px solid transparent;
@@ -150,7 +150,7 @@
     .magic-orbit::after {
       content: "";
       position: absolute;
-      inset: 16px 34px;
+      inset: 12px 28px;
       border-radius: 50%;
       border: 1px solid transparent;
       border-left-color: rgba(255,255,255,0.72);
@@ -164,8 +164,8 @@
     }
 
     @keyframes orbit-drift {
-      0%, 100% { transform: translate(-50%, -50%) rotate(-8deg) scale(1); }
-      50% { transform: translate(-50%, -50%) rotate(14deg) scale(1.04); }
+      0%, 100% { transform: translate(-50%, -50%) rotate(-7deg) scale(1); }
+      50% { transform: translate(-50%, -50%) rotate(8deg) scale(1.02); }
     }
 
     .eyebrow {
@@ -791,9 +791,9 @@
       }
 
       .magic-orbit {
-        width: min(540px, 92vw);
-        height: 128px;
-        top: 27%;
+        width: min(500px, 88vw);
+        height: 96px;
+        top: 21%;
       }
     }
 
