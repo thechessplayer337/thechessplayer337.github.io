@@ -283,85 +283,56 @@
       border-color: #cbbca7;
     }
 
-    .hero-card {
+    .hero-slogan {
       position: relative;
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid rgba(222, 215, 202, 0.9);
-      border-radius: 28px;
-      padding: 30px;
-      box-shadow: 0 24px 60px rgba(31, 41, 51, 0.10);
-      backdrop-filter: blur(12px);
-      overflow: hidden;
+      align-self: center;
+      justify-self: center;
+      max-width: 420px;
+      padding: 10px 0;
+      text-align: center;
     }
 
-    .hero-card::before {
+    .hero-slogan::before {
       content: "";
       position: absolute;
-      inset: 0;
+      inset: 6% -10%;
       background:
-        radial-gradient(circle at 80% 14%, rgba(86,126,163,0.16), transparent 16rem),
-        radial-gradient(circle at 18% 90%, rgba(124,74,33,0.14), transparent 14rem),
-        linear-gradient(135deg, rgba(255,255,255,0.30), transparent 35%);
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.42), transparent 56%),
+        radial-gradient(circle at 32% 62%, rgba(124,74,33,0.16), transparent 34%),
+        radial-gradient(circle at 70% 30%, rgba(86,126,163,0.18), transparent 32%);
+      filter: blur(10px);
+      z-index: -1;
       pointer-events: none;
     }
 
-    .hero-card > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .vision-kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 18px;
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.78rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-    }
-
-    .vision-kicker::before {
-      content: "";
-      width: 34px;
-      height: 1px;
-      background: linear-gradient(90deg, rgba(124,74,33,0.7), rgba(86,126,163,0.5));
-    }
-
-    .hero-card .card-title {
-      font-size: clamp(2rem, 3vw, 2.7rem);
-      line-height: 1.04;
+    .slogan-only {
+      font-size: clamp(2.2rem, 4.2vw, 4rem);
+      line-height: 1.02;
       letter-spacing: -0.04em;
-      margin-bottom: 12px;
-      color: var(--dark);
+      font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      font-style: italic;
+      font-weight: 700;
+      background: linear-gradient(135deg, #7c4a21 8%, #5d6f93 48%, #b27a46 82%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 8px 26px rgba(86,126,163,0.12);
+      filter: drop-shadow(0 3px 18px rgba(124,74,33,0.08));
+      transform: rotate(-4deg);
+      position: relative;
+      display: inline-block;
     }
 
-    .hero-card .card-text {
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--muted);
-      font-size: 1rem;
-      margin-bottom: 20px;
-    }
-
-    .vision-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .vision-tags span {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 12px;
+    .slogan-only::after {
+      content: "";
+      position: absolute;
+      left: -8%;
+      right: -8%;
+      bottom: -12px;
+      height: 3px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.72);
-      border: 1px solid rgba(222,215,202,0.92);
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.86rem;
-      color: var(--muted);
+      background: linear-gradient(90deg, rgba(124,74,33,0.0), rgba(124,74,33,0.48), rgba(86,126,163,0.46), rgba(124,74,33,0.0));
+      opacity: 0.78;
     }
 
     .board {
@@ -679,18 +650,8 @@
         </div>
       </div>
 
-      <aside class="hero-card" aria-label="Board vision and world vision summary">
-        <div class="vision-kicker">Pattern notebook</div>
-        <h2 class="card-title">From board vision to world vision.</h2>
-        <p class="card-text">
-          Pattern recognition starts on sixty-four squares, then expands into roads, landscapes, maps, and tools.
-        </p>
-        <div class="vision-tags" aria-label="Topics covered on the site">
-          <span>Chess</span>
-          <span>GeoGuessr</span>
-          <span>Maps</span>
-          <span>Tools</span>
-        </div>
+      <aside class="hero-slogan" aria-label="Board vision and world vision slogan">
+        <h2 class="slogan-only">From Board Vision to World Vision</h2>
       </aside>
     </section>
 
