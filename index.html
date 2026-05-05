@@ -31,9 +31,13 @@
 
     body {
       font-family: Georgia, "Times New Roman", serif;
-      background: var(--bg);
+      background:
+        radial-gradient(circle at 18% 18%, rgba(124, 74, 33, 0.09), transparent 30rem),
+        radial-gradient(circle at 86% 22%, rgba(62, 103, 142, 0.10), transparent 34rem),
+        linear-gradient(180deg, #f8f5ef 0%, var(--bg) 46%, #f4efe6 100%);
       color: var(--text);
       line-height: 1.6;
+      overflow-x: hidden;
     }
 
     a {
@@ -90,6 +94,21 @@
       align-items: center;
       gap: 48px;
       padding: 72px 0;
+      position: relative;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 7% -7% auto auto;
+      width: min(640px, 52vw);
+      height: min(640px, 52vw);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, rgba(255,255,255,0.55), transparent 56%),
+        conic-gradient(from 140deg, rgba(124,74,33,0.05), rgba(62,103,142,0.14), rgba(239,226,211,0.14), rgba(124,74,33,0.05));
+      filter: blur(4px);
+      z-index: -2;
     }
 
     .eyebrow {
@@ -135,6 +154,11 @@
       gap: 14px;
     }
 
+    .hero-actions.stack {
+      margin-top: 12px;
+      padding-left: 150px;
+    }
+
     .button {
       display: inline-flex;
       align-items: center;
@@ -155,6 +179,35 @@
     .button.secondary {
       background: transparent;
       color: var(--dark);
+    }
+
+    .button.geospy {
+      position: relative;
+      overflow: hidden;
+      border-color: rgba(124, 74, 33, 0.46);
+      background:
+        linear-gradient(135deg, rgba(124, 74, 33, 0.12), rgba(62, 103, 142, 0.12)),
+        rgba(255, 255, 255, 0.72);
+      box-shadow: 0 10px 28px rgba(62, 103, 142, 0.11);
+    }
+
+    .button.geospy::before {
+      content: "";
+      position: absolute;
+      inset: -80% -35%;
+      background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.76) 50%, transparent 64%);
+      transform: translateX(-55%) rotate(12deg);
+      animation: button-shine 3.6s ease-in-out infinite;
+    }
+
+    .button.geospy span {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes button-shine {
+      0%, 45% { transform: translateX(-65%) rotate(12deg); }
+      70%, 100% { transform: translateX(65%) rotate(12deg); }
     }
 
     .button:hover {
@@ -182,6 +235,99 @@
       box-shadow: 0 10px 24px rgba(31, 41, 51, 0.10);
       border-color: #cbbca7;
     }
+
+    .fusion-visual {
+      position: relative;
+      margin-bottom: 24px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(240,223,195,0.86), rgba(255,255,255,0.42)),
+        radial-gradient(circle at 30% 25%, rgba(124,74,33,0.18), transparent 18rem);
+      min-height: 360px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+    }
+
+    .fusion-map {
+      position: absolute;
+      inset: 0;
+      opacity: 0.72;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 540'%3E%3Cg fill='none' stroke='%233e678e' stroke-width='2.4' opacity='0.38'%3E%3Cpath d='M102 182c62-46 126-50 164-16 28 26 14 59 52 77 46 22 74-20 117-2 57 25 39 95 89 113 53 19 82-43 143-18 45 19 78 69 118 54'/%3E%3Cpath d='M180 345c44-22 102-27 143 0 34 22 44 60 81 68 45 9 72-38 124-23 54 16 82 77 150 61'/%3E%3Cpath d='M62 270h775M120 104h660M120 436h660M220 54c-42 118-42 303 0 431M450 42c-20 124-20 318 0 452M680 54c42 118 42 303 0 431'/%3E%3C/g%3E%3Cg fill='%233e678e' opacity='0.24'%3E%3Cpath d='M161 145c34-28 92-22 112 7 15 22-15 44 2 68 20 28 70 9 88 38 18 28-13 75-49 86-41 13-63-27-100-16-35 10-49 53-83 47-39-7-67-72-55-123 9-37 48-76 85-107z'/%3E%3Cpath d='M505 128c54-27 135-15 171 30 36 45 11 90 52 122 31 24 74 14 83 42 10 32-35 77-82 83-55 7-75-41-127-34-52 7-77 60-119 46-38-13-54-72-44-118 9-40 44-52 38-88-4-29-30-52 28-83z'/%3E%3Cpath d='M396 344c31-10 56 17 53 44-3 33-45 55-74 39-28-15-24-70 21-83z'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .fusion-board {
+      position: absolute;
+      left: 7%;
+      bottom: 8%;
+      width: 54%;
+      transform: rotate(-5deg);
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 22px 45px rgba(31, 41, 51, 0.18);
+      border: 1px solid rgba(255,255,255,0.64);
+    }
+
+    .fusion-board span {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      font-size: clamp(0.9rem, 2vw, 1.4rem);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .fusion-board span:nth-child(odd) { background: rgba(240,223,195,0.94); }
+    .fusion-board span:nth-child(even) { background: rgba(138,90,52,0.94); color: white; }
+
+    .fusion-piece {
+      position: absolute;
+      right: 10%;
+      bottom: 11%;
+      width: 34%;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.58);
+      border: 1px solid rgba(255,255,255,0.75);
+      box-shadow: 0 24px 55px rgba(31, 41, 51, 0.16);
+      font-size: clamp(4.8rem, 10vw, 8rem);
+      color: var(--dark);
+      backdrop-filter: blur(7px);
+    }
+
+    .fusion-route {
+      position: absolute;
+      left: 50%;
+      top: 38%;
+      width: 62%;
+      height: 38%;
+      transform: translate(-50%, -50%) rotate(-6deg);
+      border: 2px solid rgba(62, 103, 142, 0.36);
+      border-left-color: transparent;
+      border-right-color: transparent;
+      border-radius: 50%;
+      filter: drop-shadow(0 0 12px rgba(62,103,142,0.22));
+    }
+
+    .map-pin {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50% 50% 50% 0;
+      background: var(--accent);
+      transform: rotate(-45deg);
+      box-shadow: 0 0 0 6px rgba(124,74,33,0.12);
+    }
+
+    .map-pin.one { top: 22%; right: 26%; }
+    .map-pin.two { top: 48%; right: 14%; }
+    .map-pin.three { top: 35%; left: 18%; }
 
     .hero-card {
       background: var(--panel);
@@ -412,6 +558,13 @@
     }
 
     @media (max-width: 860px) {
+      .hero-actions.stack {
+        padding-left: 0;
+      }
+
+      .fusion-visual {
+        min-height: 300px;
+      }
       nav {
         align-items: flex-start;
         flex-direction: column;
@@ -468,6 +621,7 @@
         <a href="#working-on">Working On</a>
         <a href="#chess">Chess</a>
         <a href="#geoguessr">GeoGuessr</a>
+        <a href="geospy.html">GeoSpy</a>
         <a href="#extensions">Extensions</a>
         <a href="#contact">Contact</a>
       </div>
@@ -493,86 +647,35 @@
           <a class="button primary" href="#chess">Start with Chess</a>
           <a class="button secondary" href="#geoguessr">Read GeoGuessr Notes</a>
         </div>
+        <div class="hero-actions stack">
+          <a class="button geospy" href="geospy.html"><span>Try GeoSpy</span></a>
+        </div>
       </div>
 
-      <aside class="hero-card" aria-label="Chessboard illustration">
-        <div class="board">
-          <div class="square light">♜</div>
-          <div class="square dark-square">♞</div>
-          <div class="square light">♝</div>
-          <div class="square dark-square">♛</div>
-          <div class="square light">♚</div>
-          <div class="square dark-square">♝</div>
-          <div class="square light">♞</div>
-          <div class="square dark-square">♜</div>
+      <aside class="hero-card" aria-label="Board vision and world vision illustration">
+        <div class="fusion-visual">
+          <div class="fusion-map" aria-hidden="true"></div>
+          <div class="fusion-route" aria-hidden="true"></div>
+          <span class="map-pin one" aria-hidden="true"></span>
+          <span class="map-pin two" aria-hidden="true"></span>
+          <span class="map-pin three" aria-hidden="true"></span>
 
-          <div class="square dark-square">♟</div>
-          <div class="square light">♟</div>
-          <div class="square dark-square">♟</div>
-          <div class="square light">♟</div>
-          <div class="square dark-square">♟</div>
-          <div class="square light">♟</div>
-          <div class="square dark-square">♟</div>
-          <div class="square light">♟</div>
-
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-          <div class="square dark-square"></div>
-          <div class="square light"></div>
-
-          <div class="square light">♙</div>
-          <div class="square dark-square">♙</div>
-          <div class="square light">♙</div>
-          <div class="square dark-square">♙</div>
-          <div class="square light">♙</div>
-          <div class="square dark-square">♙</div>
-          <div class="square light">♙</div>
-          <div class="square dark-square">♙</div>
-
-          <div class="square dark-square">♖</div>
-          <div class="square light">♘</div>
-          <div class="square dark-square">♗</div>
-          <div class="square light">♕</div>
-          <div class="square dark-square">♔</div>
-          <div class="square light">♗</div>
-          <div class="square dark-square">♘</div>
-          <div class="square light">♖</div>
+          <div class="fusion-board" aria-hidden="true">
+            <span>♜</span><span>♞</span><span>♝</span><span>♛</span><span>♚</span><span>♝</span><span>♞</span><span>♜</span>
+            <span>♟</span><span>♟</span><span>♟</span><span>♟</span><span>♟</span><span>♟</span><span>♟</span><span>♟</span>
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            <span>♙</span><span>♙</span><span>♙</span><span>♙</span><span>♙</span><span>♙</span><span>♙</span><span>♙</span>
+            <span>♖</span><span>♘</span><span>♗</span><span>♕</span><span>♔</span><span>♗</span><span>♘</span><span>♖</span>
+          </div>
+          <div class="fusion-piece" aria-hidden="true">♘</div>
         </div>
 
         <h2 class="card-title">From board vision to world vision.</h2>
         <p class="card-text">
-          This site is a notebook for pattern recognition: tactics, positions, roads, landscapes, maps, and tools.
+          Pattern recognition starts on sixty-four squares, then expands to roads, landscapes, maps, and tools.
         </p>
       </aside>
     </section>
