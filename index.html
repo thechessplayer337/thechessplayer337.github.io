@@ -7,6 +7,7 @@
   <meta name="description" content="The Chessplayer — chess teaching, GeoGuessr guides, experience notes, and useful extensions." />
 
   <style>
+    @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&display=swap");
     :root {
       --bg: #f7f4ee;
       --panel: #ffffff;
@@ -286,52 +287,57 @@
     .hero-slogan {
       position: relative;
       align-self: center;
-      justify-self: center;
-      max-width: 420px;
-      padding: 10px 0;
+      justify-self: end;
+      width: min(560px, 100%);
+      margin-right: 44px;
+      padding: 18px 0 18px 78px;
       text-align: center;
     }
 
     .hero-slogan::before {
       content: "";
       position: absolute;
-      inset: 6% -10%;
+      inset: 6% -2%;
       background:
         radial-gradient(circle at 50% 50%, rgba(255,255,255,0.42), transparent 56%),
-        radial-gradient(circle at 32% 62%, rgba(124,74,33,0.16), transparent 34%),
-        radial-gradient(circle at 70% 30%, rgba(86,126,163,0.18), transparent 32%);
+        radial-gradient(circle at 30% 68%, rgba(124,74,33,0.16), transparent 34%),
+        radial-gradient(circle at 72% 28%, rgba(86,126,163,0.18), transparent 32%);
       filter: blur(10px);
       z-index: -1;
       pointer-events: none;
     }
 
     .slogan-only {
-      font-size: clamp(2.2rem, 4.2vw, 4rem);
-      line-height: 1.02;
-      letter-spacing: -0.04em;
-      font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      font-size: clamp(3.2rem, 5.2vw, 5.4rem);
+      line-height: 0.9;
+      letter-spacing: -0.035em;
+      font-family: "Cormorant Garamond", "Palatino Linotype", Georgia, serif;
       font-style: italic;
       font-weight: 700;
-      background: linear-gradient(135deg, #7c4a21 8%, #5d6f93 48%, #b27a46 82%);
+      background: linear-gradient(135deg, #87471d 6%, #7a6b84 32%, #4f6794 60%, #bd7a3b 94%);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      text-shadow: 0 8px 26px rgba(86,126,163,0.12);
-      filter: drop-shadow(0 3px 18px rgba(124,74,33,0.08));
-      transform: rotate(-4deg);
+      text-shadow: 0 8px 26px rgba(86,126,163,0.10);
+      filter: drop-shadow(0 3px 18px rgba(124,74,33,0.06));
       position: relative;
       display: inline-block;
+    }
+
+    .slogan-only .line {
+      display: block;
+      white-space: nowrap;
     }
 
     .slogan-only::after {
       content: "";
       position: absolute;
-      left: -8%;
-      right: -8%;
-      bottom: -12px;
+      left: 2%;
+      right: 2%;
+      bottom: -14px;
       height: 3px;
       border-radius: 999px;
-      background: linear-gradient(90deg, rgba(124,74,33,0.0), rgba(124,74,33,0.48), rgba(86,126,163,0.46), rgba(124,74,33,0.0));
+      background: linear-gradient(90deg, rgba(124,74,33,0.0), rgba(124,74,33,0.46), rgba(86,126,163,0.42), rgba(124,74,33,0.0));
       opacity: 0.78;
     }
 
@@ -565,6 +571,13 @@
         grid-column: auto;
       }
 
+      .hero-slogan {
+        justify-self: center;
+        margin-right: 0;
+        padding: 10px 0;
+        width: 100%;
+      }
+
       nav {
         align-items: flex-start;
         flex-direction: column;
@@ -651,7 +664,7 @@
       </div>
 
       <aside class="hero-slogan" aria-label="Board vision and world vision slogan">
-        <h2 class="slogan-only">From Board Vision to World Vision</h2>
+        <h2 class="slogan-only"><span class="line">From Board</span><span class="line">Vision to</span><span class="line">World Vision</span></h2>
       </aside>
     </section>
 
