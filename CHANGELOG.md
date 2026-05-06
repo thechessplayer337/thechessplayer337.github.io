@@ -1,6 +1,8 @@
 # GeoSpy Changelog
 
-## 2026-05-06 — Contact section polish
+## v1.1.8 — Contact section polish
+
+**Release date:** 2026-05-06
 
 - Replaced the Contact card’s `Back to top` link with a Discord link.
 - Added a standalone floating `Back to top` button in the bottom-right corner.
