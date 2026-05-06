@@ -1,5 +1,11 @@
 # GeoSpy Changelog
 
+## 2026-05-06 — Contact section polish
+
+- Replaced the Contact card’s `Back to top` link with a Discord link.
+- Added a standalone floating `Back to top` button in the bottom-right corner.
+- Kept the button style consistent with the navigation button used on Beginner Notes.
+
 ## v1.1.7 — Website Integration and Visual Refresh
 
 **Release date:** 2026-05-05
