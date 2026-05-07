@@ -1728,6 +1728,7 @@ const playersList = document.getElementById("playersList");
   let transitionLock = false;
   let pendingVoteTarget = "";
   let otherImagesVisible = false;
+  const countdownAudioKeys = new Map();
 
   async function loadLocationData() {
     try {
@@ -1978,10 +1979,10 @@ const playersList = document.getElementById("playersList");
       .replaceAll("'", "&#039;");
   }
 
-  function countdownHtml(seconds, label = "s") {
+  function countdownHtml(seconds, label = "s", dangerAt = 5) {
     const safeSeconds = Math.max(0, Number(seconds || 0));
     const text = `${safeSeconds}${label}`;
-    if (safeSeconds <= 5) {
+    if (safeSeconds > 0 && safeSeconds <= dangerAt) {
       return `<span class="countdown-danger">${text}</span>`;
     }
     return escapeHtml(text);
@@ -2020,6 +2021,57 @@ const playersList = document.getElementById("playersList");
       // Some browsers block audio unless the page has already received user interaction.
     }
   }
+
+  function playCountdownTick(remainingSeconds, dangerAt = 5) {
+    const safeSeconds = Math.max(0, Number(remainingSeconds || 0));
+    if (safeSeconds <= 0 || safeSeconds > dangerAt) return;
+
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      const urgency = Math.max(0, dangerAt - safeSeconds + 1) / dangerAt;
+      const peakVolume = 0.035 + urgency * 0.115;
+      const frequency = 720 + urgency * 300;
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(peakVolume, ctx.currentTime + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.20);
+
+      osc.onended = () => {
+        try {
+          ctx.close();
+        } catch (_) {}
+      };
+    } catch (_) {
+      // Some browsers block audio unless the page has already received user interaction.
+    }
+  }
+
+  function maybePlayCountdownTick(scope, uniqueKey, remainingSeconds, dangerAt = 5) {
+    const safeSeconds = Math.max(0, Number(remainingSeconds || 0));
+    if (safeSeconds <= 0 || safeSeconds > dangerAt) return;
+
+    const key = `${uniqueKey}:${safeSeconds}`;
+    if (countdownAudioKeys.get(scope) === key) return;
+
+    countdownAudioKeys.set(scope, key);
+    playCountdownTick(safeSeconds, dangerAt);
+  }
+
 
   function showGameNotification(title, text, autoHideMs = 3000, playSound = true) {
     gameNotificationTitle.textContent = title;
@@ -3238,9 +3290,17 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
 
       const speakerState = getCurrentSpeaker(room, alivePlayers);
       const remainingSeconds = getDescriptionRemainingSeconds(room);
+      if (!room.privateChat && speakerState.speakerId) {
+        maybePlayCountdownTick(
+          "description",
+          `${currentRoomId || "room"}:${room.round || 0}:${speakerState.speakerId}`,
+          remainingSeconds,
+          5
+        );
+      }
       const timerLabel = room.privateChat
-        ? `PAUSED at ${countdownHtml(remainingSeconds)}`
-        : countdownHtml(remainingSeconds);
+        ? `PAUSED at ${countdownHtml(remainingSeconds, "s", 5)}`
+        : countdownHtml(remainingSeconds, "s", 5);
       const speakerName = speakerState.speaker?.name || "Waiting...";
       const activeOrderNames = speakerState.activeOrder
         .map((id, index) => {
@@ -3424,7 +3484,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     if (chat.status === "pending") {
       const requestRemainingSeconds = getPrivateChatRequestRemainingSeconds(room);
 
-      const requestTimeHtml = countdownHtml(requestRemainingSeconds);
+      const requestTimeHtml = countdownHtml(requestRemainingSeconds, "s", 3);
 
       if (isParticipant) {
         privateChatStatus.innerHTML = `${escapeHtml(requesterName)} requested a private chat with ${escapeHtml(targetName)}. Description timer is paused/frozen. Response time left: ${requestTimeHtml}.`;
@@ -3441,8 +3501,14 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
 
     if (chat.status === "active") {
       const remainingSeconds = getPrivateChatRemainingSeconds(room);
+      maybePlayCountdownTick(
+        "privateChat",
+        `${currentRoomId || "room"}:${room.round || 0}:${chat.requesterId || "requester"}:${chat.targetId || "target"}`,
+        remainingSeconds,
+        5
+      );
 
-      const remainingTimeHtml = countdownHtml(remainingSeconds);
+      const remainingTimeHtml = countdownHtml(remainingSeconds, "s", 5);
 
       if (isParticipant) {
         privateChatStatus.innerHTML = `Private chat with ${escapeHtml(currentPlayerId === chat.requesterId ? targetName : requesterName)}. Time left: ${remainingTimeHtml}.`;
