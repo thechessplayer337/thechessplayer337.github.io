@@ -2022,21 +2022,55 @@ const playersList = document.getElementById("playersList");
     }
   }
 
-  function playCountdownTick(remainingSeconds, dangerAt = 5) {
-    const safeSeconds = Math.max(0, Number(remainingSeconds || 0));
-    if (safeSeconds <= 0 || safeSeconds > dangerAt) return;
+  let lastCountdownTickKey = "";
 
-    try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return;
+function playCountdownTick(remainingSeconds, dangerAt = 5, timerKey = "default") {
+  const safeSeconds = Math.ceil(Number(remainingSeconds || 0));
 
-      const ctx = new AudioContext();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+  if (safeSeconds <= 0 || safeSeconds > dangerAt) return;
 
-      const urgency = Math.max(0, dangerAt - safeSeconds + 1) / dangerAt;
-      const peakVolume = 0.1 + urgency * 0.12;
-      const frequency = 720 + urgency * 300;
+  const tickKey = `${timerKey}:${safeSeconds}`;
+
+  // Make sure each second only plays once for each timer.
+  if (tickKey === lastCountdownTickKey) return;
+  lastCountdownTickKey = tickKey;
+
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    // 5s = softer, 1s = loudest
+    const urgency = (dangerAt - safeSeconds + 1) / dangerAt;
+
+    const peakVolume = 0.035 + urgency * 0.28;
+    const frequency = 700 + urgency * 420;
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(peakVolume, ctx.currentTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+
+    osc.onended = () => {
+      try {
+        ctx.close();
+      } catch (_) {}
+    };
+  } catch (_) {
+    // Some browsers may block audio.
+  }
+}
 
       osc.type = "sine";
       osc.frequency.setValueAtTime(frequency, ctx.currentTime);
