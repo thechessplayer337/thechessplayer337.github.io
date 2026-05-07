@@ -2035,7 +2035,7 @@ const playersList = document.getElementById("playersList");
       const gain = ctx.createGain();
 
       const urgency = Math.max(0, dangerAt - safeSeconds + 1) / dangerAt;
-      const peakVolume = 0.035 + urgency * 0.115;
+      const peakVolume = 0.1 + urgency * 0.12;
       const frequency = 720 + urgency * 300;
 
       osc.type = "sine";
