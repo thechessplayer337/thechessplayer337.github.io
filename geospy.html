@@ -2022,61 +2022,29 @@ const playersList = document.getElementById("playersList");
     }
   }
 
-  let lastCountdownTickKey = "";
+  function playCountdownTick(remainingSeconds, dangerAt = 5) {
+    const safeSeconds = Math.ceil(Number(remainingSeconds || 0));
 
-function playCountdownTick(remainingSeconds, dangerAt = 5, timerKey = "default") {
-  const safeSeconds = Math.ceil(Number(remainingSeconds || 0));
+    if (safeSeconds <= 0 || safeSeconds > dangerAt) return;
 
-  if (safeSeconds <= 0 || safeSeconds > dangerAt) return;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
 
-  const tickKey = `${timerKey}:${safeSeconds}`;
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
-  // Make sure each second only plays once for each timer.
-  if (tickKey === lastCountdownTickKey) return;
-  lastCountdownTickKey = tickKey;
-
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    // 5s = softer, 1s = loudest
-    const urgency = (dangerAt - safeSeconds + 1) / dangerAt;
-
-    const peakVolume = 0.035 + urgency * 0.28;
-    const frequency = 700 + urgency * 420;
-
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(frequency, ctx.currentTime);
-
-    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(peakVolume, ctx.currentTime + 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.2);
-
-    osc.onended = () => {
-      try {
-        ctx.close();
-      } catch (_) {}
-    };
-  } catch (_) {
-    // Some browsers may block audio.
-  }
-}
+      // 5s = softer, 1s = loudest.
+      const urgency = (dangerAt - safeSeconds + 1) / dangerAt;
+      const peakVolume = 0.045 + urgency * 0.34;
+      const frequency = 700 + urgency * 420;
 
       osc.type = "sine";
       osc.frequency.setValueAtTime(frequency, ctx.currentTime);
 
       gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(peakVolume, ctx.currentTime + 0.018);
+      gain.gain.exponentialRampToValueAtTime(peakVolume, ctx.currentTime + 0.015);
       gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
 
       osc.connect(gain);
@@ -2091,12 +2059,12 @@ function playCountdownTick(remainingSeconds, dangerAt = 5, timerKey = "default")
         } catch (_) {}
       };
     } catch (_) {
-      // Some browsers block audio unless the page has already received user interaction.
+      // Some browsers may block audio unless the page has already received user interaction.
     }
   }
 
   function maybePlayCountdownTick(scope, uniqueKey, remainingSeconds, dangerAt = 5) {
-    const safeSeconds = Math.max(0, Number(remainingSeconds || 0));
+    const safeSeconds = Math.ceil(Number(remainingSeconds || 0));
     if (safeSeconds <= 0 || safeSeconds > dangerAt) return;
 
     const key = `${uniqueKey}:${safeSeconds}`;
