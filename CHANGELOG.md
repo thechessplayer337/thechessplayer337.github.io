@@ -1,184 +1,112 @@
 # GeoSpy Changelog
 
-## v1.1.9 — GeoSpy cinematic UI update
+## v1.3 — Gameplay Balance and Expanded Private Chat
 
-- Removed the old title orbit effect from the GeoSpy landing section.
-- Added subtle moving light points over the existing map/grid background.
-- Introduced a darker cinematic in-game layout after the game starts.
-- Made the player screenshot the visual focus of the game screen.
-- Added a gradual image reveal effect and subtle golden frame glow.
-- Kept host controls available in a compact in-game control area.
+**Release date:** 2026-05-07
 
-## v1.1.8 — Contact section polish
+GeoSpy v1.3 is a gameplay balance update focused on making discussion faster, private chat more meaningful, and larger rooms more strategically interesting.
 
-**Release date:** 2026-05-06
+### Speaking Timer Balance
 
-- Replaced the Contact card’s `Back to top` link with a Discord link.
-- Added a standalone floating `Back to top` button in the bottom-right corner.
-- Kept the button style consistent with the navigation button used on Beginner Notes.
+- Reduced each player's speaking time from **60 seconds** to **45 seconds**.
+- Updated related description-phase text so the interface and rules remain consistent.
+- This change is intended to keep description rounds faster and reduce downtime between turns.
 
-## v1.1.7 — Website Integration and Visual Refresh
+### Private Chat Balance
 
-**Release date:** 2026-05-05
+- Reduced accepted private chat duration from **90 seconds** to **60 seconds** total.
+- Changed private chat opportunities from **one per player per game** to:
 
-This update improves how GeoSpy appears on The Chessplayer website and makes the playable prototype easier to access from the homepage.
+    Private chat opportunities per player = total player count - 2
 
-### Homepage Integration
+| Players | Private chat opportunities per player |
+|---:|---:|
+| 3 | 1 |
+| 4 | 2 |
+| 5 | 3 |
+| 6 | 4 |
 
-- Added a direct **GeoSpy** item to the main homepage navigation bar.
+- A private chat opportunity is consumed only when the request is **accepted**.
+- If the invited player refuses or does not respond before the request timer ends, the opportunity is **not** consumed.
+- Private chat remains available only during the requesting player's own speaking turn.
+- Added interface feedback showing remaining private chat opportunities, such as:
+
+    Remaining: 2 / 3
+
+### Design Goal
+
+- Make private chat more useful in larger rooms.
+- Encourage more social deduction, alliance-building, and targeted questioning.
+- Prevent private chat from becoming too slow by shortening each accepted chat to 60 seconds.
+- Keep smaller 3-player rooms balanced by preserving the original one-chat limit.
+
+---
+
+## v1.2 — Website Integration and Cinematic UI Update
+
+**Release date:** 2026-05-05 to 2026-05-07
+
+GeoSpy v1.2 is a major visual and presentation update. It improves how GeoSpy appears on The Chessplayer website and makes the in-game experience feel less like a functional webpage and more like a cinematic social deduction game.
+
+### Website Integration
+
+- Added a direct **GeoSpy** item to The Chessplayer homepage navigation.
 - Added a **Try GeoSpy** button to the homepage hero section.
-- Updated the button layout so **Try GeoSpy** aligns with the two main hero buttons and no longer appears too short.
 - Connected the homepage call-to-action directly to `geospy.html`.
+- Adjusted the homepage button layout so **Try GeoSpy** aligns cleanly with the other hero buttons.
+- Added a direct **Read rules** link from the GeoSpy landing page to the public Google Docs rules document.
 
 ### Homepage Visual Refresh
 
-- Reworked the homepage hero illustration around the slogan **“From board vision to world vision.”**
-- Added a board-to-world visual concept:
-  - left side: chessboard-style grid
-  - right side: latitude/longitude globe-style grid
-  - center: chess piece bridge between board vision and world vision
-- Reduced the feeling of a separate beige illustration block by integrating the board and map elements into one blended visual panel.
+- Reworked the homepage hero concept around the slogan **From Board Vision to World Vision**.
+- Added a board-to-world visual direction:
+  - chessboard-inspired background structure
+  - latitude/longitude map-grid atmosphere
+  - stronger connection between chess pattern recognition and GeoGuessr-style world recognition
+- Simplified the right-side homepage slogan area so it feels cleaner and less crowded.
+- Replaced the Contact card's old `Back to top` link with a Discord link.
+- Added a standalone floating `Back to top` button in the bottom-right corner.
+- Kept the floating button style consistent with the lightweight navigation buttons used on note pages such as Beginner Notes.
 
-### GeoSpy Landing Page Design
+### GeoSpy Landing Page Visual Refresh
 
 - Centered the GeoSpy entry layout and Create / Join card.
 - Added a subtle world-map / globe-projection background behind the page.
 - Increased background color depth while keeping text readable.
-- Adjusted the animated light orbit so it surrounds the **GeoSpy** title without covering the letters.
+- Removed the old title orbit effect from the GeoSpy landing section.
+- Added subtle moving light points over the existing map/grid background.
 - Moved **Back to Home** to the far left of the page for clearer navigation.
 
-### Notes
+### Cinematic In-game Layout
 
-- This is a visual and navigation update only.
-- Core gameplay logic, Firebase room flow, screenshot assignment, feedback submission, and voting systems are unchanged.
+- Introduced a darker cinematic in-game layout after the game starts.
+- Made the player's screenshot the visual focus of the game screen.
+- Added a gradual image reveal effect when the screenshot appears.
+- Added a subtle golden frame glow around the screenshot area.
+- Reduced visual clutter during active gameplay.
+- Kept description, voting, private chat, result, and feedback controls available below or around the main image.
+- Kept host controls available in a compact in-game control area.
+- Preserved the host-only **Restart game** and **Back to Lobby** controls during active games.
 
----
+### Design Goal
 
-## v1.1.6 — Active Game Restart Hotfix
-
-**Release date:** 2026-05-03
-
-This hotfix improves host control during active games.
-
-### Room Management Fixes
-
-- Added a host-only **Restart game** button during active rounds.
-- The host can now restart the current game before it ends.
-- Restart game keeps the same room and the same players.
-- Restart game immediately assigns new roles, countries/regions, and screenshots.
-- This is useful when a game needs to be restarted because of a bad image, a flow issue, or a player-side problem.
-- **Back to Lobby** remains available as a full room reset option.
+- Make the landing page feel more polished and game-like.
+- Make the transition into an active game feel more dramatic.
+- Reduce the feeling of a plain functional webpage.
+- Focus the player's attention on the screenshot, description, voting, and deduction flow.
 
 ---
 
-## v1.1.5 — Notification Timing and Sound Hotfix
+## v1.1 — Feedback, Rejoin, and Room Control Stability Update
 
-**Release date:** 2026-05-03
+**Release date:** 2026-05-02 to 2026-05-03
 
-This hotfix improves the game start notification experience.
+GeoSpy v1.1 improves the first playable release with feedback reporting, rejoin support, better room controls, notification fixes, and several important gameplay stability hotfixes.
 
-### Start Notification Fixes
-
-- Fixed an issue where non-host players could miss the game start notification.
-- The game start notification now appears for all players.
-- If a player's page is in the background when the game starts, the notification appears when they return to the tab.
-- Reduced the notification duration to **3 seconds**.
-- Added a short notification sound when the game starts.
-- If the browser blocks autoplay audio, the notification still appears silently.
-
----
-
-## v1.1.4 — Clean Back to Lobby Hotfix
-
-**Release date:** 2026-05-03
-
-This hotfix clarifies and fixes the post-game room reset flow.
-
-### Room Management Fixes
-
-- Updated **Back to Lobby** so it fully resets the current room.
-- Back to Lobby now deletes the active room and returns all players to the clean Create / Join screen.
-- Players who want to change room size must now create a new room after returning to lobby.
-- This prevents confusion between restarting the same game room and creating a fresh room with a different player count.
-- **Restart game** remains available for the host after game over and keeps the same room and same players.
-
----
-
-## v1.1.3 — Restart Game and Back to Lobby Controls
-
-**Release date:** 2026-05-03
-
-This update improves the post-game host controls.
-
-### Post-game Controls
-
-- Added a host-only **Restart game** button after game over.
-- Restart game keeps the same room and the same players.
-- Restart game immediately starts a new game with new roles, countries/regions, and screenshots.
-- Added a host-only **Back to Lobby** button after game over.
-- Separated the meaning of restarting a game from resetting the room flow.
-
----
-
-## v1.1.2 — Game Start Notification
-
-**Release date:** 2026-05-03
-
-This update adds a clearer notification when a game begins.
-
-### Start Notification
-
-- Added a visible top notification when the game starts.
-- The notification tells players that their screenshot is ready.
-- Added a **View image** button that scrolls directly to the player’s role and screenshot area.
-- Added a **Dismiss** button.
-- The notification is shown once per player per game.
-
----
-
-## v1.1.1 — Feedback Privacy and Storage Hotfix
-
-**Release date:** 2026-05-03
-
-This hotfix improves the feedback system introduced in v1.1.
-
-### Feedback Privacy Fixes
-
-- Fixed an issue where the feedback window could display hidden role and country information during the game.
-- The feedback window no longer displays:
-  - player role
-  - country/region
-  - country/region code
-- The feedback window now only displays non-secret context, such as:
-  - room
-  - round
-  - phase
-  - player name
-  - screenshot filename
-
-### Feedback Storage Fixes
-
-- Updated feedback storage so all feedback records are saved under a single root-level Firebase path:
-
-```text
-feedback/{feedbackId}
-```
-
-- This makes feedback easier to find and review.
-- Feedback records still automatically include the relevant room, player, screenshot, country/region, and game context internally for maintenance purposes.
-
----
-
-## v1.1 — Feedback and Bad Image Reporting
-
-**Release date:** 2026-05-03
-
-GeoSpy v1.1 adds an in-game feedback and issue reporting system for long-term dataset maintenance and gameplay improvement.
-
-### Feedback System
+### Feedback and Bad Image Reporting
 
 - Added a low-profile **Feedback** button to the bottom-right corner of the page.
-- Added a **Report this image** button in the player’s own screenshot panel.
+- Added a **Report this image** button in the player's own screenshot panel.
 - Added feedback categories:
   - Bad / blurry image
   - Black or broken image
@@ -188,11 +116,9 @@ GeoSpy v1.1 adds an in-game feedback and issue reporting system for long-term da
   - General suggestion
 - Feedback is submitted directly to Firebase under:
 
-```text
-feedback/{feedbackId}
-```
+    feedback/{feedbackId}
 
-### Automatic Context Attachment
+### Automatic Feedback Context
 
 Each feedback submission automatically records relevant game context, including:
 
@@ -213,9 +139,25 @@ Each feedback submission automatically records relevant game context, including:
 - browser user agent
 - submission time
 
-### Dataset Maintenance
+### Feedback Privacy Fixes
 
-- Bad image reports now include the exact screenshot filename, making later image removal or replacement possible.
+- Fixed an issue where the feedback window could display hidden role and country information during the game.
+- The feedback window no longer displays:
+  - player role
+  - country/region
+  - country/region code
+- The feedback window now only displays non-secret context, such as:
+  - room
+  - round
+  - phase
+  - player name
+  - screenshot filename
+- Feedback records still store relevant internal context for maintenance purposes.
+
+### Dataset Maintenance Support
+
+- Bad image reports now include the exact screenshot filename.
+- This makes later image removal or replacement possible.
 - Reports can be used to identify:
   - blurry screenshots
   - broken screenshots
@@ -224,22 +166,14 @@ Each feedback submission automatically records relevant game context, including:
   - game-flow bugs
 - This update prepares the project for future screenshot quality control and dataset patch releases.
 
----
+### Rejoin Support
 
-## v1.0.3 — Rejoin Support Hotfix
-
-**Release date:** 2026-05-02
-
-This hotfix adds support for players rejoining an active game after accidentally refreshing, closing the page, or disconnecting.
-
-### Room Rejoin
-
-- Added rejoin support for active games.
-- Players can now rejoin an existing room by entering:
+- Added support for players rejoining an active game after accidentally refreshing, closing the page, or disconnecting.
+- Players can rejoin an existing room by entering:
   - the same room code
   - the same player name used earlier in the game
 - Rejoining restores the original player slot instead of creating a new player.
-- Rejoining preserves the player’s:
+- Rejoining preserves the player's:
   - role
   - country/region
   - screenshot
@@ -249,20 +183,12 @@ This hotfix adds support for players rejoining an active game after accidentally
 - New players are still prevented from joining after a game has started.
 - Lobby-stage rejoin is also supported for players who disconnect before the game begins.
 
----
-
-## v1.0.2 — Fixed Images Across Rounds Hotfix
-
-**Release date:** 2026-05-02
-
-This hotfix fixes an important gameplay issue where players could receive new screenshots after a tied vote or a failed vote-to-vote round.
-
-### Gameplay Fixes
+### Fixed Images Across Rounds
 
 - Fixed an issue where player screenshots could change between rounds within the same game.
 - Player screenshots now remain fixed for the entire game.
 - A new description round no longer reassigns images.
-- Tied votes now correctly proceed to the next round while keeping all surviving players’ original screenshots.
+- Tied votes now correctly proceed to the next round while keeping all surviving players' original screenshots.
 - Failed ready-to-vote rounds now correctly proceed to the next description round without changing screenshots.
 - Only round-specific state is reset between rounds:
   - descriptions
@@ -272,21 +198,49 @@ This hotfix fixes an important gameplay issue where players could receive new sc
   - speaking order
   - timers
 
----
-
-## v1.0.1 — Ready Vote Logic Hotfix
-
-**Release date:** 2026-05-02
-
-This hotfix fixes the ready-to-vote stage so that the system does not resolve the stage before the final outcome is determined.
-
-### Gameplay Fixes
+### Ready-to-vote Logic Fixes
 
 - Fixed an issue where the ready-to-vote stage could end too early.
 - The system no longer moves directly to a new description round while remaining unconfirmed players could still change the result.
-- Voting now begins immediately if confirmed Agree votes reach the required threshold.
+- Voting begins immediately if confirmed Agree votes reach the required threshold.
 - A new description round begins only if reaching the Agree threshold has become mathematically impossible.
 - Unconfirmed players are still treated as Refuse when the ready-to-vote timer expires.
+
+### Game Start Notification
+
+- Added a visible top notification when a game begins.
+- The notification tells players that their screenshot is ready.
+- Added a **View image** button that scrolls directly to the player's role and screenshot area.
+- Added a **Dismiss** button.
+- The notification is shown once per player per game.
+- Fixed an issue where non-host players could miss the game start notification.
+- If a player's page is in the background when the game starts, the notification appears when they return to the tab.
+- Reduced the notification duration to **3 seconds**.
+- Added a short notification sound when the game starts.
+- If the browser blocks autoplay audio, the notification still appears silently.
+
+### Room Management Improvements
+
+- Added a host-only **Restart game** button after game over.
+- Restart game keeps the same room and the same players.
+- Restart game immediately starts a new game with new roles, countries/regions, and screenshots.
+- Added a host-only **Back to Lobby** button after game over.
+- Separated the meaning of restarting a game from resetting the room flow.
+- Updated **Back to Lobby** so it fully resets the current room.
+- Back to Lobby now deletes the active room and returns all players to the clean Create / Join screen.
+- Players who want to change room size must create a new room after returning to lobby.
+- Added a host-only **Restart game** button during active rounds.
+- The host can restart the current game before it ends.
+- Restart game keeps the same room and the same players.
+- Restart game immediately assigns new roles, countries/regions, and screenshots.
+- **Back to Lobby** remains available as a full room reset option.
+
+### Design Goal
+
+- Make the first playable version more stable.
+- Make disconnects and accidental refreshes less damaging.
+- Improve host control over broken or awkward rooms.
+- Prepare the game for larger-scale testing and dataset cleanup.
 
 ---
 
@@ -325,7 +279,7 @@ GeoSpy v1.0 is the first complete playable release of the project. This version 
 - Connected the game frontend to the R2-hosted screenshot dataset.
 - Added screenshot-to-country indexing so each image is linked to its correct country/region code.
 - Replaced temporary Street View links with direct in-game screenshot display.
-- Added “Open full screenshot” link for each player’s own image.
+- Added **Open full screenshot** link for each player's own image.
 
 ### Country and Pair System
 
@@ -337,7 +291,7 @@ GeoSpy v1.0 is the first complete playable release of the project. This version 
 ### Private Chat
 
 - Added one private chat opportunity per player per game.
-- Private chat can only be requested during the player’s own speaking turn.
+- Private chat can only be requested during the player's own speaking turn.
 - Added 15-second accept/refuse window for private chat invitations.
 - Added automatic refusal if the invited player does not respond in time.
 - Added 90-second private chat timer.
@@ -347,13 +301,13 @@ GeoSpy v1.0 is the first complete playable release of the project. This version 
 
 ### Post-game Reveal
 
-- Added post-game reveal of other players’ images.
-- Players can view other players’:
+- Added post-game reveal of other players' images.
+- Players can view other players':
   - image
   - country/region
   - role
   - description
-- Added toggle button to show or hide other players’ images after the game ends.
+- Added toggle button to show or hide other players' images after the game ends.
 
 ### Room Management
 
@@ -361,7 +315,7 @@ GeoSpy v1.0 is the first complete playable release of the project. This version 
 - Added invite link copying.
 - Added host-only start game control.
 - Added host-only room reset.
-- Resetting a room returns players to the initial create/join screen.
+- Resetting a room returns players to the initial Create / Join screen.
 
 ### Documentation
 
@@ -373,16 +327,3 @@ GeoSpy v1.0 is the first complete playable release of the project. This version 
 - Some screenshots may be blurry or visually low quality.
 - Some country/region pairs may need further balancing after more real-player testing.
 - Future versions may further clean, replace, or expand the screenshot dataset.
-
----
-
-## Planned Next Updates
-
-### v1.2
-
-- Build an admin/review workflow for submitted feedback.
-- Add tools for removing or replacing reported bad images.
-- Improve screenshot quality control.
-- Possible country-pair balancing updates.
-- Possible dataset expansion.
-- Possible statistics or admin review tools.
