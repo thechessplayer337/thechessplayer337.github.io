@@ -1,5 +1,14 @@
 # GeoSpy Changelog
 
+## v1.1.9 — GeoSpy cinematic UI update
+
+- Removed the old title orbit effect from the GeoSpy landing section.
+- Added subtle moving light points over the existing map/grid background.
+- Introduced a darker cinematic in-game layout after the game starts.
+- Made the player screenshot the visual focus of the game screen.
+- Added a gradual image reveal effect and subtle golden frame glow.
+- Kept host controls available in a compact in-game control area.
+
 ## v1.1.8 — Contact section polish
 
 **Release date:** 2026-05-06
