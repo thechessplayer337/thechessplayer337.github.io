@@ -576,6 +576,12 @@
       margin-left: 6px;
     }
 
+    .countdown-danger {
+      color: #ff3b30;
+      font-weight: 900;
+      text-shadow: 0 0 10px rgba(255, 59, 48, 0.28);
+    }
+
 
 
 
@@ -1972,6 +1978,15 @@ const playersList = document.getElementById("playersList");
       .replaceAll("'", "&#039;");
   }
 
+  function countdownHtml(seconds, label = "s") {
+    const safeSeconds = Math.max(0, Number(seconds || 0));
+    const text = `${safeSeconds}${label}`;
+    if (safeSeconds <= 5) {
+      return `<span class="countdown-danger">${text}</span>`;
+    }
+    return escapeHtml(text);
+  }
+
 
 
   function playNotificationSound() {
@@ -3223,7 +3238,9 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
 
       const speakerState = getCurrentSpeaker(room, alivePlayers);
       const remainingSeconds = getDescriptionRemainingSeconds(room);
-      const timerLabel = room.privateChat ? `PAUSED at ${remainingSeconds}s` : `${remainingSeconds}s`;
+      const timerLabel = room.privateChat
+        ? `PAUSED at ${countdownHtml(remainingSeconds)}`
+        : countdownHtml(remainingSeconds);
       const speakerName = speakerState.speaker?.name || "Waiting...";
       const activeOrderNames = speakerState.activeOrder
         .map((id, index) => {
@@ -3407,10 +3424,12 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     if (chat.status === "pending") {
       const requestRemainingSeconds = getPrivateChatRequestRemainingSeconds(room);
 
+      const requestTimeHtml = countdownHtml(requestRemainingSeconds);
+
       if (isParticipant) {
-        privateChatStatus.textContent = `${requesterName} requested a private chat with ${targetName}. Description timer is paused/frozen. Response time left: ${requestRemainingSeconds}s.`;
+        privateChatStatus.innerHTML = `${escapeHtml(requesterName)} requested a private chat with ${escapeHtml(targetName)}. Description timer is paused/frozen. Response time left: ${requestTimeHtml}.`;
       } else {
-        privateChatStatus.textContent = `A private chat request is pending. Description timer is paused/frozen. Response time left: ${requestRemainingSeconds}s.`;
+        privateChatStatus.innerHTML = `A private chat request is pending. Description timer is paused/frozen. Response time left: ${requestTimeHtml}.`;
       }
 
       if (chat.targetId === currentPlayerId) {
@@ -3423,8 +3442,10 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     if (chat.status === "active") {
       const remainingSeconds = getPrivateChatRemainingSeconds(room);
 
+      const remainingTimeHtml = countdownHtml(remainingSeconds);
+
       if (isParticipant) {
-        privateChatStatus.textContent = `Private chat with ${currentPlayerId === chat.requesterId ? targetName : requesterName}. Time left: ${remainingSeconds}s.`;
+        privateChatStatus.innerHTML = `Private chat with ${escapeHtml(currentPlayerId === chat.requesterId ? targetName : requesterName)}. Time left: ${remainingTimeHtml}.`;
         privateChatActiveBox.classList.remove("hidden");
 
         const messages = Object.entries(chat.messages || {})
@@ -3440,7 +3461,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
           `;
         }).join("") || `<div class="desc"><em>No private messages yet.</em></div>`;
       } else {
-        privateChatStatus.textContent = `Private chat in progress. Time left: ${remainingSeconds}s.`;
+        privateChatStatus.innerHTML = `Private chat in progress. Time left: ${remainingTimeHtml}.`;
       }
     }
   }
