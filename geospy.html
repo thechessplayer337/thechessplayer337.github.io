@@ -69,8 +69,6 @@
     }
 
     .page {
-      position: relative;
-      z-index: 1;
       width: min(1100px, calc(100% - 32px));
       min-height: 100vh;
       margin: 0 auto;
@@ -171,360 +169,6 @@
     @keyframes orbit-water-flow {
       from { stroke-dashoffset: 0; }
       to { stroke-dashoffset: -140; }
-    }
-
-    /* v1.2 UI polish: remove the old title orbit and replace it with subtle flowing map lights. */
-    .magic-orbit {
-      display: none;
-    }
-
-    .geo-flow-layer {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      overflow: hidden;
-      opacity: 0.72;
-    }
-
-    .flow-dot {
-      position: absolute;
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #7fd8ff;
-      box-shadow:
-        0 0 10px rgba(127, 216, 255, 0.85),
-        0 0 26px rgba(127, 216, 255, 0.35);
-      animation: flow-east 8s linear infinite;
-    }
-
-    .flow-dot::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      right: 6px;
-      width: 46px;
-      height: 2px;
-      border-radius: 999px;
-      transform: translateY(-50%);
-      background: linear-gradient(90deg, transparent, rgba(127, 216, 255, 0.8));
-    }
-
-    .flow-dot.gold {
-      background: #ffd27a;
-      box-shadow:
-        0 0 10px rgba(255, 210, 122, 0.85),
-        0 0 26px rgba(255, 163, 93, 0.34);
-    }
-
-    .flow-dot.gold::after {
-      background: linear-gradient(90deg, transparent, rgba(255, 210, 122, 0.82));
-    }
-
-    .flow-dot.pink {
-      background: #f5a3ff;
-      box-shadow:
-        0 0 10px rgba(245, 163, 255, 0.72),
-        0 0 24px rgba(245, 163, 255, 0.26);
-    }
-
-    .flow-dot.pink::after {
-      background: linear-gradient(90deg, transparent, rgba(245, 163, 255, 0.74));
-    }
-
-    .flow-dot.one { left: 18%; top: 34%; animation-delay: -1.2s; }
-    .flow-dot.two { left: 43%; top: 52%; animation-delay: -4.4s; animation-duration: 10s; }
-    .flow-dot.three { left: 66%; top: 70%; animation-delay: -6.1s; animation-duration: 11s; }
-    .flow-dot.four { left: 74%; top: 38%; animation-delay: -2.8s; animation-duration: 9s; }
-    .flow-dot.five { left: 32%; top: 77%; animation-delay: -7.5s; animation-duration: 12s; }
-
-    @keyframes flow-east {
-      0% { transform: translate3d(-80px, 0, 0) scale(0.65); opacity: 0; }
-      10% { opacity: 0.85; }
-      48% { transform: translate3d(150px, -20px, 0) scale(1); opacity: 1; }
-      90% { opacity: 0.75; }
-      100% { transform: translate3d(360px, -42px, 0) scale(0.7); opacity: 0; }
-    }
-
-    /* Cinematic in-game mode */
-    body.in-game {
-      background:
-        radial-gradient(circle at 50% 18%, rgba(88, 132, 177, 0.18), transparent 28rem),
-        radial-gradient(circle at 50% 62%, rgba(255, 196, 107, 0.10), transparent 32rem),
-        linear-gradient(180deg, #07090f 0%, #0e1118 48%, #050609 100%);
-      color: rgba(255, 255, 255, 0.86);
-    }
-
-    body.in-game::before {
-      opacity: 0.16;
-      filter: saturate(0.7) brightness(0.82);
-    }
-
-    body.in-game::after {
-      z-index: -2;
-      background:
-        radial-gradient(circle at 50% 28%, rgba(76, 111, 147, 0.26), transparent 34rem),
-        radial-gradient(circle at 50% 78%, rgba(255, 203, 120, 0.10), transparent 28rem),
-        linear-gradient(180deg, rgba(5, 6, 10, 0.54), rgba(5, 6, 10, 0.82));
-    }
-
-    body.in-game .page {
-      width: min(1220px, calc(100% - 36px));
-      padding-top: 34px;
-    }
-
-    body.in-game .geospy-hero,
-    body.in-game #entryCard {
-      display: none !important;
-    }
-
-    body.in-game:not(.host-manager) #roomCard {
-      display: none !important;
-    }
-
-    body.in-game.host-manager #roomCard:not(.hidden) {
-      position: fixed;
-      top: 18px;
-      right: 18px;
-      z-index: 82;
-      width: auto;
-      min-width: 0;
-      max-width: min(360px, calc(100vw - 36px));
-      margin: 0;
-      padding: 12px;
-      border-radius: 22px;
-      border: 1px solid rgba(255, 216, 146, 0.22);
-      background: rgba(8, 10, 15, 0.74);
-      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
-      backdrop-filter: blur(16px);
-    }
-
-    body.in-game.host-manager #roomCard::before,
-    body.in-game.host-manager #roomCard h2,
-    body.in-game.host-manager #roomCard h3,
-    body.in-game.host-manager #roomCard > div:first-of-type,
-    body.in-game.host-manager #roomStatus,
-    body.in-game.host-manager #inviteLink,
-    body.in-game.host-manager #playersList,
-    body.in-game.host-manager #copyInviteBtn,
-    body.in-game.host-manager #startGameBtn {
-      display: none !important;
-    }
-
-    body.in-game.host-manager #roomCard .row {
-      margin: 0;
-      gap: 8px;
-      display: flex;
-      flex-wrap: nowrap;
-    }
-
-    body.in-game.host-manager #restartGameRoomBtn,
-    body.in-game.host-manager #resetRoomBtn {
-      border-color: rgba(255, 216, 146, 0.30);
-      box-shadow: none;
-      white-space: nowrap;
-    }
-
-    body.in-game.host-manager #restartGameRoomBtn {
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 239, 209, 0.94);
-    }
-
-    body.in-game.host-manager #resetRoomBtn {
-      background: rgba(180, 35, 24, 0.88);
-      color: white;
-      border-color: rgba(180, 35, 24, 0.86);
-    }
-
-    body.in-game .top-links {
-      margin-bottom: 20px;
-    }
-
-    body.in-game .back,
-    body.in-game .eyebrow {
-      color: rgba(255, 224, 174, 0.88);
-      border-color: rgba(255, 224, 174, 0.18);
-      background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(10px);
-    }
-
-    body.in-game .grid,
-    body.in-game .grid:has(#roomCard:not(.hidden)) {
-      width: min(1120px, 100%);
-      grid-template-columns: 1fr;
-    }
-
-    body.in-game #gameCard {
-      display: block;
-      background: transparent;
-      border: 0;
-      box-shadow: none;
-      padding: 0;
-      margin: 0 auto;
-      overflow: visible;
-    }
-
-    body.in-game #gameCard::before {
-      display: none;
-    }
-
-    body.in-game #gameTitle {
-      text-align: center;
-      color: rgba(255, 237, 203, 0.92);
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 0.92rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      margin-bottom: 18px;
-    }
-
-    body.in-game .secret {
-      position: relative;
-      width: min(1040px, 100%);
-      margin: 0 auto 20px;
-      padding: 0;
-      background: transparent;
-      border-radius: 28px;
-      box-shadow: none;
-      color: white;
-    }
-
-    body.in-game .secret > .muted,
-    body.in-game .secret > .country,
-    body.in-game #streetViewNote {
-      display: none;
-    }
-
-    body.in-game .location-frame {
-      position: relative;
-      margin: 0 auto 14px;
-      border: 1px solid rgba(255, 216, 146, 0.72);
-      border-radius: 28px;
-      overflow: hidden;
-      background: #020305;
-      box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-        0 0 28px rgba(255, 202, 116, 0.30),
-        0 28px 90px rgba(0, 0, 0, 0.62);
-      animation: cinematic-reveal 5s ease both, gold-breathe 4.6s ease-in-out infinite;
-    }
-
-    body.in-game .location-frame::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      pointer-events: none;
-      background: linear-gradient(115deg, transparent 0%, rgba(255, 235, 184, 0.30) 42%, transparent 58%);
-      transform: translateX(-130%);
-      animation: gold-scan 5s ease-out 0.45s both;
-    }
-
-    body.in-game .location-frame img {
-      width: 100%;
-      max-height: 72vh;
-      object-fit: contain;
-      background: #020305;
-      filter: saturate(1.04) contrast(1.03);
-    }
-
-    body.in-game .street-link,
-    body.in-game #reportCurrentImageBtn {
-      margin-top: 10px;
-      border-color: rgba(255, 216, 146, 0.32) !important;
-      background: rgba(255, 255, 255, 0.06);
-      color: rgba(255, 239, 209, 0.92) !important;
-      backdrop-filter: blur(10px);
-    }
-
-    body.in-game .result-box,
-    body.in-game #privateChatPanel,
-    body.in-game #describePanel,
-    body.in-game #descriptionsPanel,
-    body.in-game #readyVotePanel,
-    body.in-game #votingPanel,
-    body.in-game #resultPanel,
-    body.in-game #gameOverPanel {
-      width: min(1040px, 100%);
-      margin: 14px auto;
-      padding: 18px 20px;
-      border-radius: 24px;
-      border: 1px solid rgba(255, 216, 146, 0.16);
-      background: rgba(8, 10, 15, 0.72);
-      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
-      color: rgba(255, 255, 255, 0.76);
-      backdrop-filter: blur(16px);
-    }
-
-    body.in-game h2,
-    body.in-game h3,
-    body.in-game .result-box strong,
-    body.in-game .desc strong {
-      color: rgba(255, 237, 203, 0.96);
-    }
-
-    body.in-game .status,
-    body.in-game .small-note,
-    body.in-game .desc,
-    body.in-game .player {
-      color: rgba(255, 255, 255, 0.68);
-    }
-
-    body.in-game textarea,
-    body.in-game input,
-    body.in-game select,
-    body.in-game .desc,
-    body.in-game .vote-btn {
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 255, 255, 0.88);
-      border-color: rgba(255, 255, 255, 0.14);
-    }
-
-    body.in-game .vote-btn.selected {
-      background: rgba(255, 216, 146, 0.92);
-      color: #111318;
-      border-color: rgba(255, 216, 146, 0.92);
-    }
-
-    body.in-game .feedback-launcher {
-      border-color: rgba(255, 216, 146, 0.32);
-      background: rgba(8, 10, 15, 0.78);
-      color: rgba(255, 239, 209, 0.92);
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
-      backdrop-filter: blur(12px);
-    }
-
-    @keyframes cinematic-reveal {
-      0% { opacity: 0; transform: translateY(20px) scale(0.985); filter: blur(18px) brightness(0.5); }
-      48% { opacity: 0.72; filter: blur(6px) brightness(0.9); }
-      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0) brightness(1); }
-    }
-
-    @keyframes gold-breathe {
-      0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 0 24px rgba(255,202,116,0.22), 0 28px 90px rgba(0,0,0,0.60); }
-      50% { box-shadow: 0 0 0 1px rgba(255,232,174,0.18) inset, 0 0 42px rgba(255,202,116,0.40), 0 32px 100px rgba(0,0,0,0.66); }
-    }
-
-    @keyframes gold-scan {
-      0% { transform: translateX(-130%); opacity: 0; }
-      20% { opacity: 1; }
-      100% { transform: translateX(130%); opacity: 0; }
-    }
-
-
-    @media (max-width: 700px) {
-      body.in-game.host-manager #roomCard:not(.hidden) {
-        top: auto;
-        right: 12px;
-        bottom: 68px;
-        padding: 10px;
-      }
-
-      body.in-game.host-manager #roomCard .row {
-        flex-direction: column;
-        align-items: stretch;
-      }
     }
 
     .eyebrow {
@@ -934,6 +578,316 @@
 
 
 
+
+
+    /* Cinematic GeoSpy polish */
+    .page {
+      position: relative;
+      z-index: 1;
+    }
+
+    .magic-orbit {
+      display: none;
+    }
+
+    .map-flow-dots {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .map-flow-dots span {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(122,198,255,0.72) 38%, rgba(122,198,255,0) 72%);
+      box-shadow: 0 0 18px rgba(122,198,255,0.45), 0 0 34px rgba(255,205,126,0.22);
+      opacity: 0.72;
+      animation: map-glint-a 9s ease-in-out infinite;
+    }
+
+    .map-flow-dots span:nth-child(1) { left: 18%; top: 32%; animation-delay: 0s; }
+    .map-flow-dots span:nth-child(2) { left: 34%; top: 56%; animation-delay: -2s; background: radial-gradient(circle, rgba(255,255,255,0.96), rgba(255,203,111,0.74) 38%, rgba(255,203,111,0) 72%); }
+    .map-flow-dots span:nth-child(3) { left: 58%; top: 36%; animation-delay: -4s; }
+    .map-flow-dots span:nth-child(4) { left: 73%; top: 61%; animation-delay: -6s; background: radial-gradient(circle, rgba(255,255,255,0.96), rgba(190,145,255,0.70) 38%, rgba(190,145,255,0) 72%); }
+    .map-flow-dots span:nth-child(5) { left: 84%; top: 46%; animation-delay: -1.4s; }
+    .map-flow-dots span:nth-child(6) { left: 47%; top: 72%; animation-delay: -5.2s; background: radial-gradient(circle, rgba(255,255,255,0.96), rgba(255,203,111,0.74) 38%, rgba(255,203,111,0) 72%); }
+
+    @keyframes map-glint-a {
+      0% { transform: translate3d(-28px, 18px, 0) scale(0.55); opacity: 0; }
+      18% { opacity: 0.72; }
+      50% { transform: translate3d(34px, -10px, 0) scale(1); opacity: 0.95; }
+      82% { opacity: 0.66; }
+      100% { transform: translate3d(86px, -34px, 0) scale(0.55); opacity: 0; }
+    }
+
+    body.in-game {
+      background:
+        radial-gradient(circle at 50% 5%, rgba(97, 119, 160, 0.24), transparent 26rem),
+        radial-gradient(circle at 18% 22%, rgba(124, 74, 33, 0.12), transparent 30rem),
+        radial-gradient(circle at 80% 34%, rgba(76, 111, 147, 0.20), transparent 32rem),
+        linear-gradient(180deg, #070707 0%, #11100e 44%, #17130f 100%);
+      color: rgba(255,255,255,0.88);
+    }
+
+    body.in-game::after {
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255,255,255,0.08), transparent 24rem),
+        linear-gradient(180deg, rgba(6,6,7,0.60), rgba(7,7,8,0.82));
+    }
+
+    body.in-game .map-flow-dots span {
+      opacity: 0.94;
+      box-shadow: 0 0 22px rgba(122,198,255,0.55), 0 0 42px rgba(255,205,126,0.30);
+    }
+
+    body.in-game .geospy-hero,
+    body.in-game #entryCard {
+      display: none !important;
+    }
+
+    body.in-game .page {
+      width: min(1280px, calc(100% - 32px));
+      padding-top: 84px;
+    }
+
+    body.in-game .grid,
+    body.in-game .grid:has(#roomCard:not(.hidden)) {
+      width: min(1180px, 100%);
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    body.in-game #gameCard {
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      backdrop-filter: none;
+      padding: 0;
+      margin: 0 auto;
+      width: min(1120px, 100%);
+    }
+
+    body.in-game #gameCard::before {
+      display: none;
+    }
+
+    body.in-game #gameTitle {
+      display: none;
+    }
+
+    body.in-game #roomCard {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 65;
+      width: auto;
+      max-width: min(430px, calc(100vw - 36px));
+      padding: 10px;
+      margin: 0;
+      border-radius: 20px;
+      background: rgba(8, 8, 9, 0.72);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 22px 70px rgba(0,0,0,0.34);
+      backdrop-filter: blur(14px);
+    }
+
+    body.in-game #roomCard:has(#restartGameRoomBtn.hidden):has(#resetRoomBtn.hidden) {
+      display: none !important;
+    }
+
+    body.in-game #roomCard h2,
+    body.in-game #roomCard > div:first-of-type,
+    body.in-game #roomStatus,
+    body.in-game #inviteLink,
+    body.in-game #copyInviteBtn,
+    body.in-game #startGameBtn,
+    body.in-game #roomCard h3,
+    body.in-game #playersList {
+      display: none !important;
+    }
+
+    body.in-game #roomCard .row {
+      display: flex;
+      gap: 8px;
+      margin: 0;
+    }
+
+    body.in-game #roomCard button {
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      border-color: rgba(255,255,255,0.26);
+      box-shadow: none;
+    }
+
+    body.in-game #resetRoomBtn::after {
+      content: "";
+    }
+
+    body.in-game .secret {
+      position: relative;
+      background: transparent;
+      padding: 0;
+      margin: 0 auto 16px;
+      border-radius: 0;
+      color: white;
+      text-align: center;
+    }
+
+    body.in-game .secret > .muted,
+    body.in-game .secret .country,
+    body.in-game #secretRoleText,
+    body.in-game #streetViewLink,
+    body.in-game #reportCurrentImageBtn,
+    body.in-game #streetViewNote {
+      display: none !important;
+    }
+
+    body.in-game .location-frame {
+      position: relative;
+      width: min(1040px, 100%);
+      margin: 0 auto 18px;
+      border-radius: 26px;
+      overflow: hidden;
+      background: #030303;
+      border: 1px solid rgba(255, 217, 147, 0.58);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.06) inset,
+        0 0 24px rgba(255, 196, 103, 0.20),
+        0 28px 90px rgba(0, 0, 0, 0.58);
+      animation: frame-rise 900ms ease both;
+    }
+
+    body.in-game .location-frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: linear-gradient(115deg, transparent 0 36%, rgba(255,231,179,0.32) 48%, transparent 60% 100%);
+      transform: translateX(-130%);
+      animation: golden-sweep 5s ease-in-out infinite;
+    }
+
+    body.in-game .location-frame::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      border-radius: 26px;
+      box-shadow: inset 0 0 42px rgba(255, 198, 95, 0.15), inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+
+    body.in-game .location-frame img {
+      width: 100%;
+      max-height: min(72vh, 760px);
+      object-fit: contain;
+      background: #030303;
+      filter: saturate(1.04) contrast(1.02);
+    }
+
+    body.in-game .location-frame.reveal-ready img {
+      animation: image-reveal 5s cubic-bezier(0.18, 0.84, 0.18, 1) both;
+    }
+
+    body.in-game .location-frame.reveal-ready::after {
+      animation: reveal-vignette 5s ease both;
+    }
+
+    @keyframes frame-rise {
+      from { opacity: 0; transform: translateY(18px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes image-reveal {
+      0% { opacity: 0; filter: blur(24px) brightness(0.25) saturate(0.65); transform: scale(1.035); }
+      24% { opacity: 0.35; }
+      62% { opacity: 0.86; filter: blur(6px) brightness(0.78) saturate(0.90); transform: scale(1.012); }
+      100% { opacity: 1; filter: blur(0) brightness(1) saturate(1.04); transform: scale(1); }
+    }
+
+    @keyframes reveal-vignette {
+      0% { background: rgba(0,0,0,0.72); }
+      70% { background: rgba(0,0,0,0.18); }
+      100% { background: transparent; }
+    }
+
+    @keyframes golden-sweep {
+      0%, 26% { transform: translateX(-130%); opacity: 0; }
+      42% { opacity: 0.78; }
+      62%, 100% { transform: translateX(130%); opacity: 0; }
+    }
+
+    body.in-game #speakingStatusBox,
+    body.in-game #privateChatPanel,
+    body.in-game #describePanel,
+    body.in-game #descriptionsPanel,
+    body.in-game #readyVotePanel,
+    body.in-game #votingPanel,
+    body.in-game #resultPanel,
+    body.in-game #gameOverPanel {
+      width: min(1040px, 100%);
+      margin: 14px auto 0;
+      border-radius: 24px;
+      padding: 18px 20px;
+      background: rgba(7, 7, 9, 0.70);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 18px 55px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(14px);
+      color: rgba(255,255,255,0.78);
+    }
+
+    body.in-game #describePanel h3,
+    body.in-game #descriptionsPanel h3,
+    body.in-game #readyVotePanel h3,
+    body.in-game #votingPanel h3,
+    body.in-game #resultPanel h3,
+    body.in-game #gameOverPanel h3 {
+      color: white;
+    }
+
+    body.in-game .status,
+    body.in-game .small-note,
+    body.in-game .desc,
+    body.in-game .result-box {
+      color: rgba(255,255,255,0.68);
+    }
+
+    body.in-game .desc,
+    body.in-game .result-box,
+    body.in-game .vote-btn,
+    body.in-game textarea,
+    body.in-game select,
+    body.in-game input {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.88);
+    }
+
+    body.in-game .desc strong,
+    body.in-game .result-box strong,
+    body.in-game .vote-btn {
+      color: white;
+    }
+
+    body.in-game .vote-btn.selected {
+      background: rgba(255, 209, 129, 0.18);
+      border-color: rgba(255, 209, 129, 0.62);
+      color: white;
+    }
+
+    body.in-game .feedback-launcher {
+      background: rgba(8, 8, 9, 0.72);
+      color: white;
+      border-color: rgba(255,255,255,0.18);
+      box-shadow: 0 18px 55px rgba(0,0,0,0.32);
+      backdrop-filter: blur(12px);
+    }
+
     .game-notification {
       position: fixed;
       top: 18px;
@@ -1117,6 +1071,38 @@
       }
     }
 
+
+
+    @media (max-width: 760px) {
+      body.in-game .page {
+        width: min(100% - 18px, 100%);
+        padding-top: 72px;
+      }
+
+      body.in-game #roomCard {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+      }
+
+      body.in-game #roomCard .row {
+        justify-content: center;
+      }
+
+      body.in-game .location-frame,
+      body.in-game #speakingStatusBox,
+      body.in-game #privateChatPanel,
+      body.in-game #describePanel,
+      body.in-game #descriptionsPanel,
+      body.in-game #readyVotePanel,
+      body.in-game #votingPanel,
+      body.in-game #resultPanel,
+      body.in-game #gameOverPanel {
+        border-radius: 20px;
+      }
+    }
+
     @media (max-width: 880px) {
       .grid,
       .grid:has(#roomCard:not(.hidden)) {
@@ -1127,14 +1113,7 @@
 </head>
 
 <body>
-  <div class="geo-flow-layer" aria-hidden="true">
-    <span class="flow-dot one"></span>
-    <span class="flow-dot two gold"></span>
-    <span class="flow-dot three"></span>
-    <span class="flow-dot four pink"></span>
-    <span class="flow-dot five gold"></span>
-  </div>
-
+  <div class="map-flow-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
   <main class="page">
     <div class="top-links">
       <a class="back" href="index.html">← Back to Home</a>
@@ -1213,10 +1192,9 @@
           <button id="copyInviteBtn">Copy Invite Link</button>
           <button class="secondary hidden" id="startGameBtn">Start Game</button>
           <button class="secondary hidden" id="restartGameRoomBtn">Restart game</button>
-          <button class="danger hidden" id="resetRoomBtn">Back to GeoSpy Lobby</button>
+          <button class="danger hidden" id="resetRoomBtn">Back to Lobby</button>
         </div>
-
-        <h3>Players</h3>
+<h3>Players</h3>
         <div class="players" id="playersList"></div>
       </section>
 
@@ -1422,9 +1400,9 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const DESCRIPTION_SECONDS = 60;
+  const DESCRIPTION_SECONDS = 45;
   const PRIVATE_CHAT_REQUEST_SECONDS = 15;
-  const PRIVATE_CHAT_SECONDS = 90;
+  const PRIVATE_CHAT_SECONDS = 60;
   const READY_VOTE_SECONDS = 60;
   const VOTING_SECONDS = 60;
   const SCREENSHOT_DATA_SOURCE = "data/geospy-screenshot-locations-r2-lean.js";
@@ -1821,6 +1799,19 @@ const playersList = document.getElementById("playersList");
   function getRoleCounts(maxPlayers) {
     if (maxPlayers === 6) return { undercover: 2, civilian: 4 };
     return { undercover: 1, civilian: maxPlayers - 1 };
+  }
+
+  function getPrivateChatLimit(room) {
+    const maxPlayers = Number(room?.maxPlayers || 3);
+    return Math.max(1, maxPlayers - 2);
+  }
+
+  function getPrivateChatUsedCount(player) {
+    return Math.max(0, Number(player?.privateChatUsedCount || 0));
+  }
+
+  function getPrivateChatRemainingCount(room, player) {
+    return Math.max(0, getPrivateChatLimit(room) - getPrivateChatUsedCount(player));
   }
 
   function getAlivePlayers(room) {
@@ -2305,13 +2296,14 @@ const playersList = document.getElementById("playersList");
     currentRoomId = null;
     currentPlayerId = null;
     currentRoom = null;
-    document.body.classList.remove("in-game", "host-manager");
     transitionLock = false;
     pendingVoteTarget = "";
     otherImagesVisible = false;
 
     sessionStorage.removeItem("geospyRoomId");
     sessionStorage.removeItem("geospyPlayerId");
+
+    document.body.classList.remove("in-game");
 
     entryCard.classList.remove("hidden");
     roomCard.classList.add("hidden");
@@ -2429,6 +2421,8 @@ const playersList = document.getElementById("playersList");
       updates[`rooms/${currentRoomId}/players/${playerId}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
       updates[`rooms/${currentRoomId}/players/${playerId}/privateChatUsed`] = false;
+      updates[`rooms/${currentRoomId}/players/${playerId}/privateChatUsedCount`] = 0;
+      updates[`rooms/${currentRoomId}/players/${playerId}/privateChatLimit`] = getPrivateChatLimit(currentRoom);
     }
 
     await update(ref(db), updates);
@@ -2513,6 +2507,8 @@ const playersList = document.getElementById("playersList");
       updates[`rooms/${currentRoomId}/players/${playerId}/voteIntentConfirmed`] = false;
       updates[`rooms/${currentRoomId}/players/${playerId}/vote`] = "";
       updates[`rooms/${currentRoomId}/players/${playerId}/privateChatUsed`] = false;
+      updates[`rooms/${currentRoomId}/players/${playerId}/privateChatUsedCount`] = 0;
+      updates[`rooms/${currentRoomId}/players/${playerId}/privateChatLimit`] = getPrivateChatLimit(currentRoom);
     }
 
     otherImagesVisible = false;
@@ -2598,7 +2594,10 @@ const playersList = document.getElementById("playersList");
 
     if (!me || me.alive === false) return;
     if (speakerState.speakerId !== currentPlayerId) return;
-    if (me.privateChatUsed === true) return;
+    if (getPrivateChatRemainingCount(currentRoom, me) <= 0) {
+      privateChatStatus.textContent = "You have no private chat opportunities left.";
+      return;
+    }
     if (currentRoom.privateChat) return;
 
     const targetId = privateChatTargetInput.value;
@@ -2625,8 +2624,7 @@ const playersList = document.getElementById("playersList");
         pausedDescriptionRemainingMs: remainingMs,
         messages: {}
       },
-      [`rooms/${currentRoomId}/descriptionStartedAt`]: null,
-      [`rooms/${currentRoomId}/players/${currentPlayerId}/privateChatUsed`]: true
+      [`rooms/${currentRoomId}/descriptionStartedAt`]: null
     });
   }
 
@@ -2637,10 +2635,17 @@ const playersList = document.getElementById("playersList");
     if (chat.status !== "pending") return;
     if (chat.targetId !== currentPlayerId) return;
 
+    const requester = currentRoom.players?.[chat.requesterId] || {};
+    const newUsedCount = getPrivateChatUsedCount(requester) + 1;
+    const privateChatLimit = getPrivateChatLimit(currentRoom);
+
     await update(ref(db), {
       [`rooms/${currentRoomId}/privateChat/status`]: "active",
       [`rooms/${currentRoomId}/privateChat/activeStartedAt`]: Date.now(),
-      [`rooms/${currentRoomId}/descriptionStartedAt`]: null
+      [`rooms/${currentRoomId}/descriptionStartedAt`]: null,
+      [`rooms/${currentRoomId}/players/${chat.requesterId}/privateChatUsedCount`]: newUsedCount,
+      [`rooms/${currentRoomId}/players/${chat.requesterId}/privateChatLimit`]: privateChatLimit,
+      [`rooms/${currentRoomId}/players/${chat.requesterId}/privateChatUsed`]: newUsedCount >= privateChatLimit
     });
   }
 
@@ -2774,7 +2779,7 @@ const playersList = document.getElementById("playersList");
     const winnerText = winner === "civilians" ? "Civilians" : "Spies";
     const playerName = player.name || "A player";
 
-    const resultText = `${playerName} did not submit a description within 60 seconds. ${winnerText} win immediately.`;
+    const resultText = `${playerName} did not submit a description within 45 seconds. ${winnerText} win immediately.`;
 
     await update(ref(db), {
       [`rooms/${currentRoomId}/phase`]: "gameOver",
@@ -3083,7 +3088,6 @@ const playersList = document.getElementById("playersList");
     const me = getMe(room);
     const players = Object.entries(room.players || {});
     const alivePlayers = getAlivePlayers(room);
-
     document.body.classList.toggle("in-game", room.status !== "lobby");
 
     roomCodePill.textContent = `Room: ${currentRoomId}`;
@@ -3102,7 +3106,6 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     startGameBtn.disabled = !(playerCount === room.maxPlayers);
 
     const hostCanManageActiveGame = isHost(room) && (room.status === "playing" || room.status === "finished");
-    document.body.classList.toggle("host-manager", hostCanManageActiveGame);
 
     restartGameRoomBtn.classList.toggle("hidden", !hostCanManageActiveGame);
     restartGameRoomBtn.disabled = !(playerCount === room.maxPlayers);
@@ -3133,7 +3136,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     }).join("");
 
     if (room.status === "lobby") {
-      document.body.classList.remove("in-game", "host-manager");
+      document.body.classList.remove("in-game");
       gameCard.classList.add("hidden");
       return;
     }
@@ -3175,7 +3178,18 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
 
       if (me.location?.imagePath) {
         const screenshotUrl = makeScreenshotUrl(me.location);
-        locationImage.src = screenshotUrl;
+        const previousUrl = locationImage.dataset.currentSrc || "";
+
+        if (previousUrl !== screenshotUrl) {
+          locationImageFrame.classList.remove("reveal-ready");
+          void locationImageFrame.offsetWidth;
+          locationImage.dataset.currentSrc = screenshotUrl;
+          locationImage.src = screenshotUrl;
+          locationImageFrame.classList.add("reveal-ready");
+        } else {
+          locationImage.src = screenshotUrl;
+        }
+
         locationImage.alt = "Your GeoSpy location screenshot";
         locationImageFrame.classList.remove("hidden");
         streetViewLink.href = screenshotUrl;
@@ -3187,6 +3201,8 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
         `;
       } else {
         locationImage.removeAttribute("src");
+        locationImage.removeAttribute("data-current-src");
+        locationImageFrame.classList.remove("reveal-ready");
         locationImageFrame.classList.add("hidden");
         streetViewLink.href = "#";
         streetViewLink.textContent = "Screenshot unavailable";
@@ -3194,6 +3210,8 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       }
     } else {
       locationImage.removeAttribute("src");
+      locationImage.removeAttribute("data-current-src");
+      locationImageFrame.classList.remove("reveal-ready");
       locationImageFrame.classList.add("hidden");
       secretBox.classList.add("hidden");
     }
@@ -3361,7 +3379,8 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     const participants = getPrivateChatParticipants(chat);
     const isParticipant = chat && participants.has(currentPlayerId);
     const isMySpeakingTurn = me?.alive !== false && speakerState.speakerId === currentPlayerId;
-    const canRequest = isMySpeakingTurn && me && !me.description && me.privateChatUsed !== true && !chat;
+    const remainingPrivateChats = me ? getPrivateChatRemainingCount(room, me) : 0;
+    const canRequest = isMySpeakingTurn && me && !me.description && remainingPrivateChats > 0 && !chat;
 
     if (!chat && !canRequest) {
       return;
@@ -3370,7 +3389,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     privateChatPanel.classList.remove("hidden");
 
     if (!chat && canRequest) {
-      privateChatStatus.textContent = "You may use your once-per-game private chat during your speaking turn.";
+      privateChatStatus.textContent = `You may request a private chat during your speaking turn. Remaining: ${remainingPrivateChats} / ${getPrivateChatLimit(room)}.`;
       privateChatRequestBox.classList.remove("hidden");
 
       privateChatTargetInput.innerHTML = alivePlayers
