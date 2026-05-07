@@ -894,6 +894,44 @@
       backdrop-filter: blur(12px);
     }
 
+    body.in-game .feedback-box {
+      background: #f7f4ee;
+      color: var(--text);
+    }
+
+    body.in-game .feedback-box h2,
+    body.in-game .feedback-box label {
+      color: var(--dark);
+    }
+
+    body.in-game .feedback-box .status,
+    body.in-game .feedback-box .feedback-meta {
+      color: var(--muted);
+    }
+
+    body.in-game .feedback-box select,
+    body.in-game .feedback-box textarea,
+    body.in-game .feedback-box input {
+      background: rgba(255, 255, 255, 0.72);
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    body.in-game .feedback-box select option {
+      color: var(--text);
+      background: #ffffff;
+    }
+
+    body.in-game .feedback-box textarea::placeholder,
+    body.in-game .feedback-box input::placeholder {
+      color: rgba(102, 112, 133, 0.72);
+    }
+
+    body.in-game .feedback-box button.secondary {
+      color: var(--dark);
+      border-color: var(--dark);
+    }
+
     .game-notification {
       position: fixed;
       top: 18px;
@@ -2035,23 +2073,26 @@ const playersList = document.getElementById("playersList");
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      // 5s = softer, 1s = loudest.
+      // 5s = lower / softer, 1s = heavier / louder.
       const urgency = (dangerAt - safeSeconds + 1) / dangerAt;
-      const peakVolume = 0.045 + urgency * 0.34;
-      const frequency = 700 + urgency * 420;
 
-      osc.type = "sine";
+      // Heavier, less bell-like countdown tick.
+      const peakVolume = 0.045 + urgency * 0.22;
+      const frequency = 170 + urgency * 95;
+
+      osc.type = "triangle";
       osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(90, frequency * 0.72), ctx.currentTime + 0.16);
 
       gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(peakVolume, ctx.currentTime + 0.015);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+      gain.gain.exponentialRampToValueAtTime(peakVolume, ctx.currentTime + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.28);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
       osc.start();
-      osc.stop(ctx.currentTime + 0.20);
+      osc.stop(ctx.currentTime + 0.30);
 
       osc.onended = () => {
         try {
