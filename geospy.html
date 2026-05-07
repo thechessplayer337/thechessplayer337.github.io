@@ -275,9 +275,66 @@
     }
 
     body.in-game .geospy-hero,
-    body.in-game #entryCard,
-    body.in-game #roomCard {
+    body.in-game #entryCard {
       display: none !important;
+    }
+
+    body.in-game:not(.host-manager) #roomCard {
+      display: none !important;
+    }
+
+    body.in-game.host-manager #roomCard:not(.hidden) {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 82;
+      width: auto;
+      min-width: 0;
+      max-width: min(360px, calc(100vw - 36px));
+      margin: 0;
+      padding: 12px;
+      border-radius: 22px;
+      border: 1px solid rgba(255, 216, 146, 0.22);
+      background: rgba(8, 10, 15, 0.74);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(16px);
+    }
+
+    body.in-game.host-manager #roomCard::before,
+    body.in-game.host-manager #roomCard h2,
+    body.in-game.host-manager #roomCard h3,
+    body.in-game.host-manager #roomCard > div:first-of-type,
+    body.in-game.host-manager #roomStatus,
+    body.in-game.host-manager #inviteLink,
+    body.in-game.host-manager #playersList,
+    body.in-game.host-manager #copyInviteBtn,
+    body.in-game.host-manager #startGameBtn {
+      display: none !important;
+    }
+
+    body.in-game.host-manager #roomCard .row {
+      margin: 0;
+      gap: 8px;
+      display: flex;
+      flex-wrap: nowrap;
+    }
+
+    body.in-game.host-manager #restartGameRoomBtn,
+    body.in-game.host-manager #resetRoomBtn {
+      border-color: rgba(255, 216, 146, 0.30);
+      box-shadow: none;
+      white-space: nowrap;
+    }
+
+    body.in-game.host-manager #restartGameRoomBtn {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 239, 209, 0.94);
+    }
+
+    body.in-game.host-manager #resetRoomBtn {
+      background: rgba(180, 35, 24, 0.88);
+      color: white;
+      border-color: rgba(180, 35, 24, 0.86);
     }
 
     body.in-game .top-links {
@@ -453,6 +510,21 @@
       0% { transform: translateX(-130%); opacity: 0; }
       20% { opacity: 1; }
       100% { transform: translateX(130%); opacity: 0; }
+    }
+
+
+    @media (max-width: 700px) {
+      body.in-game.host-manager #roomCard:not(.hidden) {
+        top: auto;
+        right: 12px;
+        bottom: 68px;
+        padding: 10px;
+      }
+
+      body.in-game.host-manager #roomCard .row {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
 
     .eyebrow {
@@ -1141,7 +1213,7 @@
           <button id="copyInviteBtn">Copy Invite Link</button>
           <button class="secondary hidden" id="startGameBtn">Start Game</button>
           <button class="secondary hidden" id="restartGameRoomBtn">Restart game</button>
-          <button class="danger hidden" id="resetRoomBtn">Back to Lobby</button>
+          <button class="danger hidden" id="resetRoomBtn">Back to GeoSpy Lobby</button>
         </div>
 
         <h3>Players</h3>
@@ -1268,7 +1340,7 @@
           <div class="row" style="margin-top: 14px;">
             <button id="restartGameBtn">Restart game</button>
             <button class="secondary" id="toggleOtherImagesBtn">See other players' images</button>
-            <button class="danger hidden" id="backToLobbyGameOverBtn">Back to Lobby</button>
+            <button class="danger hidden" id="backToLobbyGameOverBtn">Back to GeoSpy Lobby</button>
           </div>
           <div id="otherImagesPanel" class="other-images-list hidden"></div>
         </div>
@@ -2233,7 +2305,7 @@ const playersList = document.getElementById("playersList");
     currentRoomId = null;
     currentPlayerId = null;
     currentRoom = null;
-    document.body.classList.remove("in-game");
+    document.body.classList.remove("in-game", "host-manager");
     transitionLock = false;
     pendingVoteTarget = "";
     otherImagesVisible = false;
@@ -3030,6 +3102,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     startGameBtn.disabled = !(playerCount === room.maxPlayers);
 
     const hostCanManageActiveGame = isHost(room) && (room.status === "playing" || room.status === "finished");
+    document.body.classList.toggle("host-manager", hostCanManageActiveGame);
 
     restartGameRoomBtn.classList.toggle("hidden", !hostCanManageActiveGame);
     restartGameRoomBtn.disabled = !(playerCount === room.maxPlayers);
@@ -3060,7 +3133,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     }).join("");
 
     if (room.status === "lobby") {
-      document.body.classList.remove("in-game");
+      document.body.classList.remove("in-game", "host-manager");
       gameCard.classList.add("hidden");
       return;
     }
