@@ -69,6 +69,8 @@
     }
 
     .page {
+      position: relative;
+      z-index: 1;
       width: min(1100px, calc(100% - 32px));
       min-height: 100vh;
       margin: 0 auto;
@@ -169,6 +171,288 @@
     @keyframes orbit-water-flow {
       from { stroke-dashoffset: 0; }
       to { stroke-dashoffset: -140; }
+    }
+
+    /* v1.2 UI polish: remove the old title orbit and replace it with subtle flowing map lights. */
+    .magic-orbit {
+      display: none;
+    }
+
+    .geo-flow-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0.72;
+    }
+
+    .flow-dot {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #7fd8ff;
+      box-shadow:
+        0 0 10px rgba(127, 216, 255, 0.85),
+        0 0 26px rgba(127, 216, 255, 0.35);
+      animation: flow-east 8s linear infinite;
+    }
+
+    .flow-dot::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 6px;
+      width: 46px;
+      height: 2px;
+      border-radius: 999px;
+      transform: translateY(-50%);
+      background: linear-gradient(90deg, transparent, rgba(127, 216, 255, 0.8));
+    }
+
+    .flow-dot.gold {
+      background: #ffd27a;
+      box-shadow:
+        0 0 10px rgba(255, 210, 122, 0.85),
+        0 0 26px rgba(255, 163, 93, 0.34);
+    }
+
+    .flow-dot.gold::after {
+      background: linear-gradient(90deg, transparent, rgba(255, 210, 122, 0.82));
+    }
+
+    .flow-dot.pink {
+      background: #f5a3ff;
+      box-shadow:
+        0 0 10px rgba(245, 163, 255, 0.72),
+        0 0 24px rgba(245, 163, 255, 0.26);
+    }
+
+    .flow-dot.pink::after {
+      background: linear-gradient(90deg, transparent, rgba(245, 163, 255, 0.74));
+    }
+
+    .flow-dot.one { left: 18%; top: 34%; animation-delay: -1.2s; }
+    .flow-dot.two { left: 43%; top: 52%; animation-delay: -4.4s; animation-duration: 10s; }
+    .flow-dot.three { left: 66%; top: 70%; animation-delay: -6.1s; animation-duration: 11s; }
+    .flow-dot.four { left: 74%; top: 38%; animation-delay: -2.8s; animation-duration: 9s; }
+    .flow-dot.five { left: 32%; top: 77%; animation-delay: -7.5s; animation-duration: 12s; }
+
+    @keyframes flow-east {
+      0% { transform: translate3d(-80px, 0, 0) scale(0.65); opacity: 0; }
+      10% { opacity: 0.85; }
+      48% { transform: translate3d(150px, -20px, 0) scale(1); opacity: 1; }
+      90% { opacity: 0.75; }
+      100% { transform: translate3d(360px, -42px, 0) scale(0.7); opacity: 0; }
+    }
+
+    /* Cinematic in-game mode */
+    body.in-game {
+      background:
+        radial-gradient(circle at 50% 18%, rgba(88, 132, 177, 0.18), transparent 28rem),
+        radial-gradient(circle at 50% 62%, rgba(255, 196, 107, 0.10), transparent 32rem),
+        linear-gradient(180deg, #07090f 0%, #0e1118 48%, #050609 100%);
+      color: rgba(255, 255, 255, 0.86);
+    }
+
+    body.in-game::before {
+      opacity: 0.16;
+      filter: saturate(0.7) brightness(0.82);
+    }
+
+    body.in-game::after {
+      z-index: -2;
+      background:
+        radial-gradient(circle at 50% 28%, rgba(76, 111, 147, 0.26), transparent 34rem),
+        radial-gradient(circle at 50% 78%, rgba(255, 203, 120, 0.10), transparent 28rem),
+        linear-gradient(180deg, rgba(5, 6, 10, 0.54), rgba(5, 6, 10, 0.82));
+    }
+
+    body.in-game .page {
+      width: min(1220px, calc(100% - 36px));
+      padding-top: 34px;
+    }
+
+    body.in-game .geospy-hero,
+    body.in-game #entryCard,
+    body.in-game #roomCard {
+      display: none !important;
+    }
+
+    body.in-game .top-links {
+      margin-bottom: 20px;
+    }
+
+    body.in-game .back,
+    body.in-game .eyebrow {
+      color: rgba(255, 224, 174, 0.88);
+      border-color: rgba(255, 224, 174, 0.18);
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(10px);
+    }
+
+    body.in-game .grid,
+    body.in-game .grid:has(#roomCard:not(.hidden)) {
+      width: min(1120px, 100%);
+      grid-template-columns: 1fr;
+    }
+
+    body.in-game #gameCard {
+      display: block;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      padding: 0;
+      margin: 0 auto;
+      overflow: visible;
+    }
+
+    body.in-game #gameCard::before {
+      display: none;
+    }
+
+    body.in-game #gameTitle {
+      text-align: center;
+      color: rgba(255, 237, 203, 0.92);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.92rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    body.in-game .secret {
+      position: relative;
+      width: min(1040px, 100%);
+      margin: 0 auto 20px;
+      padding: 0;
+      background: transparent;
+      border-radius: 28px;
+      box-shadow: none;
+      color: white;
+    }
+
+    body.in-game .secret > .muted,
+    body.in-game .secret > .country,
+    body.in-game #streetViewNote {
+      display: none;
+    }
+
+    body.in-game .location-frame {
+      position: relative;
+      margin: 0 auto 14px;
+      border: 1px solid rgba(255, 216, 146, 0.72);
+      border-radius: 28px;
+      overflow: hidden;
+      background: #020305;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+        0 0 28px rgba(255, 202, 116, 0.30),
+        0 28px 90px rgba(0, 0, 0, 0.62);
+      animation: cinematic-reveal 5s ease both, gold-breathe 4.6s ease-in-out infinite;
+    }
+
+    body.in-game .location-frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: linear-gradient(115deg, transparent 0%, rgba(255, 235, 184, 0.30) 42%, transparent 58%);
+      transform: translateX(-130%);
+      animation: gold-scan 5s ease-out 0.45s both;
+    }
+
+    body.in-game .location-frame img {
+      width: 100%;
+      max-height: 72vh;
+      object-fit: contain;
+      background: #020305;
+      filter: saturate(1.04) contrast(1.03);
+    }
+
+    body.in-game .street-link,
+    body.in-game #reportCurrentImageBtn {
+      margin-top: 10px;
+      border-color: rgba(255, 216, 146, 0.32) !important;
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 239, 209, 0.92) !important;
+      backdrop-filter: blur(10px);
+    }
+
+    body.in-game .result-box,
+    body.in-game #privateChatPanel,
+    body.in-game #describePanel,
+    body.in-game #descriptionsPanel,
+    body.in-game #readyVotePanel,
+    body.in-game #votingPanel,
+    body.in-game #resultPanel,
+    body.in-game #gameOverPanel {
+      width: min(1040px, 100%);
+      margin: 14px auto;
+      padding: 18px 20px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 216, 146, 0.16);
+      background: rgba(8, 10, 15, 0.72);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
+      color: rgba(255, 255, 255, 0.76);
+      backdrop-filter: blur(16px);
+    }
+
+    body.in-game h2,
+    body.in-game h3,
+    body.in-game .result-box strong,
+    body.in-game .desc strong {
+      color: rgba(255, 237, 203, 0.96);
+    }
+
+    body.in-game .status,
+    body.in-game .small-note,
+    body.in-game .desc,
+    body.in-game .player {
+      color: rgba(255, 255, 255, 0.68);
+    }
+
+    body.in-game textarea,
+    body.in-game input,
+    body.in-game select,
+    body.in-game .desc,
+    body.in-game .vote-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.88);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    body.in-game .vote-btn.selected {
+      background: rgba(255, 216, 146, 0.92);
+      color: #111318;
+      border-color: rgba(255, 216, 146, 0.92);
+    }
+
+    body.in-game .feedback-launcher {
+      border-color: rgba(255, 216, 146, 0.32);
+      background: rgba(8, 10, 15, 0.78);
+      color: rgba(255, 239, 209, 0.92);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(12px);
+    }
+
+    @keyframes cinematic-reveal {
+      0% { opacity: 0; transform: translateY(20px) scale(0.985); filter: blur(18px) brightness(0.5); }
+      48% { opacity: 0.72; filter: blur(6px) brightness(0.9); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0) brightness(1); }
+    }
+
+    @keyframes gold-breathe {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 0 24px rgba(255,202,116,0.22), 0 28px 90px rgba(0,0,0,0.60); }
+      50% { box-shadow: 0 0 0 1px rgba(255,232,174,0.18) inset, 0 0 42px rgba(255,202,116,0.40), 0 32px 100px rgba(0,0,0,0.66); }
+    }
+
+    @keyframes gold-scan {
+      0% { transform: translateX(-130%); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: translateX(130%); opacity: 0; }
     }
 
     .eyebrow {
@@ -771,6 +1055,14 @@
 </head>
 
 <body>
+  <div class="geo-flow-layer" aria-hidden="true">
+    <span class="flow-dot one"></span>
+    <span class="flow-dot two gold"></span>
+    <span class="flow-dot three"></span>
+    <span class="flow-dot four pink"></span>
+    <span class="flow-dot five gold"></span>
+  </div>
+
   <main class="page">
     <div class="top-links">
       <a class="back" href="index.html">← Back to Home</a>
@@ -851,7 +1143,8 @@
           <button class="secondary hidden" id="restartGameRoomBtn">Restart game</button>
           <button class="danger hidden" id="resetRoomBtn">Back to Lobby</button>
         </div>
-<h3>Players</h3>
+
+        <h3>Players</h3>
         <div class="players" id="playersList"></div>
       </section>
 
@@ -1940,6 +2233,7 @@ const playersList = document.getElementById("playersList");
     currentRoomId = null;
     currentPlayerId = null;
     currentRoom = null;
+    document.body.classList.remove("in-game");
     transitionLock = false;
     pendingVoteTarget = "";
     otherImagesVisible = false;
@@ -2718,6 +3012,8 @@ const playersList = document.getElementById("playersList");
     const players = Object.entries(room.players || {});
     const alivePlayers = getAlivePlayers(room);
 
+    document.body.classList.toggle("in-game", room.status !== "lobby");
+
     roomCodePill.textContent = `Room: ${currentRoomId}`;
     phasePill.textContent = `Phase: ${room.phase || "lobby"}`;
     roundPill.textContent = `Round: ${room.round || 0}`;
@@ -2764,6 +3060,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     }).join("");
 
     if (room.status === "lobby") {
+      document.body.classList.remove("in-game");
       gameCard.classList.add("hidden");
       return;
     }
