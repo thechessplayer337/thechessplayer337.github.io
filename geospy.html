@@ -1474,6 +1474,115 @@
       }
     }
 
+
+
+    /* Civilians-win endgame morning theme */
+    body.in-game.civilians-endgame {
+      background:
+        radial-gradient(circle at 50% 8%, rgba(255, 232, 176, 0.58), transparent 30rem),
+        radial-gradient(circle at 16% 18%, rgba(255, 189, 115, 0.26), transparent 28rem),
+        radial-gradient(circle at 82% 18%, rgba(132, 194, 235, 0.38), transparent 34rem),
+        linear-gradient(180deg, #fbf6ea 0%, #edf6fb 46%, #f8f2e6 100%);
+      color: var(--text);
+    }
+
+    body.in-game.civilians-endgame::after {
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.72), transparent 26rem),
+        linear-gradient(180deg, rgba(255, 250, 238, 0.45), rgba(230, 244, 252, 0.42));
+    }
+
+    body.in-game.civilians-endgame::before {
+      opacity: 0.42;
+      filter: sepia(0.08) saturate(1.08) brightness(1.06);
+    }
+
+    body.in-game.civilians-endgame .map-flow-dots span {
+      opacity: 0.74;
+      box-shadow: 0 0 18px rgba(91, 157, 217, 0.34), 0 0 36px rgba(255, 183, 92, 0.28);
+    }
+
+    body.in-game.civilians-endgame .back {
+      color: #7c4a21;
+      text-shadow: none;
+    }
+
+    body.in-game.civilians-endgame .eyebrow {
+      background: rgba(255, 255, 255, 0.72);
+      color: #7c4a21;
+      border-color: rgba(124, 74, 33, 0.20);
+    }
+
+    body.in-game.civilians-endgame #gameOverPanel {
+      background: rgba(255, 255, 255, 0.72);
+      border-color: rgba(124, 74, 33, 0.16);
+      color: var(--text);
+      box-shadow: 0 24px 75px rgba(68, 92, 116, 0.16);
+    }
+
+    body.in-game.civilians-endgame #gameOverPanel h3,
+    body.in-game.civilians-endgame .endgame-section h4 {
+      color: var(--dark);
+    }
+
+    body.in-game.civilians-endgame .endgame-hero {
+      background:
+        radial-gradient(circle at 14% 16%, rgba(255, 206, 124, 0.36), transparent 18rem),
+        radial-gradient(circle at 90% 20%, rgba(105, 168, 213, 0.28), transparent 18rem),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(232, 244, 251, 0.72));
+      border-color: rgba(124, 74, 33, 0.16);
+      box-shadow: 0 18px 46px rgba(84, 112, 140, 0.13);
+    }
+
+    body.in-game.civilians-endgame .endgame-winner {
+      color: #182333;
+      text-shadow: 0 14px 36px rgba(88, 112, 142, 0.18);
+    }
+
+    body.in-game.civilians-endgame .endgame-subtitle {
+      color: #52647a;
+    }
+
+    body.in-game.civilians-endgame .endgame-stat,
+    body.in-game.civilians-endgame .endgame-section,
+    body.in-game.civilians-endgame .endgame-row,
+    body.in-game.civilians-endgame .game-review-event {
+      background: rgba(255, 255, 255, 0.70);
+      border-color: rgba(124, 74, 33, 0.16);
+      color: var(--text);
+    }
+
+    body.in-game.civilians-endgame .endgame-label,
+    body.in-game.civilians-endgame .game-review-meta {
+      color: rgba(72, 84, 101, 0.66);
+    }
+
+    body.in-game.civilians-endgame .endgame-value,
+    body.in-game.civilians-endgame .endgame-row strong,
+    body.in-game.civilians-endgame .game-review-toggle {
+      color: var(--dark);
+    }
+
+    body.in-game.civilians-endgame .endgame-desc-text {
+      color: #59697d;
+    }
+
+    body.in-game.civilians-endgame .player-reveal-body {
+      border-top-color: rgba(124, 74, 33, 0.14);
+    }
+
+    body.in-game.civilians-endgame .player-reveal-body img {
+      border-color: rgba(124, 74, 33, 0.22);
+      box-shadow: 0 18px 52px rgba(84, 112, 140, 0.18);
+    }
+
+    body.in-game.civilians-endgame .feedback-launcher {
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--dark);
+      border-color: rgba(124, 74, 33, 0.16);
+      box-shadow: 0 18px 48px rgba(84, 112, 140, 0.16);
+    }
+
     .game-notification {
       position: fixed;
       top: 18px;
@@ -3073,7 +3182,7 @@ const playersList = document.getElementById("playersList");
     sessionStorage.removeItem("geospyRoomId");
     sessionStorage.removeItem("geospyPlayerId");
 
-    document.body.classList.remove("in-game");
+    document.body.classList.remove("in-game", "civilians-endgame", "spies-endgame");
 
     entryCard.classList.remove("hidden");
     roomCard.classList.add("hidden");
@@ -3982,7 +4091,11 @@ const playersList = document.getElementById("playersList");
     const me = getMe(room);
     const players = Object.entries(room.players || {});
     const alivePlayers = getAlivePlayers(room);
+    const isCiviliansEndgame = room.status === "finished" && room.phase === "gameOver" && room.game?.winner === "civilians";
+    const isSpiesEndgame = room.status === "finished" && room.phase === "gameOver" && room.game?.winner === "spies";
     document.body.classList.toggle("in-game", room.status !== "lobby");
+    document.body.classList.toggle("civilians-endgame", isCiviliansEndgame);
+    document.body.classList.toggle("spies-endgame", isSpiesEndgame);
 
     roomCodePill.textContent = `Room: ${currentRoomId}`;
     phasePill.textContent = `Phase: ${room.phase || "lobby"}`;
@@ -4030,7 +4143,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     }).join("");
 
     if (room.status === "lobby") {
-      document.body.classList.remove("in-game");
+      document.body.classList.remove("in-game", "civilians-endgame", "spies-endgame");
       gameCard.classList.add("hidden");
       return;
     }
