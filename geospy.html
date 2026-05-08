@@ -886,6 +886,25 @@
       color: white;
     }
 
+    body.in-game button.secondary {
+      color: rgba(255, 255, 255, 0.88);
+      border-color: rgba(255, 255, 255, 0.34);
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    body.in-game button.secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.10);
+      border-color: rgba(255, 255, 255, 0.52);
+    }
+
+    body.in-game button.secondary:disabled,
+    body.in-game button:disabled {
+      color: rgba(255, 255, 255, 0.42);
+      border-color: rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.035);
+      opacity: 0.72;
+    }
+
     body.in-game .feedback-launcher {
       background: rgba(8, 8, 9, 0.72);
       color: white;
@@ -968,6 +987,21 @@
       animation: game-over-transition-in 3s cubic-bezier(0.18, 0.84, 0.18, 1) forwards;
     }
 
+    .game-over-transition.spies-win {
+      background:
+        radial-gradient(circle at 50% 30%, rgba(124, 74, 33, 0.28), transparent 28rem),
+        radial-gradient(circle at 70% 18%, rgba(76, 111, 147, 0.18), transparent 30rem),
+        linear-gradient(180deg, rgba(4,4,5,0.97), rgba(13,9,8,0.98));
+    }
+
+    .game-over-transition.civilians-win {
+      background:
+        radial-gradient(circle at 50% 22%, rgba(255, 236, 190, 0.92), transparent 24rem),
+        radial-gradient(circle at 18% 18%, rgba(255, 198, 117, 0.44), transparent 24rem),
+        radial-gradient(circle at 80% 28%, rgba(117, 177, 218, 0.34), transparent 30rem),
+        linear-gradient(180deg, rgba(247, 241, 226, 0.98), rgba(219, 234, 244, 0.96));
+    }
+
     .game-over-transition.fade-out {
       animation: game-over-transition-out 520ms ease forwards;
     }
@@ -1007,6 +1041,12 @@
       25% { opacity: 1; filter: blur(5px); }
       62% { opacity: 1; transform: scale(1); filter: blur(0); }
       100% { opacity: 1; transform: scale(1); filter: blur(0); }
+    }
+
+    @keyframes end-title-reveal {
+      0% { opacity: 0; filter: blur(18px); transform: translateY(12px) scale(0.985); }
+      55% { opacity: 0.78; filter: blur(5px); }
+      100% { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
     }
 
     @keyframes game-over-transition-out {
@@ -1242,6 +1282,81 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       font-weight: 800;
+    }
+
+
+    .player-reveal-toggle,
+    .game-review-toggle {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      box-shadow: none;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .player-reveal-toggle::before,
+    .game-review-toggle::before {
+      display: none;
+    }
+
+    .player-reveal-toggle {
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border-radius: 14px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .player-reveal-card.open .player-reveal-toggle {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .player-reveal-card .player-reveal-body {
+      display: none;
+    }
+
+    .player-reveal-card.open .player-reveal-body {
+      display: grid;
+    }
+
+    .game-review-toggle {
+      padding: 0;
+      color: white;
+      font-size: 1.05rem;
+      font-weight: 800;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .game-review-toggle::after {
+      content: "Open";
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: rgba(255, 209, 129, 0.14);
+      color: rgba(255, 226, 171, 0.95);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .endgame-review.open .game-review-toggle::after {
+      content: "Hide";
+    }
+
+    .endgame-review .game-review-list {
+      display: none;
+    }
+
+    .endgame-review.open .game-review-list {
+      display: grid;
     }
 
 
@@ -3928,14 +4043,14 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       const description = playerDescriptionText(p);
 
       return `
-        <details class="endgame-row player-reveal-card">
-          <summary>
+        <div class="endgame-row player-reveal-card" data-player-reveal-card>
+          <button type="button" class="player-reveal-toggle" data-endgame-player-toggle>
             <span>
               <strong>${escapeHtml(p.name || "Unknown")}</strong><br>
               ${escapeHtml(role)} · ${escapeHtml(countryLabel(countryCode))} · ${escapeHtml(status)}
             </span>
             <span class="endgame-tag ${roleClass}">${escapeHtml(role)}</span>
-          </summary>
+          </button>
           <div class="player-reveal-body">
             <div><strong>Description:</strong> ${escapeHtml(description)}</div>
             ${imageUrl
@@ -3943,7 +4058,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
                  <a href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener noreferrer">Open full screenshot</a>`
               : `<em>Screenshot unavailable.</em>`}
           </div>
-        </details>
+        </div>
       `;
     }).join("");
 
@@ -3991,10 +4106,10 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
           <div class="endgame-list">${playerRows}</div>
         </div>
 
-        <details class="endgame-section endgame-review">
-          <summary>Game Review</summary>
+        <div class="endgame-section endgame-review" data-endgame-review-card>
+          <button type="button" class="game-review-toggle" data-endgame-review-toggle>Game Review</button>
           <div class="endgame-list game-review-list">${reviewRows}</div>
-        </details>
+        </div>
       </div>
     `;
   }
@@ -4007,7 +4122,10 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     if (lastGameOverTransitionKey === key) return;
     lastGameOverTransitionKey = key;
 
-    gameOverTransitionTitle.textContent = room?.game?.winner === "spies" ? "Spies Win" : "Civilians Win";
+    const spiesWon = room?.game?.winner === "spies";
+    gameOverTransitionTitle.textContent = spiesWon ? "Spies Win" : "Civilians Win";
+    gameOverTransition.classList.toggle("spies-win", spiesWon);
+    gameOverTransition.classList.toggle("civilians-win", !spiesWon);
 
     if (gameOverTransitionTimer) {
       clearTimeout(gameOverTransitionTimer);
@@ -4022,7 +4140,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       gameOverTransition.classList.add("fade-out");
       setTimeout(() => {
         gameOverTransition.classList.add("hidden");
-        gameOverTransition.classList.remove("active", "fade-out");
+        gameOverTransition.classList.remove("active", "fade-out", "spies-win", "civilians-win");
       }, 560);
     }, 3000);
   }
@@ -4426,6 +4544,25 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
   feedbackSubmitBtn.addEventListener("click", submitFeedback);
   feedbackModal.addEventListener("click", (event) => {
     if (event.target === feedbackModal) closeFeedbackModal();
+  });
+
+  document.addEventListener("click", (event) => {
+    const playerToggle = event.target.closest("[data-endgame-player-toggle]");
+    if (playerToggle) {
+      event.preventDefault();
+      event.stopPropagation();
+      const card = playerToggle.closest("[data-player-reveal-card]");
+      if (card) card.classList.toggle("open");
+      return;
+    }
+
+    const reviewToggle = event.target.closest("[data-endgame-review-toggle]");
+    if (reviewToggle) {
+      event.preventDefault();
+      event.stopPropagation();
+      const card = reviewToggle.closest("[data-endgame-review-card]");
+      if (card) card.classList.toggle("open");
+    }
   });
 
   createRoomBtn.addEventListener("click", createRoom);
