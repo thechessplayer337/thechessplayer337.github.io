@@ -933,6 +933,88 @@
     }
 
 
+    /* In-game secondary/disabled button readability */
+    body.in-game button.secondary {
+      color: rgba(255, 255, 255, 0.88);
+      border-color: rgba(255, 255, 255, 0.34);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    body.in-game button.secondary:disabled,
+    body.in-game button:disabled {
+      color: rgba(255, 255, 255, 0.46);
+      border-color: rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.025);
+      opacity: 1;
+    }
+
+    .game-over-transition {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(255, 211, 139, 0.16), transparent 24rem),
+        radial-gradient(circle at 50% 48%, rgba(90, 132, 174, 0.18), transparent 32rem),
+        rgba(4, 4, 5, 0.92);
+      backdrop-filter: blur(14px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .game-over-transition.active {
+      animation: game-over-transition-in 3s cubic-bezier(0.18, 0.84, 0.18, 1) forwards;
+    }
+
+    .game-over-transition.fade-out {
+      animation: game-over-transition-out 520ms ease forwards;
+    }
+
+    .game-over-transition-inner {
+      width: min(760px, 100%);
+      text-align: center;
+      border-radius: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.035)),
+        rgba(10, 10, 12, 0.72);
+      box-shadow: 0 30px 110px rgba(0, 0, 0, 0.48);
+      padding: clamp(34px, 8vw, 72px) 28px;
+    }
+
+    .game-over-transition-title {
+      display: block;
+      color: white;
+      font-size: clamp(3rem, 8vw, 7rem);
+      line-height: 0.9;
+      letter-spacing: -0.055em;
+      text-shadow: 0 18px 60px rgba(0, 0, 0, 0.52);
+      margin-bottom: 14px;
+    }
+
+    .game-over-transition-text {
+      color: rgba(255, 255, 255, 0.70);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    @keyframes game-over-transition-in {
+      0% { opacity: 0; transform: scale(1.025); filter: blur(14px); }
+      25% { opacity: 1; filter: blur(5px); }
+      62% { opacity: 1; transform: scale(1); filter: blur(0); }
+      100% { opacity: 1; transform: scale(1); filter: blur(0); }
+    }
+
+    @keyframes game-over-transition-out {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+
     .endgame-recap {
       display: grid;
       gap: 16px;
@@ -1055,6 +1137,113 @@
       line-height: 1.5;
       margin-top: 4px;
     }
+
+
+
+    .player-reveal-card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .player-reveal-card summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border-radius: 14px;
+    }
+
+    .player-reveal-card summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .player-reveal-card[open] summary {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .player-reveal-body {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      color: rgba(255, 255, 255, 0.70);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .player-reveal-body img {
+      display: block;
+      width: 100%;
+      max-height: 62vh;
+      object-fit: contain;
+      background: #050505;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .player-reveal-body a {
+      color: rgba(255, 226, 171, 0.98);
+      font-weight: 800;
+    }
+
+    .endgame-review summary {
+      cursor: pointer;
+      color: white;
+      font-size: 1.05rem;
+      font-weight: 800;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      list-style: none;
+    }
+
+    .endgame-review summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .endgame-review summary::after {
+      content: "Open";
+      float: right;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: rgba(255, 209, 129, 0.14);
+      color: rgba(255, 226, 171, 0.95);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .endgame-review[open] summary::after {
+      content: "Hide";
+    }
+
+    .game-review-list {
+      margin-top: 12px;
+    }
+
+    .game-review-event {
+      display: grid;
+      gap: 5px;
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      color: rgba(255, 255, 255, 0.72);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .game-review-event strong {
+      color: white;
+    }
+
+    .game-review-meta {
+      color: rgba(255, 255, 255, 0.46);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 800;
+    }
+
 
     @media (max-width: 760px) {
       .endgame-grid {
@@ -1515,6 +1704,13 @@
       </div>
     </div>
 
+    <div class="game-over-transition hidden" id="gameOverTransition" aria-hidden="true">
+      <div class="game-over-transition-inner">
+        <span class="game-over-transition-title" id="gameOverTransitionTitle">Game Over</span>
+        <div class="game-over-transition-text">Revealing final report</div>
+      </div>
+    </div>
+
     <button class="feedback-launcher" id="feedbackOpenBtn">Feedback</button>
 
     <div class="feedback-modal hidden" id="feedbackModal">
@@ -1885,6 +2081,8 @@ const playersList = document.getElementById("playersList");
   const gameNotificationText = document.getElementById("gameNotificationText");
   const gameNotificationGoBtn = document.getElementById("gameNotificationGoBtn");
   const gameNotificationCloseBtn = document.getElementById("gameNotificationCloseBtn");
+  const gameOverTransition = document.getElementById("gameOverTransition");
+  const gameOverTransitionTitle = document.getElementById("gameOverTransitionTitle");
 
 
   const toggleOtherImagesBtn = document.getElementById("toggleOtherImagesBtn");
@@ -1900,6 +2098,8 @@ const playersList = document.getElementById("playersList");
   let transitionLock = false;
   let pendingVoteTarget = "";
   let otherImagesVisible = false;
+  let lastGameOverTransitionKey = "";
+  let gameOverTransitionTimer = null;
   const countdownAudioKeys = new Map();
 
   async function loadLocationData() {
@@ -1987,6 +2187,27 @@ const playersList = document.getElementById("playersList");
 
   function getPrivateChatUsedCount(player) {
     return Math.max(0, Number(player?.privateChatUsedCount || 0));
+  }
+
+
+  function makeLogEventId(type = "event") {
+    return `evt_${Date.now()}_${type}_${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function playerNameFromRoom(room, playerId) {
+    return room?.players?.[playerId]?.name || "Unknown";
+  }
+
+  function addGameLogEvent(updates, room, type, data = {}) {
+    if (!currentRoomId || !updates) return;
+
+    const eventId = makeLogEventId(type);
+    updates[`rooms/${currentRoomId}/gameLog/events/${eventId}`] = {
+      type,
+      round: Number(room?.round || 1),
+      createdAt: Date.now(),
+      ...data
+    };
   }
 
   function getPrivateChatRemainingCount(room, player) {
@@ -2625,6 +2846,7 @@ const playersList = document.getElementById("playersList");
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
     updates[`rooms/${currentRoomId}/privateChat`] = null;
+    updates[`rooms/${currentRoomId}/gameLog`] = { events: {} };
     updates[`rooms/${currentRoomId}/speakingOrder`] = speakingOrder;
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
     updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
@@ -2710,6 +2932,7 @@ const playersList = document.getElementById("playersList");
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
     updates[`rooms/${currentRoomId}/privateChat`] = null;
+    updates[`rooms/${currentRoomId}/gameLog`] = { events: {} };
     updates[`rooms/${currentRoomId}/speakingOrder`] = speakingOrder;
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
     updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
@@ -2763,9 +2986,17 @@ const playersList = document.getElementById("playersList");
     const text = descriptionInput.value.trim();
     if (!text) return;
 
-    await update(ref(db), {
+    const updates = {
       [`rooms/${currentRoomId}/players/${currentPlayerId}/description`]: text
+    };
+
+    addGameLogEvent(updates, currentRoom, "description", {
+      playerId: currentPlayerId,
+      playerName: playerNameFromRoom(currentRoom, currentPlayerId),
+      text
     });
+
+    await update(ref(db), updates);
 
     descriptionInput.value = "";
   }
@@ -2786,9 +3017,17 @@ const playersList = document.getElementById("playersList");
       return;
     }
 
-    await update(ref(db), {
+    const updates = {
       [`rooms/${currentRoomId}/players/${currentPlayerId}/voteIntentConfirmed`]: true
+    };
+
+    addGameLogEvent(updates, currentRoom, "ready_vote_choice", {
+      playerId: currentPlayerId,
+      playerName: playerNameFromRoom(currentRoom, currentPlayerId),
+      choice: me.voteIntent
     });
+
+    await update(ref(db), updates);
   }
 
   async function cancelVoteIntent() {
@@ -2799,9 +3038,18 @@ const playersList = document.getElementById("playersList");
   }
 
   async function submitVote(targetPlayerId) {
-    await update(ref(db), {
+    const updates = {
       [`rooms/${currentRoomId}/players/${currentPlayerId}/vote`]: targetPlayerId
+    };
+
+    addGameLogEvent(updates, currentRoom, "player_vote", {
+      playerId: currentPlayerId,
+      playerName: playerNameFromRoom(currentRoom, currentPlayerId),
+      targetId: targetPlayerId,
+      targetName: playerNameFromRoom(currentRoom, targetPlayerId)
     });
+
+    await update(ref(db), updates);
   }
 
   function selectPendingVote(targetPlayerId) {
@@ -2859,7 +3107,7 @@ const playersList = document.getElementById("playersList");
     const remainingMs = getDescriptionRemainingMs(currentRoom);
     const now = Date.now();
 
-    await update(ref(db), {
+    const updates = {
       [`rooms/${currentRoomId}/privateChat`]: {
         status: "pending",
         requesterId: currentPlayerId,
@@ -2869,7 +3117,16 @@ const playersList = document.getElementById("playersList");
         messages: {}
       },
       [`rooms/${currentRoomId}/descriptionStartedAt`]: null
+    };
+
+    addGameLogEvent(updates, currentRoom, "private_chat_request", {
+      requesterId: currentPlayerId,
+      requesterName: playerNameFromRoom(currentRoom, currentPlayerId),
+      targetId,
+      targetName: playerNameFromRoom(currentRoom, targetId)
     });
+
+    await update(ref(db), updates);
   }
 
   async function acceptPrivateChat() {
@@ -2883,14 +3140,23 @@ const playersList = document.getElementById("playersList");
     const newUsedCount = getPrivateChatUsedCount(requester) + 1;
     const privateChatLimit = getPrivateChatLimit(currentRoom);
 
-    await update(ref(db), {
+    const updates = {
       [`rooms/${currentRoomId}/privateChat/status`]: "active",
       [`rooms/${currentRoomId}/privateChat/activeStartedAt`]: Date.now(),
       [`rooms/${currentRoomId}/descriptionStartedAt`]: null,
       [`rooms/${currentRoomId}/players/${chat.requesterId}/privateChatUsedCount`]: newUsedCount,
       [`rooms/${currentRoomId}/players/${chat.requesterId}/privateChatLimit`]: privateChatLimit,
       [`rooms/${currentRoomId}/players/${chat.requesterId}/privateChatUsed`]: newUsedCount >= privateChatLimit
+    };
+
+    addGameLogEvent(updates, currentRoom, "private_chat_accepted", {
+      requesterId: chat.requesterId,
+      requesterName: playerNameFromRoom(currentRoom, chat.requesterId),
+      targetId: chat.targetId,
+      targetName: playerNameFromRoom(currentRoom, chat.targetId)
     });
+
+    await update(ref(db), updates);
   }
 
   async function refusePrivateChat() {
@@ -2902,10 +3168,19 @@ const playersList = document.getElementById("playersList");
 
     const resumedStartedAt = descriptionStartedAtFromRemainingMs(chat.pausedDescriptionRemainingMs);
 
-    await update(ref(db), {
+    const updates = {
       [`rooms/${currentRoomId}/privateChat`]: null,
       [`rooms/${currentRoomId}/descriptionStartedAt`]: resumedStartedAt
+    };
+
+    addGameLogEvent(updates, currentRoom, "private_chat_refused", {
+      requesterId: chat.requesterId,
+      requesterName: playerNameFromRoom(currentRoom, chat.requesterId),
+      targetId: chat.targetId,
+      targetName: playerNameFromRoom(currentRoom, chat.targetId)
     });
+
+    await update(ref(db), updates);
   }
 
   async function endPrivateChat() {
@@ -2917,10 +3192,19 @@ const playersList = document.getElementById("playersList");
 
     const resumedStartedAt = descriptionStartedAtFromRemainingMs(chat.pausedDescriptionRemainingMs);
 
-    await update(ref(db), {
+    const updates = {
       [`rooms/${currentRoomId}/privateChat`]: null,
       [`rooms/${currentRoomId}/descriptionStartedAt`]: resumedStartedAt
+    };
+
+    addGameLogEvent(updates, currentRoom, "private_chat_ended", {
+      requesterId: chat.requesterId,
+      requesterName: playerNameFromRoom(currentRoom, chat.requesterId),
+      targetId: chat.targetId,
+      targetName: playerNameFromRoom(currentRoom, chat.targetId)
     });
+
+    await update(ref(db), updates);
   }
 
   async function sendPrivateChatMessage() {
@@ -2936,13 +3220,25 @@ const playersList = document.getElementById("playersList");
 
     const messageId = "m_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
 
-    await update(ref(db), {
+    const updates = {
       [`rooms/${currentRoomId}/privateChat/messages/${messageId}`]: {
         senderId: currentPlayerId,
         text,
         sentAt: Date.now()
       }
+    };
+
+    addGameLogEvent(updates, currentRoom, "private_chat_message", {
+      senderId: currentPlayerId,
+      senderName: playerNameFromRoom(currentRoom, currentPlayerId),
+      requesterId: chat.requesterId,
+      requesterName: playerNameFromRoom(currentRoom, chat.requesterId),
+      targetId: chat.targetId,
+      targetName: playerNameFromRoom(currentRoom, chat.targetId),
+      text
     });
+
+    await update(ref(db), updates);
 
     privateChatInput.value = "";
   }
@@ -2963,6 +3259,10 @@ const playersList = document.getElementById("playersList");
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
     updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
     updates[`rooms/${currentRoomId}/game/lastResult`] = "";
+    addGameLogEvent(updates, currentRoom, "round_start", {
+      message: `Round ${nextRoundNumber} description phase started.`,
+      speakingOrder: updates[`rooms/${currentRoomId}/speakingOrder`]
+    });
 
     // Important: locations/images are fixed for the entire game.
     // Later description rounds should not redraw screenshots.
@@ -3001,6 +3301,10 @@ const playersList = document.getElementById("playersList");
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
     updates[`rooms/${currentRoomId}/descriptionStartedAt`] = Date.now();
     updates[`rooms/${currentRoomId}/game/lastResult`] = "Not enough confirmed Agree votes. A new description round begins.";
+    addGameLogEvent(updates, room, "round_start", {
+      message: `Round ${nextRoundNumber} description phase started after ready-to-vote refusal.`,
+      speakingOrder: updates[`rooms/${currentRoomId}/speakingOrder`]
+    });
 
     // Important: locations/images are fixed for the entire game.
     // Refusing to vote starts a new description round, but keeps the same screenshots.
@@ -3025,7 +3329,7 @@ const playersList = document.getElementById("playersList");
 
     const resultText = `${playerName} did not submit a description within 45 seconds. ${winnerText} win immediately.`;
 
-    await update(ref(db), {
+    const updates = {
       [`rooms/${currentRoomId}/phase`]: "gameOver",
       [`rooms/${currentRoomId}/status`]: "finished",
       [`rooms/${currentRoomId}/readyVoteStartedAt`]: null,
@@ -3034,7 +3338,12 @@ const playersList = document.getElementById("playersList");
       [`rooms/${currentRoomId}/game/winner`]: winner,
       [`rooms/${currentRoomId}/game/lastResult`]: resultText,
       [`rooms/${currentRoomId}/game/gameOverText`]: resultText
+    };
+    addGameLogEvent(updates, room, "game_over", {
+      winner,
+      message: resultText
     });
+    await update(ref(db), updates);
   }
 
 
@@ -3044,29 +3353,45 @@ const playersList = document.getElementById("playersList");
 
     const resumedStartedAt = descriptionStartedAtFromRemainingMs(chat.pausedDescriptionRemainingMs);
 
-    await update(ref(db), {
+    const updates = {
       [`rooms/${currentRoomId}/privateChat`]: null,
       [`rooms/${currentRoomId}/descriptionStartedAt`]: resumedStartedAt
+    };
+    addGameLogEvent(updates, room, "private_chat_timeout", {
+      requesterId: chat.requesterId,
+      requesterName: playerNameFromRoom(room, chat.requesterId),
+      targetId: chat.targetId,
+      targetName: playerNameFromRoom(room, chat.targetId)
     });
+    await update(ref(db), updates);
   }
 
   async function advanceToNextSpeakerOrVote(room, alivePlayers, speakerState) {
     const nextIndex = speakerState.index + 1;
 
     if (nextIndex >= speakerState.activeOrder.length) {
-      await update(ref(db), {
+      const updates = {
         [`rooms/${currentRoomId}/phase`]: "readyVote",
         [`rooms/${currentRoomId}/readyVoteStartedAt`]: Date.now(),
         [`rooms/${currentRoomId}/votingStartedAt`]: null,
         [`rooms/${currentRoomId}/descriptionStartedAt`]: null,
         [`rooms/${currentRoomId}/privateChat`]: null
+      };
+      addGameLogEvent(updates, room, "ready_vote_started", {
+        message: "All living players finished descriptions. Ready-to-vote confirmation started."
       });
+      await update(ref(db), updates);
     } else {
-      await update(ref(db), {
+      const updates = {
         [`rooms/${currentRoomId}/currentSpeakerIndex`]: nextIndex,
         [`rooms/${currentRoomId}/descriptionStartedAt`]: Date.now(),
         [`rooms/${currentRoomId}/privateChat`]: null
+      };
+      addGameLogEvent(updates, room, "speaker_advanced", {
+        nextSpeakerId: speakerState.activeOrder[nextIndex],
+        nextSpeakerName: playerNameFromRoom(room, speakerState.activeOrder[nextIndex])
       });
+      await update(ref(db), updates);
     }
   }
 
@@ -3138,9 +3463,15 @@ const playersList = document.getElementById("playersList");
       if (speakerState.speaker && expired) {
         transitionLock = true;
 
-        await update(ref(db), {
+        const timeoutUpdates = {
           [`rooms/${currentRoomId}/players/${speakerState.speakerId}/description`]: "__NULL_TIMEOUT__"
+        };
+        addGameLogEvent(timeoutUpdates, room, "description_timeout", {
+          playerId: speakerState.speakerId,
+          playerName: playerNameFromRoom(room, speakerState.speakerId),
+          text: "NULL"
         });
+        await update(ref(db), timeoutUpdates);
 
         await advanceToNextSpeakerOrVote(room, alivePlayersStillHere, speakerState);
         setTimeout(() => transitionLock = false, 500);
@@ -3230,6 +3561,13 @@ const playersList = document.getElementById("playersList");
           if (!p.vote) {
             const randomTarget = pickRandomVoteTarget(p.id, alivePlayers);
             updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = randomTarget;
+            addGameLogEvent(updates, room, "player_vote", {
+              playerId: p.id,
+              playerName: p.name || "Unknown",
+              targetId: randomTarget,
+              targetName: playerNameFromRoom(room, randomTarget),
+              automatic: true
+            });
           }
         }
 
@@ -3299,6 +3637,11 @@ const playersList = document.getElementById("playersList");
       updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
       updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
       updates[`rooms/${currentRoomId}/game/lastResult`] = resultText;
+      addGameLogEvent(updates, room, "round_result", {
+        message: resultText,
+        eliminatedId,
+        eliminatedName: eliminatedId ? (room.players?.[eliminatedId]?.name || "Unknown") : "None"
+      });
     }
 
     await update(ref(db), updates);
@@ -3406,6 +3749,160 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     return player?.description || "No description submitted.";
   }
 
+  function gameLogEvents(room) {
+    return Object.values(room?.gameLog?.events || {})
+      .filter(Boolean)
+      .sort((a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0));
+  }
+
+  function formatGameReviewEvent(event, room) {
+    const roundLabel = `Round ${Number(event.round || 1)}`;
+    const type = event.type || "event";
+
+    if (type === "round_start") {
+      const orderNames = Array.isArray(event.speakingOrder)
+        ? event.speakingOrder.map(id => playerNameFromRoom(room, id)).join(" → ")
+        : "";
+      return {
+        meta: `${roundLabel} · Description phase`,
+        body: `${event.message || "Description phase started."}${orderNames ? ` Speaking order: ${orderNames}.` : ""}`
+      };
+    }
+
+    if (type === "speaker_advanced") {
+      return {
+        meta: `${roundLabel} · Speaking order`,
+        body: `Next speaker: ${event.nextSpeakerName || playerNameFromRoom(room, event.nextSpeakerId) || "Unknown"}.`
+      };
+    }
+
+    if (type === "description") {
+      return {
+        meta: `${roundLabel} · Description`,
+        body: `${event.playerName || playerNameFromRoom(room, event.playerId)}: ${event.text || ""}`
+      };
+    }
+
+    if (type === "description_timeout") {
+      return {
+        meta: `${roundLabel} · Description timeout`,
+        body: `${event.playerName || playerNameFromRoom(room, event.playerId)} did not submit in time. Description recorded as NULL.`
+      };
+    }
+
+    if (type === "private_chat_request") {
+      return {
+        meta: `${roundLabel} · Private chat request`,
+        body: `${event.requesterName || playerNameFromRoom(room, event.requesterId)} requested private chat with ${event.targetName || playerNameFromRoom(room, event.targetId)}.`
+      };
+    }
+
+    if (type === "private_chat_accepted") {
+      return {
+        meta: `${roundLabel} · Private chat accepted`,
+        body: `${event.targetName || playerNameFromRoom(room, event.targetId)} accepted ${event.requesterName || playerNameFromRoom(room, event.requesterId)}'s private chat request.`
+      };
+    }
+
+    if (type === "private_chat_refused") {
+      return {
+        meta: `${roundLabel} · Private chat refused`,
+        body: `${event.targetName || playerNameFromRoom(room, event.targetId)} refused ${event.requesterName || playerNameFromRoom(room, event.requesterId)}'s private chat request.`
+      };
+    }
+
+    if (type === "private_chat_timeout") {
+      return {
+        meta: `${roundLabel} · Private chat request timed out`,
+        body: `${event.targetName || playerNameFromRoom(room, event.targetId)} did not respond to ${event.requesterName || playerNameFromRoom(room, event.requesterId)}'s private chat request.`
+      };
+    }
+
+    if (type === "private_chat_message") {
+      const pair = `${event.requesterName || playerNameFromRoom(room, event.requesterId)} ↔ ${event.targetName || playerNameFromRoom(room, event.targetId)}`;
+      return {
+        meta: `${roundLabel} · Private chat · ${pair}`,
+        body: `${event.senderName || playerNameFromRoom(room, event.senderId)}: ${event.text || ""}`
+      };
+    }
+
+    if (type === "private_chat_ended") {
+      return {
+        meta: `${roundLabel} · Private chat ended`,
+        body: `Private chat between ${event.requesterName || playerNameFromRoom(room, event.requesterId)} and ${event.targetName || playerNameFromRoom(room, event.targetId)} ended.`
+      };
+    }
+
+    if (type === "ready_vote_started") {
+      return {
+        meta: `${roundLabel} · Ready-to-vote`,
+        body: event.message || "Ready-to-vote confirmation started."
+      };
+    }
+
+    if (type === "ready_vote_choice") {
+      return {
+        meta: `${roundLabel} · Ready-to-vote choice`,
+        body: `${event.playerName || playerNameFromRoom(room, event.playerId)} confirmed ${event.choice === "agree" ? "Agree" : "Refuse"}.`
+      };
+    }
+
+    if (type === "player_vote") {
+      return {
+        meta: `${roundLabel} · Vote`,
+        body: `${event.playerName || playerNameFromRoom(room, event.playerId)} voted for ${event.targetName || playerNameFromRoom(room, event.targetId)}.`
+      };
+    }
+
+    if (type === "round_result") {
+      return {
+        meta: `${roundLabel} · Round result`,
+        body: event.message || "Round ended."
+      };
+    }
+
+    if (type === "game_over") {
+      return {
+        meta: `${roundLabel} · Game over`,
+        body: event.message || "Game over."
+      };
+    }
+
+    return {
+      meta: `${roundLabel} · ${type}`,
+      body: event.message || JSON.stringify(event)
+    };
+  }
+
+  function renderFallbackGameReview(room, players) {
+    const descriptionEvents = players.map(p => `
+      <div class="game-review-event">
+        <div class="game-review-meta">Round ${escapeHtml(String(room.round || 1))} · Description</div>
+        <div><strong>${escapeHtml(p.name || "Unknown")}:</strong> ${escapeHtml(playerDescriptionText(p))}</div>
+      </div>
+    `).join("");
+
+    const voteEvents = players
+      .filter(p => p.vote)
+      .map(p => {
+        const target = room.players?.[p.vote];
+        return `
+          <div class="game-review-event">
+            <div class="game-review-meta">Round ${escapeHtml(String(room.round || 1))} · Vote</div>
+            <div><strong>${escapeHtml(p.name || "Unknown")}</strong> voted for <strong>${escapeHtml(target?.name || "Unknown")}</strong>.</div>
+          </div>
+        `;
+      })
+      .join("");
+
+    return descriptionEvents + voteEvents || `
+      <div class="game-review-event">
+        <div class="game-review-meta">No detailed review available</div>
+        <div>This game was started before detailed game review logging was added.</div>
+      </div>
+    `;
+  }
+
   function renderEndgameRecap(room) {
     const players = Object.values(room.players || {})
       .sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")));
@@ -3421,43 +3918,47 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     const spies = players.filter(p => p.role === "undercover");
     const eliminated = players.filter(p => p.alive === false);
 
-    const voteRows = players
-      .filter(p => p.vote)
-      .map(p => {
-        const target = room.players?.[p.vote];
-        return `
-          <div class="endgame-row">
-            <span><strong>${escapeHtml(p.name || "Unknown")}</strong> → ${escapeHtml(target?.name || "Unknown")}</span>
-            <span class="endgame-tag">Vote</span>
-          </div>
-        `;
-      })
-      .join("");
-
     const playerRows = players.map(p => {
       const role = publicRoleLabel(p.role);
       const roleClass = p.role === "undercover" ? "spy" : "civilian";
       const status = p.alive === false ? "Eliminated" : "Alive";
+      const countryCode = playerCountryCode(p);
+      const location = p.location || {};
+      const imageUrl = location?.imagePath ? makeScreenshotUrl(location) : "";
+      const description = playerDescriptionText(p);
+
       return `
-        <div class="endgame-row">
-          <span>
-            <strong>${escapeHtml(p.name || "Unknown")}</strong><br>
-            ${escapeHtml(role)} · ${escapeHtml(countryLabel(playerCountryCode(p)))} · ${escapeHtml(status)}
-          </span>
-          <span class="endgame-tag ${roleClass}">${escapeHtml(role)}</span>
-        </div>
+        <details class="endgame-row player-reveal-card">
+          <summary>
+            <span>
+              <strong>${escapeHtml(p.name || "Unknown")}</strong><br>
+              ${escapeHtml(role)} · ${escapeHtml(countryLabel(countryCode))} · ${escapeHtml(status)}
+            </span>
+            <span class="endgame-tag ${roleClass}">${escapeHtml(role)}</span>
+          </summary>
+          <div class="player-reveal-body">
+            <div><strong>Description:</strong> ${escapeHtml(description)}</div>
+            ${imageUrl
+              ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name || "Player")}'s GeoSpy screenshot" loading="lazy" />
+                 <a href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener noreferrer">Open full screenshot</a>`
+              : `<em>Screenshot unavailable.</em>`}
+          </div>
+        </details>
       `;
     }).join("");
 
-    const descriptionRows = players.map(p => `
-      <div class="endgame-row">
-        <span>
-          <strong>${escapeHtml(p.name || "Unknown")}</strong>
-          <div class="endgame-desc-text">${escapeHtml(playerDescriptionText(p))}</div>
-        </span>
-        <span class="endgame-tag">Round ${escapeHtml(String(room.round || 1))}</span>
-      </div>
-    `).join("");
+    const events = gameLogEvents(room);
+    const reviewRows = events.length
+      ? events.map(event => {
+          const rendered = formatGameReviewEvent(event, room);
+          return `
+            <div class="game-review-event">
+              <div class="game-review-meta">${escapeHtml(rendered.meta)}</div>
+              <div>${escapeHtml(rendered.body)}</div>
+            </div>
+          `;
+        }).join("")
+      : renderFallbackGameReview(room, players);
 
     return `
       <div class="endgame-recap">
@@ -3486,34 +3987,46 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
         </div>
 
         <div class="endgame-section">
-          <h4>Final Result</h4>
-          <div class="endgame-list">
-            <div class="endgame-row">
-              <span>${escapeHtml(room.game?.lastResult || room.game?.gameOverText || "Game over.")}</span>
-              <span class="endgame-tag">Result</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="endgame-section">
-          <h4>Final Vote</h4>
-          <div class="endgame-list">
-            ${voteRows || `<div class="endgame-row"><span>No final vote was recorded.</span><span class="endgame-tag">No vote</span></div>`}
-          </div>
-        </div>
-
-        <div class="endgame-section">
           <h4>Players Revealed</h4>
           <div class="endgame-list">${playerRows}</div>
         </div>
 
-        <div class="endgame-section">
-          <h4>Descriptions Recap</h4>
-          <div class="endgame-list">${descriptionRows}</div>
-        </div>
+        <details class="endgame-section endgame-review">
+          <summary>Game Review</summary>
+          <div class="endgame-list game-review-list">${reviewRows}</div>
+        </details>
       </div>
     `;
   }
+
+
+  function maybeShowGameOverTransition(room) {
+    if (!gameOverTransition || !gameOverTransitionTitle) return;
+
+    const key = `${currentRoomId || "room"}:${room?.game?.startedAt || ""}:${room?.game?.winner || ""}:${room?.game?.lastResult || room?.game?.gameOverText || ""}`;
+    if (lastGameOverTransitionKey === key) return;
+    lastGameOverTransitionKey = key;
+
+    gameOverTransitionTitle.textContent = room?.game?.winner === "spies" ? "Spies Win" : "Civilians Win";
+
+    if (gameOverTransitionTimer) {
+      clearTimeout(gameOverTransitionTimer);
+      gameOverTransitionTimer = null;
+    }
+
+    gameOverTransition.classList.remove("hidden", "active", "fade-out");
+    void gameOverTransition.offsetWidth;
+    gameOverTransition.classList.add("active");
+
+    gameOverTransitionTimer = setTimeout(() => {
+      gameOverTransition.classList.add("fade-out");
+      setTimeout(() => {
+        gameOverTransition.classList.add("hidden");
+        gameOverTransition.classList.remove("active", "fade-out");
+      }, 560);
+    }, 3000);
+  }
+
 
   function renderGame(room, me, alivePlayers) {
     const phase = room.phase;
@@ -3687,6 +4200,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
 
     if (phase === "gameOver") {
       gameOverPanel.classList.remove("hidden");
+      maybeShowGameOverTransition(room);
 
       const gameOverHeading = gameOverPanel.querySelector("h3");
       if (gameOverHeading) {
@@ -3695,14 +4209,12 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
 
       gameOverBox.innerHTML = renderEndgameRecap(room);
 
-      toggleOtherImagesBtn.textContent = otherImagesVisible ? "Hide image gallery" : "See image gallery";
-      otherImagesPanel.classList.toggle("hidden", !otherImagesVisible);
-
-      if (otherImagesVisible) {
-        renderOtherPlayerImages(room);
-      } else {
-        otherImagesPanel.innerHTML = "";
-      }
+      // The image reveal is now inside Players Revealed, so the old separate image gallery button is hidden.
+      toggleOtherImagesBtn.classList.add("hidden");
+      otherImagesPanel.classList.add("hidden");
+      otherImagesPanel.innerHTML = "";
+    } else {
+      toggleOtherImagesBtn.classList.remove("hidden");
     }
   }
 
