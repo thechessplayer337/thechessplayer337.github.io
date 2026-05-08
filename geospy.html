@@ -4854,12 +4854,27 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       privateChatStatus.textContent = `You may request a private chat during your speaking turn. Remaining: ${remainingPrivateChats} / ${getPrivateChatLimit(room)}.`;
       privateChatRequestBox.classList.remove("hidden");
 
-      privateChatTargetInput.innerHTML = alivePlayers
-        .filter(p => p.id !== currentPlayerId)
-        .map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`)
-        .join("");
+      const privateChatTargets = alivePlayers.filter(p => p.id !== currentPlayerId);
+      const previousTarget = privateChatTargetInput.value;
+      const targetSignature = privateChatTargets
+        .map(p => `${p.id}:${p.name || ""}`)
+        .join("|");
 
-      requestPrivateChatBtn.disabled = alivePlayers.filter(p => p.id !== currentPlayerId).length === 0;
+      // Do not rebuild the dropdown every render. The speaking timer re-renders
+      // this panel frequently; rebuilding <select> while it is open makes the
+      // browser jump back to the first option.
+      if (privateChatTargetInput.dataset.targetSignature !== targetSignature) {
+        privateChatTargetInput.innerHTML = privateChatTargets
+          .map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`)
+          .join("");
+        privateChatTargetInput.dataset.targetSignature = targetSignature;
+      }
+
+      if (previousTarget && privateChatTargets.some(p => p.id === previousTarget)) {
+        privateChatTargetInput.value = previousTarget;
+      }
+
+      requestPrivateChatBtn.disabled = privateChatTargets.length === 0;
       return;
     }
 
