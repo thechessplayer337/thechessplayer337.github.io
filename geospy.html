@@ -932,6 +932,140 @@
       border-color: var(--dark);
     }
 
+
+    .endgame-recap {
+      display: grid;
+      gap: 16px;
+    }
+
+    .endgame-hero {
+      border-radius: 22px;
+      padding: 20px;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(255, 209, 129, 0.18), transparent 18rem),
+        radial-gradient(circle at 88% 18%, rgba(122, 198, 255, 0.14), transparent 18rem),
+        rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .endgame-winner {
+      display: block;
+      color: white;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.4rem, 6vw, 5rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      margin-bottom: 10px;
+      text-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+    }
+
+    .endgame-subtitle {
+      color: rgba(255, 255, 255, 0.74);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 1rem;
+    }
+
+    .endgame-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .endgame-stat,
+    .endgame-section {
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+    }
+
+    .endgame-label {
+      display: block;
+      color: rgba(255, 255, 255, 0.52);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .endgame-value {
+      color: white;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 750;
+      font-size: 1rem;
+    }
+
+    .endgame-section h4 {
+      color: white;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .endgame-list {
+      display: grid;
+      gap: 8px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .endgame-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+
+    .endgame-row strong {
+      color: white;
+    }
+
+    .endgame-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: rgba(255, 209, 129, 0.14);
+      color: rgba(255, 226, 171, 0.95);
+      font-size: 0.78rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .endgame-tag.spy {
+      background: rgba(180, 35, 24, 0.20);
+      color: rgba(255, 168, 159, 0.98);
+    }
+
+    .endgame-tag.civilian {
+      background: rgba(47, 133, 90, 0.20);
+      color: rgba(151, 231, 190, 0.98);
+    }
+
+    .endgame-desc-text {
+      color: rgba(255, 255, 255, 0.64);
+      font-size: 0.92rem;
+      line-height: 1.5;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 760px) {
+      .endgame-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .endgame-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .game-notification {
       position: fixed;
       top: 18px;
@@ -3255,6 +3389,132 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     renderGame(room, me, alivePlayers);
   }
 
+
+  function publicRoleLabel(role) {
+    if (role === "undercover") return "Spy";
+    if (role === "civilian") return "Civilian";
+    return role || "Unknown";
+  }
+
+  function playerCountryCode(player) {
+    const location = player?.location || {};
+    return player?.countryCode || player?.country || location.countryCode || location.locationCountryCode || "?";
+  }
+
+  function playerDescriptionText(player) {
+    if (player?.description === "__NULL_TIMEOUT__") return "NULL";
+    return player?.description || "No description submitted.";
+  }
+
+  function renderEndgameRecap(room) {
+    const players = Object.values(room.players || {})
+      .sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")));
+
+    const winner = room.game?.winner || "";
+    const winnerTitle = winner === "spies" ? "Spies Win" : "Civilians Win";
+    const winnerSubtitle = winner === "spies"
+      ? "The spy side survived the investigation."
+      : "The civilian side identified and eliminated the spy side.";
+
+    const civilianCountry = room.game?.civilianCountry || players.find(p => p.role === "civilian")?.countryCode || players.find(p => p.role === "civilian")?.country || "?";
+    const spyCountry = room.game?.undercoverCountry || players.find(p => p.role === "undercover")?.countryCode || players.find(p => p.role === "undercover")?.country || "?";
+    const spies = players.filter(p => p.role === "undercover");
+    const eliminated = players.filter(p => p.alive === false);
+
+    const voteRows = players
+      .filter(p => p.vote)
+      .map(p => {
+        const target = room.players?.[p.vote];
+        return `
+          <div class="endgame-row">
+            <span><strong>${escapeHtml(p.name || "Unknown")}</strong> → ${escapeHtml(target?.name || "Unknown")}</span>
+            <span class="endgame-tag">Vote</span>
+          </div>
+        `;
+      })
+      .join("");
+
+    const playerRows = players.map(p => {
+      const role = publicRoleLabel(p.role);
+      const roleClass = p.role === "undercover" ? "spy" : "civilian";
+      const status = p.alive === false ? "Eliminated" : "Alive";
+      return `
+        <div class="endgame-row">
+          <span>
+            <strong>${escapeHtml(p.name || "Unknown")}</strong><br>
+            ${escapeHtml(role)} · ${escapeHtml(countryLabel(playerCountryCode(p)))} · ${escapeHtml(status)}
+          </span>
+          <span class="endgame-tag ${roleClass}">${escapeHtml(role)}</span>
+        </div>
+      `;
+    }).join("");
+
+    const descriptionRows = players.map(p => `
+      <div class="endgame-row">
+        <span>
+          <strong>${escapeHtml(p.name || "Unknown")}</strong>
+          <div class="endgame-desc-text">${escapeHtml(playerDescriptionText(p))}</div>
+        </span>
+        <span class="endgame-tag">Round ${escapeHtml(String(room.round || 1))}</span>
+      </div>
+    `).join("");
+
+    return `
+      <div class="endgame-recap">
+        <div class="endgame-hero">
+          <span class="endgame-winner">${escapeHtml(winnerTitle)}</span>
+          <div class="endgame-subtitle">${escapeHtml(winnerSubtitle)}</div>
+        </div>
+
+        <div class="endgame-grid">
+          <div class="endgame-stat">
+            <span class="endgame-label">Civilian country</span>
+            <span class="endgame-value">${escapeHtml(countryLabel(civilianCountry))}</span>
+          </div>
+          <div class="endgame-stat">
+            <span class="endgame-label">Spy country</span>
+            <span class="endgame-value">${escapeHtml(countryLabel(spyCountry))}</span>
+          </div>
+          <div class="endgame-stat">
+            <span class="endgame-label">Spy player${spies.length === 1 ? "" : "s"}</span>
+            <span class="endgame-value">${escapeHtml(spies.map(p => p.name || "Unknown").join(", ") || "Unknown")}</span>
+          </div>
+          <div class="endgame-stat">
+            <span class="endgame-label">Eliminated</span>
+            <span class="endgame-value">${escapeHtml(eliminated.map(p => p.name || "Unknown").join(", ") || "None")}</span>
+          </div>
+        </div>
+
+        <div class="endgame-section">
+          <h4>Final Result</h4>
+          <div class="endgame-list">
+            <div class="endgame-row">
+              <span>${escapeHtml(room.game?.lastResult || room.game?.gameOverText || "Game over.")}</span>
+              <span class="endgame-tag">Result</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="endgame-section">
+          <h4>Final Vote</h4>
+          <div class="endgame-list">
+            ${voteRows || `<div class="endgame-row"><span>No final vote was recorded.</span><span class="endgame-tag">No vote</span></div>`}
+          </div>
+        </div>
+
+        <div class="endgame-section">
+          <h4>Players Revealed</h4>
+          <div class="endgame-list">${playerRows}</div>
+        </div>
+
+        <div class="endgame-section">
+          <h4>Descriptions Recap</h4>
+          <div class="endgame-list">${descriptionRows}</div>
+        </div>
+      </div>
+    `;
+  }
+
   function renderGame(room, me, alivePlayers) {
     const phase = room.phase;
 
@@ -3426,22 +3686,16 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     }
 
     if (phase === "gameOver") {
-      renderDescriptions(room);
-      descriptionsPanel.classList.remove("hidden");
       gameOverPanel.classList.remove("hidden");
 
-      const roles = Object.values(room.players || {}).map(p => {
-        const publicRole = p.role === "undercover" ? "spy" : p.role;
-        return `${escapeHtml(p.name)}: ${escapeHtml(publicRole || "?")} · ${escapeHtml(countryLabel(p.country) || "?")}`;
-      }).join("<br>");
+      const gameOverHeading = gameOverPanel.querySelector("h3");
+      if (gameOverHeading) {
+        gameOverHeading.textContent = room.game?.winner === "spies" ? "Spies Win" : "Civilians Win";
+      }
 
-      gameOverBox.innerHTML = `
-        <strong>${escapeHtml(room.game?.gameOverText || "Game over.")}</strong><br><br>
-        Last result: ${escapeHtml(room.game?.lastResult || "")}<br><br>
-        <strong>Roles revealed:</strong><br>${roles}
-      `;
+      gameOverBox.innerHTML = renderEndgameRecap(room);
 
-      toggleOtherImagesBtn.textContent = otherImagesVisible ? "Hide other players' images" : "See other players' images";
+      toggleOtherImagesBtn.textContent = otherImagesVisible ? "Hide image gallery" : "See image gallery";
       otherImagesPanel.classList.toggle("hidden", !otherImagesVisible);
 
       if (otherImagesVisible) {
