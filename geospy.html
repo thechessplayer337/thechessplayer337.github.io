@@ -967,6 +967,105 @@
       opacity: 1;
     }
 
+
+
+    .game-start-transition {
+      position: fixed;
+      inset: 0;
+      z-index: 118;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 50% 35%, rgba(255, 218, 156, 0.18), transparent 24rem),
+        radial-gradient(circle at 58% 46%, rgba(93, 141, 190, 0.20), transparent 34rem),
+        linear-gradient(180deg, rgba(5,5,7,0.96), rgba(12,10,9,0.97));
+      backdrop-filter: blur(14px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .game-start-transition.active {
+      animation: game-start-transition-in 3s cubic-bezier(0.18, 0.84, 0.18, 1) forwards;
+    }
+
+    .game-start-transition-inner {
+      width: min(720px, 100%);
+      text-align: center;
+      border-radius: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035)),
+        rgba(8, 8, 10, 0.74);
+      box-shadow: 0 30px 110px rgba(0, 0, 0, 0.50);
+      padding: clamp(34px, 8vw, 72px) 28px;
+      transform: translateY(10px) scale(0.985);
+    }
+
+    .game-start-transition-title {
+      display: block;
+      color: white;
+      font-size: clamp(3rem, 8vw, 7rem);
+      line-height: 0.9;
+      letter-spacing: -0.055em;
+      text-shadow: 0 18px 60px rgba(0, 0, 0, 0.58);
+      margin-bottom: 22px;
+      opacity: 0;
+      animation: game-start-title-reveal 1.45s cubic-bezier(0.18, 0.84, 0.18, 1) 0.18s forwards;
+    }
+
+    .game-start-loader {
+      width: min(420px, 78vw);
+      height: 10px;
+      margin: 0 auto;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: inset 0 0 18px rgba(0,0,0,0.24), 0 0 24px rgba(255, 204, 120, 0.12);
+    }
+
+    .game-start-loader span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      transform-origin: left center;
+      transform: scaleX(0);
+      border-radius: inherit;
+      background: linear-gradient(90deg, #5bb7ff, #a891ff, #ff9b78, #ffe29a);
+      box-shadow: 0 0 22px rgba(255, 204, 120, 0.32), 0 0 34px rgba(91, 183, 255, 0.24);
+      animation: game-start-loader-fill 2.75s ease-in-out 0.16s forwards;
+    }
+
+    .game-start-transition-text {
+      margin-top: 14px;
+      color: rgba(255, 255, 255, 0.62);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    @keyframes game-start-transition-in {
+      0% { opacity: 0; filter: blur(12px); }
+      18% { opacity: 1; filter: blur(4px); }
+      72% { opacity: 1; filter: blur(0); }
+      100% { opacity: 0; filter: blur(7px); }
+    }
+
+    @keyframes game-start-title-reveal {
+      0% { opacity: 0; filter: blur(18px); transform: translateY(14px) scale(0.985); }
+      52% { opacity: 0.78; filter: blur(5px); }
+      100% { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
+    }
+
+    @keyframes game-start-loader-fill {
+      0% { transform: scaleX(0); opacity: 0.58; }
+      18% { opacity: 1; }
+      68% { transform: scaleX(0.82); }
+      100% { transform: scaleX(1); opacity: 1; }
+    }
+
     .game-over-transition {
       position: fixed;
       inset: 0;
@@ -1819,6 +1918,16 @@
       </div>
     </div>
 
+
+
+    <div class="game-start-transition hidden" id="gameStartTransition" aria-hidden="true">
+      <div class="game-start-transition-inner">
+        <span class="game-start-transition-title">Game Started</span>
+        <div class="game-start-loader" aria-hidden="true"><span></span></div>
+        <div class="game-start-transition-text">Loading classified image</div>
+      </div>
+    </div>
+
     <div class="game-over-transition hidden" id="gameOverTransition" aria-hidden="true">
       <div class="game-over-transition-inner">
         <span class="game-over-transition-title" id="gameOverTransitionTitle">Game Over</span>
@@ -2196,6 +2305,7 @@ const playersList = document.getElementById("playersList");
   const gameNotificationText = document.getElementById("gameNotificationText");
   const gameNotificationGoBtn = document.getElementById("gameNotificationGoBtn");
   const gameNotificationCloseBtn = document.getElementById("gameNotificationCloseBtn");
+  const gameStartTransition = document.getElementById("gameStartTransition");
   const gameOverTransition = document.getElementById("gameOverTransition");
   const gameOverTransitionTitle = document.getElementById("gameOverTransitionTitle");
 
@@ -2209,10 +2319,13 @@ const playersList = document.getElementById("playersList");
   let lastNotifiedGameStartKey = "";
   let pendingGameStartNotification = null;
   let notificationAutoHideTimer = null;
+  let gameStartTransitionTimer = null;
   let unsubscribeRoom = null;
   let transitionLock = false;
   let pendingVoteTarget = "";
   let otherImagesVisible = false;
+  const endgameOpenPlayerIds = new Set();
+  let endgameReviewOpen = false;
   let lastGameOverTransitionKey = "";
   let gameOverTransitionTimer = null;
   const countdownAudioKeys = new Map();
@@ -2260,6 +2373,11 @@ const playersList = document.getElementById("playersList");
   }
 
   const locationDataPromise = loadLocationData();
+
+  function resetEndgameExpansionState() {
+    endgameOpenPlayerIds.clear();
+    endgameReviewOpen = false;
+  }
 
   function getAvailablePairs() {
     return countryPairs.filter(pair => {
@@ -2619,7 +2737,29 @@ const playersList = document.getElementById("playersList");
     target.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+
+  function showGameStartTransition() {
+    if (!gameStartTransition) return;
+
+    if (gameStartTransitionTimer) {
+      clearTimeout(gameStartTransitionTimer);
+      gameStartTransitionTimer = null;
+    }
+
+    gameStartTransition.classList.remove("hidden", "active");
+    void gameStartTransition.offsetWidth;
+    gameStartTransition.classList.add("active");
+
+    gameStartTransitionTimer = setTimeout(() => {
+      gameStartTransition.classList.add("hidden");
+      gameStartTransition.classList.remove("active");
+      gameStartTransitionTimer = null;
+    }, 3000);
+  }
+
   function triggerGameStartNotification() {
+    showGameStartTransition();
+
     showGameNotification(
       "Game started",
       "Your screenshot is ready. View your role and image below.",
@@ -2879,6 +3019,7 @@ const playersList = document.getElementById("playersList");
     transitionLock = false;
     pendingVoteTarget = "";
     otherImagesVisible = false;
+    resetEndgameExpansionState();
 
     sessionStorage.removeItem("geospyRoomId");
     sessionStorage.removeItem("geospyPlayerId");
@@ -3094,6 +3235,7 @@ const playersList = document.getElementById("playersList");
     }
 
     otherImagesVisible = false;
+    resetEndgameExpansionState();
     await update(ref(db), updates);
   }
 
@@ -3397,6 +3539,7 @@ const playersList = document.getElementById("playersList");
     const roomIdToReset = currentRoomId;
 
     otherImagesVisible = false;
+    resetEndgameExpansionState();
 
     await set(ref(db, `rooms/${roomIdToReset}`), null);
 
@@ -4034,6 +4177,8 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     const eliminated = players.filter(p => p.alive === false);
 
     const playerRows = players.map(p => {
+      const playerId = p.id || p.playerId || p.name || "unknown";
+      const isOpen = endgameOpenPlayerIds.has(String(playerId));
       const role = publicRoleLabel(p.role);
       const roleClass = p.role === "undercover" ? "spy" : "civilian";
       const status = p.alive === false ? "Eliminated" : "Alive";
@@ -4043,8 +4188,8 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       const description = playerDescriptionText(p);
 
       return `
-        <div class="endgame-row player-reveal-card" data-player-reveal-card>
-          <button type="button" class="player-reveal-toggle" data-endgame-player-toggle>
+        <div class="endgame-row player-reveal-card${isOpen ? " open" : ""}" data-player-reveal-card data-player-id="${escapeHtml(String(playerId))}">
+          <button type="button" class="player-reveal-toggle" data-endgame-player-toggle data-player-id="${escapeHtml(String(playerId))}">
             <span>
               <strong>${escapeHtml(p.name || "Unknown")}</strong><br>
               ${escapeHtml(role)} · ${escapeHtml(countryLabel(countryCode))} · ${escapeHtml(status)}
@@ -4106,7 +4251,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
           <div class="endgame-list">${playerRows}</div>
         </div>
 
-        <div class="endgame-section endgame-review" data-endgame-review-card>
+        <div class="endgame-section endgame-review${endgameReviewOpen ? " open" : ""}" data-endgame-review-card>
           <button type="button" class="game-review-toggle" data-endgame-review-toggle>Game Review</button>
           <div class="endgame-list game-review-list">${reviewRows}</div>
         </div>
@@ -4168,6 +4313,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
 
     if (phase !== "gameOver") {
       otherImagesVisible = false;
+      resetEndgameExpansionState();
     }
 
     gameTitle.textContent = `GeoSpy · Round ${room.round || 1}`;
@@ -4317,6 +4463,11 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     }
 
     if (phase === "gameOver") {
+      // The endgame recap now includes image reveal inside Players Revealed,
+      // so hide the player's own large screenshot at the top of the result page.
+      secretBox.classList.add("hidden");
+      locationImageFrame.classList.add("hidden");
+
       gameOverPanel.classList.remove("hidden");
       maybeShowGameOverTransition(room);
 
@@ -4551,8 +4702,21 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     if (playerToggle) {
       event.preventDefault();
       event.stopPropagation();
+
       const card = playerToggle.closest("[data-player-reveal-card]");
-      if (card) card.classList.toggle("open");
+      const playerId = String(playerToggle.dataset.playerId || card?.dataset.playerId || "");
+
+      if (playerId) {
+        if (endgameOpenPlayerIds.has(playerId)) {
+          endgameOpenPlayerIds.delete(playerId);
+          card?.classList.remove("open");
+        } else {
+          endgameOpenPlayerIds.add(playerId);
+          card?.classList.add("open");
+        }
+      } else if (card) {
+        card.classList.toggle("open");
+      }
       return;
     }
 
@@ -4560,8 +4724,11 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     if (reviewToggle) {
       event.preventDefault();
       event.stopPropagation();
+
+      endgameReviewOpen = !endgameReviewOpen;
       const card = reviewToggle.closest("[data-endgame-review-card]");
-      if (card) card.classList.toggle("open");
+      card?.classList.toggle("open", endgameReviewOpen);
+      return;
     }
   });
 
