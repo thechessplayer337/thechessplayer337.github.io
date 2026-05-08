@@ -1284,6 +1284,11 @@
       overflow: hidden;
     }
 
+    .player-reveal-card.endgame-row {
+      display: block;
+      grid-template-columns: none;
+    }
+
     .player-reveal-card summary {
       list-style: none;
       cursor: pointer;
@@ -2648,6 +2653,55 @@ const playersList = document.getElementById("playersList");
     }
   }
 
+  function playGameStartSound() {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+
+      const ctx = new AudioContext();
+      const master = ctx.createGain();
+      master.gain.setValueAtTime(0.0001, ctx.currentTime);
+      master.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 0.05);
+      master.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.25);
+      master.connect(ctx.destination);
+
+      const bass = ctx.createOscillator();
+      const bassGain = ctx.createGain();
+      bass.type = "triangle";
+      bass.frequency.setValueAtTime(92, ctx.currentTime);
+      bass.frequency.exponentialRampToValueAtTime(54, ctx.currentTime + 0.82);
+      bassGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      bassGain.gain.exponentialRampToValueAtTime(0.70, ctx.currentTime + 0.04);
+      bassGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.05);
+      bass.connect(bassGain);
+      bassGain.connect(master);
+
+      const shimmer = ctx.createOscillator();
+      const shimmerGain = ctx.createGain();
+      shimmer.type = "sine";
+      shimmer.frequency.setValueAtTime(440, ctx.currentTime + 0.10);
+      shimmer.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.76);
+      shimmerGain.gain.setValueAtTime(0.0001, ctx.currentTime + 0.10);
+      shimmerGain.gain.exponentialRampToValueAtTime(0.20, ctx.currentTime + 0.22);
+      shimmerGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.05);
+      shimmer.connect(shimmerGain);
+      shimmerGain.connect(master);
+
+      bass.start(ctx.currentTime);
+      bass.stop(ctx.currentTime + 1.08);
+      shimmer.start(ctx.currentTime + 0.10);
+      shimmer.stop(ctx.currentTime + 1.08);
+
+      setTimeout(() => {
+        try {
+          ctx.close();
+        } catch (_) {}
+      }, 1350);
+    } catch (_) {
+      // Some browsers may block audio unless the page has already received user interaction.
+    }
+  }
+
   function playCountdownTick(remainingSeconds, dangerAt = 5) {
     const safeSeconds = Math.ceil(Number(remainingSeconds || 0));
 
@@ -2758,14 +2812,9 @@ const playersList = document.getElementById("playersList");
   }
 
   function triggerGameStartNotification() {
+    hideGameNotification();
     showGameStartTransition();
-
-    showGameNotification(
-      "Game started",
-      "Your screenshot is ready. View your role and image below.",
-      3000,
-      true
-    );
+    playGameStartSound();
   }
 
   function maybeNotifyGameStarted(room) {
