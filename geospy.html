@@ -4112,7 +4112,7 @@ const playersList = document.getElementById("playersList");
 startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby"));
     startGameBtn.disabled = !(playerCount === room.maxPlayers);
 
-    const hostCanManageActiveGame = isHost(room) && (room.status === "playing" || room.status === "finished");
+    const hostCanManageActiveGame = isHost(room) && room.status === "playing";
 
     restartGameRoomBtn.classList.toggle("hidden", !hostCanManageActiveGame);
     restartGameRoomBtn.disabled = !(playerCount === room.maxPlayers);
