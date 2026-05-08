@@ -1,5 +1,113 @@
 # GeoSpy Changelog
 
+## v1.4 — Cinematic Flow and Endgame Recap Update
+
+**Release date:** 2026-05-08
+
+GeoSpy v1.4 is a major presentation and endgame review update. It improves the start-of-game transition, post-game reveal, victory presentation, and review experience after a full multiplayer test.
+
+### Game Start Flow
+
+- Added a cinematic **Game Started** transition when a new game begins.
+- Added a simulated loading/progress bar during the start transition.
+- Added a short game-start sound effect.
+- Removed the older top notification that previously appeared when the game started, since the new transition now handles the start-of-game signal more clearly.
+- Preserved the existing screenshot reveal sequence after the start transition.
+
+### Endgame Transition
+
+- Added a cinematic victory transition before the final recap screen appears.
+- Victory text now fades in gradually instead of appearing instantly.
+- **Spies Win** uses a darker, more suspenseful transition.
+- **Civilians Win** uses a brighter morning/daylight-style transition to match the theme of the civilian side winning.
+
+### Endgame Recap Page
+
+- Reworked the game over screen into a cleaner endgame recap.
+- Added a large victory panel showing either:
+  - **Civilians Win**
+  - **Spies Win**
+- Added clear endgame summary cards for:
+  - civilian country
+  - spy country
+  - spy player / spy players
+  - eliminated player / eliminated players
+- Removed redundant **Final Result** and **Final Vote** sections from the default recap layout.
+- Removed the large personal screenshot from the top of the endgame screen, since images are now handled inside **Players Revealed**.
+- Added separate visual themes for the recap screen:
+  - bright morning/daylight recap for **Civilians Win**
+  - dark suspense recap for **Spies Win**
+
+### Players Revealed
+
+- Reworked **Players Revealed** into expandable player cards.
+- Each player card shows:
+  - player name
+  - revealed role
+  - revealed country
+  - alive/eliminated status
+- Clicking a player card reveals:
+  - that player’s description
+  - that player’s screenshot
+  - a link to open the full screenshot
+- Fixed a bug where expanded player cards would immediately collapse again after being clicked.
+- Fixed the expanded player card layout so image reveals no longer squeeze the role/country text into an unreadable narrow column.
+
+### Game Review
+
+- Renamed **Descriptions Recap** to **Game Review**.
+- Game Review is now collapsed by default.
+- Added a review log for the game process, including:
+  - descriptions
+  - private chat requests
+  - accepted/refused/timed-out private chats
+  - private chat messages
+  - ready-to-vote choices
+  - voting actions
+  - round results
+  - game over state
+- Fixed a bug where the Game Review panel would immediately collapse after being opened.
+- Review expansion state is now preserved across re-renders during the game over screen.
+
+### Host Controls
+
+- Kept host shortcut controls available during active games.
+- Hid the top-right host shortcut controls after the game ends, since the recap screen already provides bottom-page controls.
+- Kept the endgame page controls available at the bottom of the recap screen.
+- This keeps active-game host actions convenient while avoiding duplicate controls on the final recap screen.
+
+### Feedback and UI Fixes
+
+- Fixed feedback modal colors during the in-game dark theme.
+- Feedback text, form fields, dropdowns, and placeholders now remain readable.
+- Improved secondary button visibility in dark in-game panels.
+- Fixed low-contrast button text for choices such as **Refuse to Vote** and **Cancel**.
+- Added minor UI polish and countdown feedback improvements.
+
+### Countdown Audio and Timer Feedback
+
+- Added red countdown styling for the final seconds of key timers.
+- Description countdown now turns red during the final **5 seconds**.
+- Active private chat countdown now turns red during the final **5 seconds**.
+- Private chat request countdown now turns red only during the final **3 seconds**.
+- Added countdown tick sound for the final seconds of:
+  - normal description turns
+  - active private chat
+- Private chat request countdown does not play countdown tick sounds.
+- Adjusted countdown audio to play once per second.
+- Changed the countdown tick to a lower, heavier sound instead of a sharper bell-like sound.
+- Countdown sound becomes more intense as the timer approaches zero.
+
+### Design Goal
+
+- Make the start of a game feel more intentional and cinematic.
+- Make the end of a game feel complete rather than abrupt.
+- Give players a clearer and more satisfying post-game reveal.
+- Support real discussion and replay after each game through expandable images and game review.
+- Keep the active game interface useful for the host while keeping the endgame screen clean.
+
+---
+
 ## v1.3 — Gameplay Balance and Expanded Private Chat
 
 **Release date:** 2026-05-07
