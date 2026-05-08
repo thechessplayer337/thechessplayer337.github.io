@@ -527,6 +527,57 @@
       margin-top: 12px;
     }
 
+    .voting-discussion {
+      margin-top: 14px;
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+    }
+
+    .voting-discussion h4 {
+      color: var(--dark);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .voting-chat-list {
+      display: grid;
+      gap: 8px;
+      max-height: 240px;
+      overflow: auto;
+      margin: 10px 0 12px;
+      padding-right: 4px;
+    }
+
+    .voting-chat-message {
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid var(--line);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .voting-chat-message strong {
+      color: var(--dark);
+    }
+
+    .voting-chat-input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .voting-chat-input-row textarea {
+      min-height: 54px;
+      margin-bottom: 0;
+    }
+
     .vote-btn {
       width: 100%;
       text-align: left;
@@ -883,6 +934,25 @@
     body.in-game .vote-btn.selected {
       background: rgba(255, 209, 129, 0.18);
       border-color: rgba(255, 209, 129, 0.62);
+      color: white;
+    }
+
+    body.in-game .voting-discussion {
+      background: rgba(255, 255, 255, 0.055);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    body.in-game .voting-discussion h4 {
+      color: white;
+    }
+
+    body.in-game .voting-chat-message {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    body.in-game .voting-chat-message strong {
       color: white;
     }
 
@@ -1583,15 +1653,6 @@
       box-shadow: 0 18px 48px rgba(84, 112, 140, 0.16);
     }
 
-
-
-    /* Hide final recap until the victory transition has fully finished */
-    body.endgame-transitioning #gameOverPanel {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
     .game-notification {
       position: fixed;
       top: 18px;
@@ -2000,6 +2061,18 @@
           </p>
           <div class="vote-grid" id="voteGrid"></div>
 
+          <div class="voting-discussion" id="votingDiscussionBox">
+            <h4>Voting Discussion</h4>
+            <p class="status">
+              Use this time for final accusations or defense. Normal description restrictions still apply.
+            </p>
+            <div class="voting-chat-list" id="votingChatMessages"></div>
+            <div class="voting-chat-input-row">
+              <textarea id="votingChatInput" placeholder="Type a public voting message..."></textarea>
+              <button id="sendVotingChatBtn">Send</button>
+            </div>
+          </div>
+
           <div class="row">
             <button id="confirmPlayerVoteBtn">Confirm Vote</button>
             <button class="secondary" id="cancelPlayerVoteBtn">Cancel</button>
@@ -2401,6 +2474,10 @@ const playersList = document.getElementById("playersList");
   const votingPanel = document.getElementById("votingPanel");
   const votingTimer = document.getElementById("votingTimer");
   const voteGrid = document.getElementById("voteGrid");
+  const votingDiscussionBox = document.getElementById("votingDiscussionBox");
+  const votingChatMessages = document.getElementById("votingChatMessages");
+  const votingChatInput = document.getElementById("votingChatInput");
+  const sendVotingChatBtn = document.getElementById("sendVotingChatBtn");
   const confirmPlayerVoteBtn = document.getElementById("confirmPlayerVoteBtn");
   const cancelPlayerVoteBtn = document.getElementById("cancelPlayerVoteBtn");
   const voteStatus = document.getElementById("voteStatus");
@@ -2450,6 +2527,7 @@ const playersList = document.getElementById("playersList");
   const endgameOpenPlayerIds = new Set();
   let endgameReviewOpen = false;
   let lastGameOverTransitionKey = "";
+  let revealedGameOverTransitionKey = "";
   let gameOverTransitionTimer = null;
   const countdownAudioKeys = new Map();
 
@@ -2500,7 +2578,6 @@ const playersList = document.getElementById("playersList");
   function resetEndgameExpansionState() {
     endgameOpenPlayerIds.clear();
     endgameReviewOpen = false;
-    revealedEndgameThemeKey = "";
   }
 
   function getAvailablePairs() {
@@ -3193,6 +3270,7 @@ const playersList = document.getElementById("playersList");
     sessionStorage.removeItem("geospyPlayerId");
 
     document.body.classList.remove("in-game", "civilians-endgame", "spies-endgame");
+      revealedGameOverTransitionKey = "";
 
     entryCard.classList.remove("hidden");
     roomCard.classList.add("hidden");
@@ -3270,6 +3348,7 @@ const playersList = document.getElementById("playersList");
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
     updates[`rooms/${currentRoomId}/privateChat`] = null;
+    updates[`rooms/${currentRoomId}/votingChat`] = null;
     updates[`rooms/${currentRoomId}/gameLog`] = { events: {} };
     updates[`rooms/${currentRoomId}/speakingOrder`] = speakingOrder;
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
@@ -3356,6 +3435,7 @@ const playersList = document.getElementById("playersList");
     updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
     updates[`rooms/${currentRoomId}/votingStartedAt`] = null;
     updates[`rooms/${currentRoomId}/privateChat`] = null;
+    updates[`rooms/${currentRoomId}/votingChat`] = null;
     updates[`rooms/${currentRoomId}/gameLog`] = { events: {} };
     updates[`rooms/${currentRoomId}/speakingOrder`] = speakingOrder;
     updates[`rooms/${currentRoomId}/currentSpeakerIndex`] = 0;
@@ -3499,6 +3579,38 @@ const playersList = document.getElementById("playersList");
   function cancelPlayerVote() {
     pendingVoteTarget = "";
     if (currentRoom) renderRoom(currentRoom);
+  }
+
+  async function sendVotingChatMessage() {
+    if (!currentRoom || currentRoom.phase !== "voting") return;
+
+    const me = getMe(currentRoom);
+    if (!me || me.alive === false) return;
+
+    const text = votingChatInput.value.trim();
+    if (!text) return;
+
+    const messageId = makeLogEventId("voting_chat");
+    const message = {
+      senderId: currentPlayerId,
+      senderName: me.name || "Player",
+      text,
+      round: Number(currentRoom.round || 1),
+      createdAt: Date.now()
+    };
+
+    const updates = {
+      [`rooms/${currentRoomId}/votingChat/messages/${messageId}`]: message
+    };
+
+    addGameLogEvent(updates, currentRoom, "voting_chat_message", {
+      senderId: currentPlayerId,
+      senderName: me.name || "Player",
+      text
+    });
+
+    votingChatInput.value = "";
+    await update(ref(db), updates);
   }
 
 
@@ -3927,8 +4039,13 @@ const playersList = document.getElementById("playersList");
           const updates = {
             [`rooms/${currentRoomId}/phase`]: "voting",
             [`rooms/${currentRoomId}/readyVoteStartedAt`]: null,
-            [`rooms/${currentRoomId}/votingStartedAt`]: Date.now()
+            [`rooms/${currentRoomId}/votingStartedAt`]: Date.now(),
+            [`rooms/${currentRoomId}/votingChat`]: null
           };
+
+          addGameLogEvent(updates, room, "voting_started", {
+            message: "Voting phase started. Public voting discussion is open."
+          });
 
           for (const p of alivePlayers) {
             updates[`rooms/${currentRoomId}/players/${p.id}/vote`] = "";
@@ -4058,6 +4175,12 @@ const playersList = document.getElementById("playersList");
       updates[`rooms/${currentRoomId}/game/winner`] = win.winner;
       updates[`rooms/${currentRoomId}/game/lastResult`] = resultText;
       updates[`rooms/${currentRoomId}/game/gameOverText`] = win.text;
+      addGameLogEvent(updates, room, "game_over", {
+        message: `${resultText} ${win.text}`.trim(),
+        winner: win.winner,
+        eliminatedId,
+        eliminatedName: eliminatedId ? (room.players?.[eliminatedId]?.name || "Unknown") : "None"
+      });
     } else {
       updates[`rooms/${currentRoomId}/phase`] = "roundResult";
       updates[`rooms/${currentRoomId}/readyVoteStartedAt`] = null;
@@ -4097,7 +4220,6 @@ const playersList = document.getElementById("playersList");
     return { gameOver: false };
   }
 
-
   function getGameOverTransitionKey(room) {
     if (!room || room.phase !== "gameOver" || room.status !== "finished") return "";
     return `${currentRoomId || "room"}:${room?.game?.startedAt || ""}:${room?.game?.winner || ""}:${room?.game?.lastResult || room?.game?.gameOverText || ""}`;
@@ -4107,13 +4229,11 @@ const playersList = document.getElementById("playersList");
     const me = getMe(room);
     const players = Object.entries(room.players || {});
     const alivePlayers = getAlivePlayers(room);
-    const gameOverKey = getGameOverTransitionKey(room);
-    const isFreshGameOverTransition = Boolean(gameOverKey && revealedEndgameThemeKey !== gameOverKey);
-    const isCiviliansEndgame = room.status === "finished" && room.phase === "gameOver" && room.game?.winner === "civilians" && !isFreshGameOverTransition;
-    const isSpiesEndgame = room.status === "finished" && room.phase === "gameOver" && room.game?.winner === "spies" && !isFreshGameOverTransition;
-
+    const gameOverTransitionKey = getGameOverTransitionKey(room);
+    const endgameTransitionRevealed = !gameOverTransitionKey || revealedGameOverTransitionKey === gameOverTransitionKey;
+    const isCiviliansEndgame = room.status === "finished" && room.phase === "gameOver" && room.game?.winner === "civilians" && endgameTransitionRevealed;
+    const isSpiesEndgame = room.status === "finished" && room.phase === "gameOver" && room.game?.winner === "spies" && endgameTransitionRevealed;
     document.body.classList.toggle("in-game", room.status !== "lobby");
-    document.body.classList.toggle("endgame-transitioning", isFreshGameOverTransition);
     document.body.classList.toggle("civilians-endgame", isCiviliansEndgame);
     document.body.classList.toggle("spies-endgame", isSpiesEndgame);
 
@@ -4163,7 +4283,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     }).join("");
 
     if (room.status === "lobby") {
-      document.body.classList.remove("in-game", "civilians-endgame", "spies-endgame", "endgame-transitioning");
+      document.body.classList.remove("in-game", "civilians-endgame", "spies-endgame");
       gameCard.classList.add("hidden");
       return;
     }
@@ -4287,10 +4407,24 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       };
     }
 
+    if (type === "voting_started") {
+      return {
+        meta: `${roundLabel} · Voting discussion`,
+        body: event.message || "Voting phase started. Public voting discussion is open."
+      };
+    }
+
+    if (type === "voting_chat_message") {
+      return {
+        meta: `${roundLabel} · Voting discussion`,
+        body: `${event.senderName || playerNameFromRoom(room, event.senderId)}: ${event.text || ""}`
+      };
+    }
+
     if (type === "player_vote") {
       return {
         meta: `${roundLabel} · Vote`,
-        body: `${event.playerName || playerNameFromRoom(room, event.playerId)} voted for ${event.targetName || playerNameFromRoom(room, event.targetId)}.`
+        body: `${event.playerName || playerNameFromRoom(room, event.playerId)} voted for ${event.targetName || playerNameFromRoom(room, event.targetId)}${event.automatic ? " (auto)" : ""}.`
       };
     }
 
@@ -4443,10 +4577,17 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
 
 
   function maybeShowGameOverTransition(room) {
-    if (!gameOverTransition || !gameOverTransitionTitle) return;
+    if (!gameOverTransition || !gameOverTransitionTitle) return false;
 
     const key = getGameOverTransitionKey(room);
-    if (!key || lastGameOverTransitionKey === key) return;
+    if (!key) return false;
+
+    // If this endgame transition has already finished, show the recap normally.
+    if (revealedGameOverTransitionKey === key) return false;
+
+    // If the same transition is already running, keep the recap hidden until it finishes.
+    if (lastGameOverTransitionKey === key) return true;
+
     lastGameOverTransitionKey = key;
 
     const spiesWon = room?.game?.winner === "spies";
@@ -4464,10 +4605,12 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     gameOverTransition.classList.add("active");
 
     gameOverTransitionTimer = setTimeout(() => {
-      revealedEndgameThemeKey = key;
-      document.body.classList.remove("endgame-transitioning");
-      document.body.classList.toggle("spies-endgame", spiesWon);
-      document.body.classList.toggle("civilians-endgame", !spiesWon);
+      revealedGameOverTransitionKey = key;
+
+      // Re-render after the transition finishes so the recap appears only after the victory screen.
+      if (currentRoom && getGameOverTransitionKey(currentRoom) === key) {
+        renderRoom(currentRoom);
+      }
 
       gameOverTransition.classList.add("fade-out");
       setTimeout(() => {
@@ -4475,6 +4618,8 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
         gameOverTransition.classList.remove("active", "fade-out", "spies-win", "civilians-win");
       }, 560);
     }, 3000);
+
+    return true;
   }
 
 
@@ -4655,8 +4800,15 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       secretBox.classList.add("hidden");
       locationImageFrame.classList.add("hidden");
 
+      if (maybeShowGameOverTransition(room)) {
+        gameOverPanel.classList.add("hidden");
+        toggleOtherImagesBtn.classList.add("hidden");
+        otherImagesPanel.classList.add("hidden");
+        otherImagesPanel.innerHTML = "";
+        return;
+      }
+
       gameOverPanel.classList.remove("hidden");
-      maybeShowGameOverTransition(room);
 
       const gameOverHeading = gameOverPanel.querySelector("h3");
       if (gameOverHeading) {
@@ -4734,12 +4886,27 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
       privateChatStatus.textContent = `You may request a private chat during your speaking turn. Remaining: ${remainingPrivateChats} / ${getPrivateChatLimit(room)}.`;
       privateChatRequestBox.classList.remove("hidden");
 
-      privateChatTargetInput.innerHTML = alivePlayers
-        .filter(p => p.id !== currentPlayerId)
-        .map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`)
-        .join("");
+      const privateChatTargets = alivePlayers.filter(p => p.id !== currentPlayerId);
+      const previousTarget = privateChatTargetInput.value;
+      const targetSignature = privateChatTargets
+        .map(p => `${p.id}:${p.name || ""}`)
+        .join("|");
 
-      requestPrivateChatBtn.disabled = alivePlayers.filter(p => p.id !== currentPlayerId).length === 0;
+      // Do not rebuild the dropdown every render. The speaking timer re-renders
+      // this panel frequently; rebuilding <select> while it is open makes the
+      // browser jump back to the first option.
+      if (privateChatTargetInput.dataset.targetSignature !== targetSignature) {
+        privateChatTargetInput.innerHTML = privateChatTargets
+          .map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`)
+          .join("");
+        privateChatTargetInput.dataset.targetSignature = targetSignature;
+      }
+
+      if (previousTarget && privateChatTargets.some(p => p.id === previousTarget)) {
+        privateChatTargetInput.value = previousTarget;
+      }
+
+      requestPrivateChatBtn.disabled = privateChatTargets.length === 0;
       return;
     }
 
@@ -4819,6 +4986,27 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
     }).join("");
   }
 
+  function renderVotingChat(room, me) {
+    const messages = Object.values(room?.votingChat?.messages || {})
+      .filter(Boolean)
+      .sort((a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0));
+
+    votingChatMessages.innerHTML = messages.map(msg => `
+      <div class="voting-chat-message">
+        <strong>${escapeHtml(msg.senderName || "Player")}:</strong>
+        ${escapeHtml(msg.text || "")}
+      </div>
+    `).join("") || `
+      <div class="voting-chat-message">
+        <em>No public voting messages yet.</em>
+      </div>
+    `;
+
+    const canChat = room?.phase === "voting" && me && me.alive !== false;
+    votingChatInput.disabled = !canChat;
+    sendVotingChatBtn.disabled = !canChat || !String(votingChatInput.value || "").trim();
+  }
+
   function renderVoting(room, me, alivePlayers) {
     const alreadyVoted = !!me?.vote;
     const canChoose = me && me.alive !== false && !alreadyVoted;
@@ -4862,6 +5050,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
 
     confirmPlayerVoteBtn.disabled = !canChoose || !pendingVoteTarget;
     cancelPlayerVoteBtn.disabled = !canChoose || !pendingVoteTarget;
+    renderVotingChat(room, me);
   }
 
   copyInviteBtn.addEventListener("click", async () => {
@@ -4878,6 +5067,15 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
 
   feedbackOpenBtn.addEventListener("click", () => openFeedbackModal());
   reportCurrentImageBtn.addEventListener("click", () => openFeedbackModal("bad_image"));
+  votingChatInput.addEventListener("input", () => {
+    if (currentRoom) renderVotingChat(currentRoom, getMe(currentRoom));
+  });
+  votingChatInput.addEventListener("keydown", event => {
+    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+      event.preventDefault();
+      sendVotingChatMessage();
+    }
+  });
   feedbackCancelBtn.addEventListener("click", closeFeedbackModal);
   feedbackSubmitBtn.addEventListener("click", submitFeedback);
   feedbackModal.addEventListener("click", (event) => {
@@ -4932,6 +5130,7 @@ startGameBtn.classList.toggle("hidden", !(isHost(room) && room.status === "lobby
   refusePrivateChatBtn.addEventListener("click", refusePrivateChat);
   sendPrivateChatBtn.addEventListener("click", sendPrivateChatMessage);
   endPrivateChatBtn.addEventListener("click", endPrivateChat);
+  sendVotingChatBtn.addEventListener("click", sendVotingChatMessage);
   agreeVoteBtn.addEventListener("click", () => setVoteIntent("agree"));
   refuseVoteBtn.addEventListener("click", () => setVoteIntent("refuse"));
   confirmVoteChoiceBtn.addEventListener("click", confirmVoteIntent);
